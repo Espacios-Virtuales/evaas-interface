@@ -1,15 +1,16 @@
+// app.component.spec.ts
 import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        RouterTestingModule
-      ],
-      declarations: [
-        AppComponent
+      imports: [AppComponent],
+      providers: [
+        provideRouter([]),      // rutas vacías (match con tu app.routes.ts actual)
+        provideHttpClient(),    // sin interceptores para simplificar el test
       ],
     }).compileComponents();
   });
@@ -20,16 +21,10 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'evaas-interface'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('evaas-interface');
-  });
-
-  it('should render title', () => {
+  it('should render Hola Mundo in template', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('evaas-interface app is running!');
+    expect(compiled.textContent).toContain('Hola Mundo');
   });
 });
