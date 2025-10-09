@@ -1,4 +1,5 @@
 export const environment = {
-  production: true,
-  apiUrl: 'https://api.evaas.lat' // ajusta si quieres
-} as const;
+    production: true,
+    apiUrl: 'https://api.tu-dominio.tld'
+  } as const;
+  
