@@ -1,1 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
+@use "sass:map";
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/utilities";
+
+// Bootstrap Icons
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+/* 🎨 Paleta EVAAS */
+:root {
+  --ev-primary: #003E6B;
+  --ev-accent:  #2BD4E0;
+}
+.btn-ev {
+  @extend .btn;
+  background: var(--ev-primary);
+  color: #fff;
+  &:hover { filter: brightness(1.05); }
+}
+.text-accent { color: var(--ev-accent); }
