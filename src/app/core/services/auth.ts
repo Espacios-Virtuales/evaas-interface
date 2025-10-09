@@ -1,30 +1,23 @@
 // src/app/core/services/auth.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
-import { ApiHttpService } from './api-http';
-import { AuthRequest, AuthResponse, RegisterRequest, User } from '../../core/models';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { RegisterRequest, UserResponse } from '../models/index';
+
+import { environment } from '../../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private api = inject(ApiHttpService);
-  private router = inject(Router);
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiUrl; // ej: http://localhost:8090
 
-  userSig = signal<User|null>(null);
-  tokenSig = signal<string|null>(null);
-
-  register(data: RegisterRequest) { return this.api.post('/auth/register', data); }
-  login(data: AuthRequest)        { return this.api.post<AuthResponse>('/auth/login', data); }
-
-  setSession({ accessToken, user }: AuthResponse) {
-    this.tokenSig.set(accessToken);
-    this.userSig.set(user);
-    localStorage.setItem('token', accessToken);
-    localStorage.setItem('user', JSON.stringify(user));
-  }
-  logout() {
-    localStorage.clear();
-    this.userSig.set(null);
-    this.tokenSig.set(null);
-    this.router.navigateByUrl('/');
+  register(payload: RegisterRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(`${this.baseUrl}/users/register`, payload).pipe(
+      catchError((err) => {
+        // Podrías mapear errores específicos aquí
+        return throwError(() => err);
+      })
+    );
   }
 }

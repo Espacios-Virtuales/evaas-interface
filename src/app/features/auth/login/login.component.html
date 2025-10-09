@@ -1,0 +1,35 @@
+<!-- src/app/features/auth/login/login.component.html -->
+<div class="login-wrapper d-flex flex-column flex-md-row vh-100">
+  <div class="login-image d-none d-md-flex flex-column justify-content-center align-items-center text-light">
+    <div class="overlay text-center">
+      <h2 class="fw-bold">EVAAS Inspira</h2>
+      <p class="lead">Conecta, crea y administra tus espacios virtuales.</p>
+    </div>
+  </div>
+
+  <div class="login-form d-flex align-items-center justify-content-center flex-grow-1 p-4">
+    <div class="form-container p-4 shadow-sm bg-white rounded-4" style="min-width:340px;max-width:420px;">
+      <h1 class="h4 mb-3 text-center text-primary">Ingresar</h1>
+
+      <div *ngIf="justRegistered()" class="alert alert-success small">
+        ¡Tu cuenta fue creada! Te enviamos un correo a <strong>{{ registeredEmail() }}</strong>.
+        Revisa tu inbox y activa tu cuenta para iniciar sesión.
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="vstack gap-3">
+        <div>
+          <input formControlName="email" type="email" class="form-control" placeholder="Correo electrónico" />
+        </div>
+        <div>
+          <input formControlName="password" type="password" class="form-control" placeholder="Contraseña" />
+        </div>
+        <button class="btn btn-ev w-100 py-2 mt-2" [disabled]="form.invalid">
+          Entrar
+        </button>
+        <p class="small text-center mt-3 text-muted">
+          ¿No tienes cuenta? <a href="/register" class="link-ev">Regístrate</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

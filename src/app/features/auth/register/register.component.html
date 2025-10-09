@@ -1,0 +1,73 @@
+<!-- src/app/features/auth/register/register.component.html -->
+<div class="register-wrapper d-flex flex-column flex-md-row vh-100">
+  <!-- Imagen lateral -->
+  <div class="register-image d-none d-md-flex flex-column justify-content-center align-items-center text-light">
+    <div class="overlay text-center">
+      <h2 class="fw-bold">EVAAS - Galaxy Training</h2>
+      <p class="lead">Regístrate y empieza a gestionar tus espacios virtuales.</p>
+      <img src="/evaas-logo.png" alt="EVAAS logo" class="brand-logo mt-3" />
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="register-form d-flex align-items-center justify-content-center flex-grow-1 p-4">
+    <div class="form-container p-4 shadow-sm bg-white rounded-4" style="min-width:340px;max-width:420px;">
+      <h1 class="h4 mb-1 text-center text-primary">Crear cuenta</h1>
+      <p class="text-center text-muted small mb-4">Completa tus datos para continuar</p>
+
+      <div *ngIf="serverError()" class="alert alert-danger py-2 small">{{ serverError() }}</div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="vstack gap-3">
+        <!-- register.component.html (inputs y mensajes) -->
+        <div>
+          <input formControlName="firstName" type="text" class="form-control"
+                [class.is-invalid]="showError('firstName')" placeholder="Nombre" />
+          <div class="invalid-feedback" *ngIf="showError('firstName')">
+            Ingresa un nombre válido (min. 2 caracteres).
+          </div>
+        </div>
+
+        <div>
+          <input formControlName="lastName" type="text" class="form-control"
+                [class.is-invalid]="showError('lastName')" placeholder="Apellido" />
+          <div class="invalid-feedback" *ngIf="showError('lastName')">
+            Ingresa un apellido válido (min. 2 caracteres).
+          </div>
+        </div>
+
+        <div>
+          <input formControlName="email" type="email" class="form-control"
+                [class.is-invalid]="showError('email')" placeholder="Correo electrónico" />
+          <div class="invalid-feedback" *ngIf="showError('email')">
+            Ingresa un correo válido.
+          </div>
+        </div>
+
+        <div>
+          <input formControlName="password" type="password" class="form-control"
+                [class.is-invalid]="showError('password')" placeholder="Contraseña" />
+          <div class="invalid-feedback" *ngIf="showError('password')">
+            Mínimo 6 caracteres.
+          </div>
+        </div>
+
+        <!-- Opcional: términos
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" formControlName="terms" id="terms">
+          <label class="form-check-label small" for="terms">Acepto los términos y condiciones</label>
+          <div class="invalid-feedback">Debes aceptar los términos.</div>
+        </div>
+        -->
+
+        <button class="btn btn-ev w-100 py-2 mt-1"
+                [disabled]="form.invalid || submitting()">
+          {{ submitting() ? 'Registrando…' : 'Registrarme' }}
+        </button>
+
+        <p class="small text-center mt-3 text-muted">
+          ¿Ya tienes cuenta? <a href="/login" class="link-ev">Inicia sesión</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

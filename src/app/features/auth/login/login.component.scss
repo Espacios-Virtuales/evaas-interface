@@ -1,0 +1,82 @@
+// Paleta Inspira / EVAAS
+$primary: #003e6b;
+$secondary: #2bd4e0;
+$light-gray: #f5f7fa;
+
+.login-wrapper {
+  background-color: $light-gray;
+
+  .login-image {
+    background: linear-gradient(135deg, $primary, $secondary);
+    flex: 1;
+    position: relative;
+    color: white;
+    text-align: center;
+
+    .overlay {
+      background: rgba(0, 0, 0, 0.2);
+      padding: 2rem;
+      border-radius: 1rem;
+    }
+    .brand-logo {
+      width: 120px;
+      opacity: 0.9;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      transition: transform 0.3s ease, opacity 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        opacity: 1;
+      }
+    }
+  }
+
+  .login-form {
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .form-container {
+      .form-control {
+        border: 1px solid lighten($primary, 40%);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        transition: all 0.2s ease;
+
+        &:focus {
+          border-color: $secondary;
+          box-shadow: 0 0 0 0.15rem rgba($secondary, 0.3);
+        }
+      }
+
+      .btn-ev {
+        background: linear-gradient(135deg, $primary, $secondary);
+        color: #fff;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: linear-gradient(135deg, darken($primary, 5%), darken($secondary, 5%));
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          background: lighten($primary, 25%);
+          cursor: not-allowed;
+        }
+      }
+
+      .link-ev {
+        color: $secondary;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
