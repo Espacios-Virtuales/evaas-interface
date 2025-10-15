@@ -31,7 +31,12 @@ export interface RolePrivilege {
     type: string; // "READ" | "WRITE" | etc.
 }
 
-/*
-export interface AuthRequest { email: string; password: string; }
-export interface AuthResponse { accessToken: string; user: User; }
-*/
+
+export interface AuthRequest { 
+    email: string; 
+    password: string; 
+}
+
+export interface AuthResponse { 
+    token: string; username: string; role:string;
+}

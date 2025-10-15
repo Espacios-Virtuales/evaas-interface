@@ -6,7 +6,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth';
 import { RegisterRequest } from '../../../core/models/index';
 
-
 @Component({
   selector: 'app-register',
   standalone: true,
@@ -55,7 +54,7 @@ export class RegisterComponent {
     };
     this.auth.register(payload).subscribe({
       next: (user) => {
-        this.router.navigate(['/login'], { queryParams: { registered: '1', email: user.email } });
+        this.router.navigate(['/login'], { queryParams: { registered: '1' } });
       },
       error: (err) => this.serverError.set(err?.error?.message || 'No pudimos completar el registro.'),
       complete: () => this.submitting.set(false)

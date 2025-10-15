@@ -1,9 +1,11 @@
 // src/app/app.config.ts
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/interceptors/auth-interceptor';
+
 import { routes } from './app.routes';
 
-import { provideHttpClient } from '@angular/common/http'; // 👈 sin withInterceptors
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     // Router
     provideRouter(routes),
 
-    // HttpClient (sin interceptores)
-    provideHttpClient(),
+
+    provideHttpClient(withInterceptors([authInterceptor])),
   ]
 };
