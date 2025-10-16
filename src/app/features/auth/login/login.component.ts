@@ -42,6 +42,13 @@ export class LoginComponent {
     });
   }
     
+
+  private extractErrorMessage(err: any): string {
+    if (!err) return 'Error desconocido.';
+    // intenta backend → HttpErrorResponse → texto
+    return err?.error?.message ?? err?.message ?? 'Credenciales incorrectas.';
+  }
+
   onSubmit() {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     this.submitting.set(true);
@@ -49,8 +56,9 @@ export class LoginComponent {
     const payload: AuthRequest = this.form.getRawValue(); // <- strings no-null
     this.auth.login(payload).subscribe({
       next: () => this.router.navigate(['/dashboard']),
-      error: (err) => {
-        this.serverError.set(err?.error?.message || 'Credenciales incorrectas.');
+      error: (err: unknown) => {
+        const msg = (err as any)?.error?.message ?? (err as any)?.message ?? 'Credenciales incorrectas.';
+        this.serverError.set(msg);
         this.submitting.set(false);
       },
     });

@@ -1,12 +1,12 @@
 // src/app/shared/components/toasts/toasts.component.ts
 import { Component, computed, inject } from '@angular/core';
-import { NgFor, NgClass } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { ToastService } from '../../../core/services/toast';
 
 @Component({
   selector: 'app-toasts',
   standalone: true,
-  imports: [NgFor, NgClass],
+  imports: [NgFor],
   template: `
   <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1200">
     <div *ngFor="let t of list()" class="toast show align-items-center text-bg-{{t.type}} border-0 mb-2">

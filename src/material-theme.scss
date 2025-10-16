@@ -1,0 +1,10 @@
+/* src/material-theme.scss */
+@use '@angular/material' as mat;
+
+$theme: mat.define-theme((
+  color: (theme-type: light, primary: mat.$cyan-palette),
+  // typography: mat.define-typography-config(),
+  // density: 0
+));
+
+@include mat.all-component-themes($theme);

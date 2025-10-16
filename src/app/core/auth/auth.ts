@@ -1,44 +1,48 @@
 // src/app/core/services/auth.service.ts
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError,  tap, catchError } from 'rxjs';
-import { RegisterRequest, RegistrationResponse, AuthResponse, AuthRequest } from '../models/index';
-
+import { Observable, throwError, map, tap, catchError } from 'rxjs';
 import { environment } from '../../../environments/environment.development';
+import { AuthRequest, AuthResponse, RegisterRequest, RegistrationResponse, UserSession } from '../models/index';
+import { AuthStore } from '../auth/auth.store';
+import { mapAuthResponseToSession } from '../auth/auth.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
-  private baseUrl = environment.apiUrl; // ej: http://localhost:8090
-
-  userSig = signal<any | null>(null);
+  private store = inject(AuthStore);
+  private baseUrl = environment.apiUrl;
 
   register(payload: RegisterRequest): Observable<RegistrationResponse> {
-    return this.http.post<RegistrationResponse>(`${this.baseUrl}/users/register`, payload).pipe(
-      catchError((err) => {
-        // Podrías mapear errores específicos aquí
+    return this.http.post<RegistrationResponse>(`${this.baseUrl}/users/register`, payload)
+      .pipe(catchError(err => throwError(() => err)));
+  }
+
+  login(payload: AuthRequest): Observable<UserSession> {
+    console.log('[AuthService] login() payload', payload);
+    return this.http.post<AuthResponse>(`${this.baseUrl}/login`, payload).pipe(
+      tap(res => console.log('[AuthService] AuthResponse', res)),
+      map(res => mapAuthResponseToSession(res)),
+      tap(session => {
+        console.log('[AuthService] setSession()', session);
+        this.store.setSession(session);
+      }),
+      catchError(err => {
+        console.error('[AuthService] login ERROR', err);
         return throwError(() => err);
       })
     );
   }
 
-  login(payload: AuthRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/login`, payload).pipe(
-      tap((res: AuthResponse) => {
-        localStorage.setItem('token', res.token);
-        this.userSig.set(res.username);
-      }),
-      catchError((err) => throwError(() => err))
-    );
-  }
-  
-
-  logout() {
-    localStorage.removeItem('token');
-    this.userSig.set(null);
+  logout(): void {
+    this.store.clear();
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+    return this.store.isLoggedIn();
+  }
+
+  getAccessToken(): string | null {
+    return this.store.session()?.accessToken ?? null;
   }
 }

@@ -15,8 +15,8 @@ import { Router } from '@angular/router';
       <a routerLink="/dashboard" class="text-decoration-none">Home</a>
 
       <div class="ms-auto d-flex align-items-center gap-3">
-        <small class="text-muted" *ngIf="auth.userSig() as user">
-          <span class="me-2">Hola, {{ user }}</span>
+        <small class="text-muted">
+          <span class="me-2">Hola</span>
         </small>
         <button class="btn btn-sm btn-outline-secondary" (click)="logout()">
           Salir

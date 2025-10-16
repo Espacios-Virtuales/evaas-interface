@@ -12,22 +12,36 @@
       <h1 class="h4 mb-3 text-center text-primary">Ingresar</h1>
 
       <div *ngIf="justRegistered()" class="alert alert-success small">
-        ¡Tu cuenta fue creada! 
-        Revisa tu inbox y activa tu cuenta para iniciar sesión.
+        ¡Tu cuenta fue creada! Revisa tu inbox y activa tu cuenta para iniciar sesión.
+      </div>
+
+      <!-- 🔴 MUESTRA EL ERROR DE SERVIDOR -->
+      <div *ngIf="serverError()" class="alert alert-danger small">
+        {{ serverError() }}
       </div>
 
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="vstack gap-3">
         <div>
           <input formControlName="email" type="email" class="form-control" placeholder="Correo electrónico" />
+          <div class="form-text text-danger" *ngIf="f.email.touched && f.email.invalid">
+            {{ f.email.hasError('required') ? 'Email requerido.' : f.email.hasError('email') ? 'Email inválido.' : '' }}
+          </div>
         </div>
+
         <div>
           <input formControlName="password" type="password" class="form-control" placeholder="Contraseña" />
+          <div class="form-text text-danger" *ngIf="f.password.touched && f.password.invalid">
+            {{ f.password.hasError('required') ? 'Contraseña requerida.' : f.password.hasError('minlength') ? 'Mínimo 6 caracteres.' : '' }}
+          </div>
         </div>
-        <button class="btn btn-ev w-100 py-2 mt-2" [disabled]="form.invalid">
-          Entrar
+
+        <button class="btn btn-ev w-100 py-2 mt-2" type="submit"
+                [disabled]="form.invalid || submitting()">
+          {{ submitting() ? 'Ingresando…' : 'Entrar' }}
         </button>
+
         <p class="small text-center mt-3 text-muted">
-          ¿No tienes cuenta? <a href="/register" class="link-ev">Regístrate</a>
+          ¿No tienes cuenta? <a routerLink="/register" class="link-ev">Regístrate</a>
         </p>
       </form>
     </div>
