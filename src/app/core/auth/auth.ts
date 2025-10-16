@@ -2,7 +2,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError,  tap, catchError } from 'rxjs';
-import { RegisterRequest, UserResponse,  AuthResponse, AuthRequest } from '../models/index';
+import { RegisterRequest, RegistrationResponse, AuthResponse, AuthRequest } from '../models/index';
 
 import { environment } from '../../../environments/environment.development';
 
@@ -13,8 +13,8 @@ export class AuthService {
 
   userSig = signal<any | null>(null);
 
-  register(payload: RegisterRequest): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.baseUrl}/users/register`, payload).pipe(
+  register(payload: RegisterRequest): Observable<RegistrationResponse> {
+    return this.http.post<RegistrationResponse>(`${this.baseUrl}/users/register`, payload).pipe(
       catchError((err) => {
         // Podrías mapear errores específicos aquí
         return throwError(() => err);
@@ -31,6 +31,7 @@ export class AuthService {
       catchError((err) => throwError(() => err))
     );
   }
+  
 
   logout() {
     localStorage.removeItem('token');

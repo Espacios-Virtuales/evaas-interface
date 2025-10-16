@@ -1,59 +1,152 @@
-# EvaasInterface
+# 🌌 EVAAS Interface
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.5.
+**EVAAS (Enterprise Virtual Apps & Services)** es una aplicación basada en **Angular 20 standalone** 
 
-## Development server
+------------------------------------------------------------------------
 
-To start a local development server, run:
+## 🧱 Arquitectura General
 
-```bash
+``` plaintext
+src/
+├─ main.ts
+├─ app/
+│  ├─ app.routes.ts
+│  ├─ core/
+│  │  ├─ models/              # Interfaces
+│  │  ├─ services/            # ApiHttp, Toast, 
+│  │  ├─ auth/                # AuthGuard, Auth, rbac, Directivas
+│  │  │  └─ directives/       # has-role.directive.ts, can.directive.ts (opcional para permisos granulares)
+│  │  │  └─ validators/       # unique-email.validator.ts
+│  │  └─ http/                # AuthInterceptor, ErrorInterceptor, RefreshTokenInterceptor
+│  ├─ shared/
+│  │  ├─ components/          # ToastsComponent
+│  │  ├─ ui/                  # wrappers Material reutilizables
+│  │  └─ lazy.ts              # lazy loading
+│  │  └─ router-helpers.ts    # helpers de ruteo
+│  └─ features/
+│     ├─ auth/                # login / register / rutas
+│     └─ dashboard/           # layout / home / rutas
+└─ styles.scss
+```
+
+**Stack:**\
+Angular 20 + RxJS + Bootstrap 5 + Signals + JWT + Docker
+
+------------------------------------------------------------------------
+
+## ⚙️ Configuración de entorno
+
+Asegúrate de que los entornos apunten correctamente a la API:
+
+``` ts
+// src/environments/environment.development.ts
+export const environment = {
+  apiUrl: 'https://api.evaas.lat'
+} as const;
+```
+
+------------------------------------------------------------------------
+
+## 🚀 Servidor de desarrollo
+
+Ejecuta el proyecto en modo local con:
+
+``` bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Luego abre en tu navegador:\
+👉 `http://localhost:4200/`
 
-## Code scaffolding
+El servidor se recargará automáticamente al detectar cambios en los
+archivos fuente.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+------------------------------------------------------------------------
 
-```bash
+## 🧩 Comandos útiles
+
+### Crear nuevos componentes
+
+``` bash
 ng generate component component-name
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+### Construir para producción
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
+``` bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Los artefactos se almacenan en `/dist`, optimizados para despliegue.
 
-## Running unit tests
+### Ejecutar tests unitarios
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
+``` bash
 ng test
 ```
 
-## Running end-to-end tests
+### Ejecutar tests E2E (opcional)
 
-For end-to-end (e2e) testing, run:
-
-```bash
+``` bash
 ng e2e
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+------------------------------------------------------------------------
 
-## Additional Resources
+## 📁 Documentación
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+La documentación detallada está en [`docs/`](docs/):
+
+- 📊 **Diagramas**
+  - [Diagramas Principales](docs/diagramas)
+
+
+- 🐞 **Flujos de Sesiones**
+  - [Flujos Completos](docs/flujos)
+
+- 🧩 **Ruta del Curso**
+  - [Sprints](docs/sprints)
+
+- 🗂 **Documentación Api**
+  - [Evaas](https://api.evaas.lat/swagger-ui/index.html)
+
+------------------------------------------------------------------------
+
+## 🔒 API y Seguridad
+
+El proyecto consume endpoints protegidos mediante JWT desde:
+
+    https://api.evaas.lat
+
+Endpoints principales: - `POST /users/register` - `POST /auth/login` -
+`GET /users/me` - `GET /clients` - `GET /resources`
+
+**Endpoints principales:**
+```http
+POST /users/register
+POST /auth/login
+GET /users/me
+GET /clients
+GET /resources
+```
+
+------------------------------------------------------------------------
+
+## 🧠 Filosofía
+
+> "Construimos no solo código, sino comprensión.\
+> Cada capa es un paso más cerca del sentido."\
+> --- *EVAAS / 2025*
+
+
+------------------------------------------------------------------------
+
+## 🪐 Créditos
+
+**Autor:** David Utreras\
+**Edición:** EVAAS Inspira\
+**Licencia:** MIT\
+**Tema visual:** Azul profundo `#003E6B`, Turquesa orbital `#2BD4E0`\
+**Framework:** Angular 20 Standalone
+
+------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 import { Routes } from '@angular/router';
 import { PATHS } from '../../paths';
 import { lazy } from '../../shared/lazy';
-import { authGuard } from '../../core/guards/auth-guard';
+import { authGuard } from '../../core/auth/auth-guard';
 
 export const DASHBOARD_ROUTES: Routes = [
   {

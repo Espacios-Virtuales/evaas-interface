@@ -10,27 +10,24 @@ export interface RegisterRequest {
     lastName: string;
 }
 
-export interface UserResponse {
+export interface RegistrationResponse {
     id: number;
     email: string;
-    password?: string; // el backend lo trae, pero no lo usaremos en UI
     firstName: string;
     lastName: string;
     enabled: boolean;
-    roles: Role[];
 }
 
 export interface Role {
     id: number;
     roleEnum: string; // "ROLE_ADMIN" | "ROLE_USER" | etc.
-    privileges: RolePrivilege[];
+    privileges: Privilege[];
 }
 
-export interface RolePrivilege {
+export interface Privilege {
     id: number;
     type: string; // "READ" | "WRITE" | etc.
 }
-
 
 export interface AuthRequest { 
     email: string; 
@@ -38,5 +35,30 @@ export interface AuthRequest {
 }
 
 export interface AuthResponse { 
-    token: string; username: string; role:string;
+    token: string; 
+    username: string;
+    role: Role[];
+    issuedAt: string;         
+    refreshToken: string;
+    refreshExpiresIn: number; 
+    message: string;
+}
+
+export interface UserSession {
+    email: string;
+    roles: string[];        // ['ROLE_USER', ...] (puedes derivarlo de role.roleEnum)
+    privileges: string[];   // ['READ','WRITE',...]
+    accessToken: string;
+    accessTokenExp: Date;   // new Date(payload.exp * 1000)
+    refreshToken: string;
+    refreshExp: Date;       // new Date(Date.parse(issuedAt) + refreshExpiresIn * 1000)
+}
+
+export interface JwtPayload {
+    iss: string;   // "Espacios Virtuales"
+    sub: string;   // "admin@espaciosvirtuales.cl"
+    jti: string;   // id del token
+    ver: number;   // versión interna
+    iat: number;   // epoch seconds
+    exp: number;   // epoch seconds
 }
