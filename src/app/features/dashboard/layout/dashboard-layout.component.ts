@@ -4,28 +4,14 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth';
 import { Router } from '@angular/router';
+import { HasRoleDirective } from '../../../core/auth/directives/has-role';
+
 
 @Component({
   selector: 'app-dashboard-layout',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterOutlet],
-  template: `
-  <div class="container py-3">
-    <nav class="d-flex align-items-center gap-3 mb-3">
-      <a routerLink="/dashboard" class="text-decoration-none">Home</a>
-
-      <div class="ms-auto d-flex align-items-center gap-3">
-        <small class="text-muted">
-          <span class="me-2">Hola</span>
-        </small>
-        <button class="btn btn-sm btn-outline-secondary" (click)="logout()">
-          Salir
-        </button>
-      </div>
-    </nav>
-    <router-outlet></router-outlet>
-  </div>
-  `,
+  imports: [RouterLink, RouterOutlet, CommonModule, HasRoleDirective],
+  templateUrl: './dashboard-layout.component.html',
 })
 export class DashboardLayoutComponent {
   auth = inject(AuthService);
