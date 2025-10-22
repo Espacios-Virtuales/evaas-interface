@@ -1,4 +1,5 @@
-import { AuthResponse, JwtPayload, Role, UserSession } from '../models/index';
+import { JwtPayload, Role, UserSession } from '../models/auth';
+import { AuthResponse } from '../models/http';
 import { decodeJwtPayload } from '../../utils/jwt';
 
 export function mapAuthResponseToSession(res: AuthResponse): UserSession {
@@ -27,6 +28,9 @@ export function mapAuthResponseToSession(res: AuthResponse): UserSession {
     ? new Date(Date.now() + res.refreshExpiresIn * 1000)
     : new Date(issuedAtMs + res.refreshExpiresIn * 1000);
 
+  // NEW: fijamos loginAt desde issuedAt si es válido; si no, ahora.
+  const loginAt = isNaN(issuedAtMs) ? new Date() : new Date(issuedAtMs);
+
   return {
     email: res.username,
     roles,
@@ -35,5 +39,6 @@ export function mapAuthResponseToSession(res: AuthResponse): UserSession {
     accessTokenExp,
     refreshToken: res.refreshToken,
     refreshExp,
+    loginAt, // NEW
   };
 }

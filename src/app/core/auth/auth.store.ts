@@ -1,6 +1,6 @@
 // core/auth/auth.store.ts
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { UserSession } from '../models';
+import { UserSession } from '../models/auth';
 
 const KEY = 'session';
 
@@ -11,6 +11,7 @@ function readSession(): UserSession | null {
     const s = JSON.parse(raw) as UserSession;
     s.accessTokenExp = new Date(s.accessTokenExp);
     s.refreshExp = new Date(s.refreshExp);
+    if (s.loginAt) s.loginAt = new Date(s.loginAt as unknown as string); // NEW
     return s;
   } catch {
     localStorage.removeItem(KEY);
@@ -34,6 +35,9 @@ export class AuthStore {
   privileges = computed<string[]>(() => this._session()?.privileges ?? []);
   email = computed<string | null>(() => this._session()?.email ?? null);
 
+  // NEW: acceso directo a loginAt para mostrar “Conectado desde”
+  loginAt = computed<Date | null>(() => this._session()?.loginAt ?? null);
+  
   // utilidades de expiración
   secondsToAccessExp = computed<number>(() => {
     const s = this._session(); if (!s) return 0;

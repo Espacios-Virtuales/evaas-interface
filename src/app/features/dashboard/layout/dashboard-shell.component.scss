@@ -1,0 +1,51 @@
+@use "sass:map";
+
+/* Tokens Inspira EV */
+:root {
+  --ev-primary: #003E6B; /* azul profundo */
+  --ev-accent:  #2BD4E0; /* turquesa */
+}
+
+.ev-shell { min-height: 100vh; background: #f7f9fb; }
+
+/* Sidebar */
+.ev-sidebar {
+  width: 260px; min-width: 260px; background: #0D1B2A; color: #fff;
+  transition: width .2s ease;
+  .brand-link { color: #fff; text-decoration: none; font-weight: 700; }
+  .menu { display: flex; flex-direction: column; padding: .5rem; }
+  .menu-item {
+    color: #cbd5e1; padding: .6rem .9rem; border-radius: .5rem; text-decoration: none;
+    display: flex; align-items: center; gap: .5rem;
+    &:hover { background: rgba(255,255,255,.06); color: #fff; }
+    &.active { background: rgba(43,212,224,.15); color: #fff; }
+  }
+  &.collapsed { width: 72px; min-width: 72px;
+    .menu-item { justify-content: center; }
+    .menu-item i { font-size: 1.1rem; }
+    .menu-item :not(i) { display: none; }
+  }
+}
+
+/* Topbar */
+.ev-topbar {
+  height: 56px; padding: 0 1rem; background: #fff; border-bottom: 1px solid #e5ebf0;
+  .toggle { color: var(--ev-primary); }
+}
+
+/* Content */
+.ev-content { padding: 1rem; }
+.ev-card { border: 1px solid #e5ebf0; }
+.ev-card .card-title { color: var(--ev-primary); }
+
+.ev-dialog {
+  border: 0; border-radius: .75rem; width: min(92vw, 420px); padding: 1.25rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,.18);
+}
+.ev-dialog::backdrop { background: rgba(13,27,42,.4); }
+
+/* Responsive tweaks */
+@media (max-width: 992px) {
+  .ev-sidebar { position: fixed; z-index: 1040; height: 100vh; }
+  .ev-shell { padding-left: 0; }
+}

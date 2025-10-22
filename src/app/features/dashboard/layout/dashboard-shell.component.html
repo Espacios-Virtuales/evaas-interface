@@ -1,0 +1,75 @@
+<!-- src/app/features/dashboard/layout/dashboard-shell.component.html -->
+<div class="ev-shell d-flex">
+  <!-- Sidebar -->
+  <aside class="ev-sidebar" [class.collapsed]="!isSidebarOpen()">
+    <div class="brand px-3 py-3">
+      <a routerLink="/dashboard" class="brand-link">EVAAS</a>
+    </div>
+
+    <nav class="menu">
+      <a routerLink="/dashboard" class="menu-item" routerLinkActive="active">
+        <i class="bi bi-speedometer2"></i> <span>Resumen</span>
+      </a>
+
+      <!-- Ejemplo de visibilidad por rol -->
+      <a
+        routerLink="/dashboard/resources"
+        class="menu-item"
+        routerLinkActive="active"
+        *hasRole="'ROLE_ADMIN'"
+      >
+        <i class="bi bi-boxes"></i> <span>Recursos</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="ev-main flex-grow-1 d-flex flex-column">
+    <header class="ev-topbar d-flex align-items-center">
+      <button class="btn btn-link toggle" (click)="toggleSidebar()" aria-label="Alternar sidebar">
+        <i class="bi" [ngClass]="isSidebarOpen() ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'"></i>
+      </button>
+
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="small text-muted d-none d-sm-inline">
+          Hola,
+          <strong>{{ email() || '—' }}</strong>
+          <ng-container *ngIf="primaryRole() as r">
+            <span class="ms-2 badge bg-light text-dark">{{ r }}</span>
+          </ng-container>
+        </span>
+
+        <button class="btn btn-outline-secondary btn-sm" (click)="openUserModal()">
+          <i class="bi bi-person-circle"></i>
+        </button>
+      </div>
+    </header>
+
+    <main class="ev-content container-fluid">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<!-- Modal de usuario -->
+<dialog id="userDlg" class="ev-dialog">
+  <form method="dialog">
+    <h3 class="h6 mb-3">Cuenta</h3>
+    <div class="vstack gap-1 small">
+      <div><span class="text-muted">Email:</span> <strong>{{ email() || '—' }}</strong></div>
+      <div>
+        <span class="text-muted">Roles:</span>
+        <strong>{{ (session()?.roles || []).join(', ') || '—' }}</strong>
+      </div>
+      <div>
+        <span class="text-muted">Conectado desde:</span>
+        <strong>{{ formatDate(connectedAt()) }}</strong>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+      <button class="btn btn-light" (click)="closeUserModal()" value="close">Cerrar</button>
+      <button class="btn btn-danger" (click)="logout(); closeUserModal()">Cerrar sesión</button>
+    </div>
+  </form>
+</dialog>

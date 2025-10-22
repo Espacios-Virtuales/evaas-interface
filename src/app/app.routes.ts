@@ -1,6 +1,6 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { PATHS } from './paths';
+import { PATHS } from './utils/paths';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: PATHS.login },

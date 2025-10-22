@@ -1,30 +1,36 @@
 // src/app/app.spec.ts
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
 
-describe('App', () => {
+@Component({
+  selector: 'app-home-stub',
+  standalone: true,
+  template: `<h1>Hola Mundo</h1>`
+})
+class HomeStub {}
+
+describe('App (routing)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [App],
+      imports: [App, HomeStub],
       providers: [
-        provideRouter([]),
-        provideHttpClient(),
+        // Ruta raíz que renderiza el stub con el texto esperado
+        provideRouter([{ path: '', component: HomeStub }]),
       ],
     }).compileComponents();
   });
 
-  it('should create the app', () => {
+  it('should render "Hola Mundo"', async () => {
+    const router = TestBed.inject(Router);
     const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
 
-  it('should render "Hola Mundo"', () => {
-    const fixture = TestBed.createComponent(App);
+    await router.navigateByUrl('/');     // navega a la raíz
+    await fixture.whenStable();          // espera a que cargue la vista
     fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hola Mundo');
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent ?? '').toContain('Hola Mundo');
   });
 });

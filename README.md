@@ -13,7 +13,7 @@ src/
 │  ├─ app.routes.ts
 │  ├─ core/
 │  │  ├─ models/              # Interfaces
-│  │  ├─ services/            # ApiHttp, Toast, 
+│  │  ├─ services/            # Toast, 
 │  │  ├─ auth/                # AuthGuard, Auth, rbac, Directivas
 │  │  │  └─ directives/       # has-role.directive.ts, can.directive.ts (opcional para permisos granulares)
 │  │  │  └─ validators/       # unique-email.validator.ts
@@ -24,8 +24,10 @@ src/
 │  │  └─ lazy.ts              # lazy loading
 │  │  └─ router-helpers.ts    # helpers de ruteo
 │  └─ features/
-│     ├─ auth/                # login / register / rutas
-│     └─ dashboard/           # layout / home / rutas
+│  │  ├─ auth/                # login / register / rutas
+│  │  └─ dashboard/           # layout / home / rutas
+│  └─ utils/
+│
 └─ styles.scss
 ```
 

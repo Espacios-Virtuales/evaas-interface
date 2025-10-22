@@ -1,5 +1,5 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8091'
+    apiUrl: 'https://api.evaas.lat'
   } as const;
   

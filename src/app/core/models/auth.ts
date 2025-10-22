@@ -3,45 +3,16 @@ export interface User {
     email: string; role: 
     Role; 
 }
-export interface RegisterRequest {
-    email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
-}
-
-export interface RegistrationResponse {
-    id: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    enabled: boolean;
-}
 
 export interface Role {
     id: number;
-    roleEnum: string; // "ROLE_ADMIN" | "ROLE_USER" | etc.
+    roleEnum: string; // "ROLE_ADMIN" | "ROLE_USER" | "ROLE_COMPANY"  -> Transformar a enum si es necesario
     privileges: Privilege[];
 }
 
 export interface Privilege {
     id: number;
-    type: string; // "READ" | "WRITE" | etc.
-}
-
-export interface AuthRequest { 
-    email: string; 
-    password: string; 
-}
-
-export interface AuthResponse { 
-    token: string; 
-    username: string;
-    role: Role[];
-    issuedAt: string;         
-    refreshToken: string;
-    refreshExpiresIn: number; 
-    message: string;
+    type: string; // "READ" | "WRITE" | -> Transformar a enum si es necesario
 }
 
 export interface UserSession {
@@ -52,6 +23,7 @@ export interface UserSession {
     accessTokenExp: Date;   // new Date(payload.exp * 1000)
     refreshToken: string;
     refreshExp: Date;       // new Date(Date.parse(issuedAt) + refreshExpiresIn * 1000)
+    loginAt?: Date;
 }
 
 export interface JwtPayload {
