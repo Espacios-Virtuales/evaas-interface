@@ -2,13 +2,17 @@
 import { environment } from '../../../environments/environment.development';
 
 export const API = {
+
   auth: {
     register:`${environment.apiUrl}/user/register`,
     refresh: `${environment.apiUrl}/auth/refresh`, // 👈 aquí tu refresh
     logout:  `${environment.apiUrl}/logout`,
     login:   `${environment.apiUrl}/login`,
-
-
   },
-  // otros recursos...
+  integrations: {
+    software:   `${environment.apiUrl}/integrations/software`,
+  },
+  provisions: {
+      software: `${environment.apiUrl}/provisions/software`, 
+  }
 };

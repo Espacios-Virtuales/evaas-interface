@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
 import { HasRoleDirective } from '../../../core/auth/directives/has-role';
 import { AuthFacade } from '../../../core/auth/auth.facade'; 
-import { UserSession } from '../../../core/models/auth';
+import { UserSession } from '../../../core/models/auth..model';
 
 
 @Component({

@@ -3,8 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, map, tap, catchError } from 'rxjs';
 import { API } from '../http/api.endpoints';
-import { UserSession } from '../models/auth';
-import { RegisterRequest, RegistrationResponse, AuthRequest, AuthResponse} from '../models/http';
+import { UserSession } from '../models/auth..model';
+import { RegisterRequest, RegistrationResponse, AuthRequest, AuthResponse} from '../models/http.model';
 import { AuthStore } from './auth.store';
 import { mapAuthResponseToSession } from './auth.mapper';
 

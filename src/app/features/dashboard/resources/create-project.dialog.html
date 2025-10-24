@@ -1,0 +1,70 @@
+<h2 class="dialog-title">
+  <mat-icon>build_circle</mat-icon>
+  Crear proyecto – {{ data.displayName }}
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="form-grid">
+  <mat-form-field appearance="outline">
+    <mat-label>Proveedor Cloud</mat-label>
+    <mat-select formControlName="provider" required>
+      <mat-option *ngFor="let p of providers" [value]="p.value">{{ p.label }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre del proyecto</mat-label>
+    <input matInput formControlName="projectName" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="wide">
+    <mat-label>Dominio (FQDN)</mat-label>
+    <input matInput placeholder="app.midominio.com" formControlName="domain" required />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Tier</mat-label>
+    <mat-select formControlName="tier" required>
+      <mat-option *ngFor="let t of tiers" [value]="t.value">{{ t.label }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>CPU (vCPU)</mat-label>
+    <input matInput type="number" formControlName="cpu" min="1" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>RAM (GiB)</mat-label>
+    <input matInput type="number" formControlName="ram" min="1" />
+  </mat-form-field>
+
+  <div class="row">
+    <mat-checkbox formControlName="dbEnabled">Habilitar Base de Datos</mat-checkbox>
+  </div>
+
+  <ng-container *ngIf="form.value.dbEnabled">
+    <mat-form-field appearance="outline">
+      <mat-label>Motor</mat-label>
+      <mat-select formControlName="dbEngine">
+        <mat-option *ngFor="let e of dbEngines" [value]="e.value">{{ e.label }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Versión</mat-label>
+      <input matInput placeholder="16 / 8.0 / 7.0" formControlName="dbVersion" />
+    </mat-form-field>
+  </ng-container>
+
+  <mat-form-field appearance="outline" class="wide">
+    <mat-label>Repositorio Git (opcional)</mat-label>
+    <input matInput placeholder="https://github.com/org/repo" formControlName="gitRepo" />
+  </mat-form-field>
+
+  <div class="actions">
+    <button type="button" mat-button (click)="close()">Cancelar</button>
+    <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid || submitting">
+      {{ submitting ? 'Creando…' : 'Crear proyecto' }}
+    </button>
+  </div>
+</form>

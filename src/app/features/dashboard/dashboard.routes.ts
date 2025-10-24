@@ -17,7 +17,12 @@ export const DASHBOARD_ROUTES: Routes = [
         loadComponent: () =>
           lazy(import('./home/home.component'), 'HomeComponent'),
       },
-      // futuros children: reports, settings, etc.
+      {
+        path: 'resources',
+        title: 'Recursos',
+        loadComponent: () =>
+            lazy(import('./resources/resources-dashboard.component'), 'ResourcesDashboardComponent'),
+      }    
     ],
   },
 ];

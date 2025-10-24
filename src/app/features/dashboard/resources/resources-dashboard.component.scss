@@ -1,0 +1,28 @@
+/* src/app/features/resources/resources-dashboard.component.scss */
+.resources {
+    .search-field {
+      width: min(320px, 100%);
+    }
+  
+    .table-wrap {
+      overflow: auto;
+    }
+  
+    th.mat-header-cell {
+      font-weight: 600;
+    }
+  
+    td.mat-cell, th.mat-header-cell {
+      padding: 0.75rem 1rem;
+    }
+  
+    .state {
+      display: inline-flex;
+      align-items: center;
+      padding: 1rem 0.25rem;
+    }
+  
+    .tech .title { font-weight: 600; }
+    .tech .muted { color: #6c757d; }
+  }
+  

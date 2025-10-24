@@ -4,7 +4,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, FormControl } from '@angu
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import { AuthRequest } from '../../../core/models/http';
+import { AuthRequest } from '../../../core/models/http.model';
 
 // Helper para tipar el formulario reactivo
 type LoginForm = {

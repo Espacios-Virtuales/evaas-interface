@@ -1,10 +1,39 @@
-/* src/material-theme.scss */
 @use '@angular/material' as mat;
 
-$theme: mat.define-theme((
-  color: (theme-type: light, primary: mat.$cyan-palette),
-  // typography: mat.define-typography-config(),
-  // density: 0
+/* Tema claro */
+$ev-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$cyan-palette,
+    tertiary: mat.$blue-palette,
+    use-system-variables: true,
+    system-variables-prefix: 'ev'
+  ),
+  // typography:  ⟵ lo omitimos por ahora
+  // density: -1
 ));
 
-@include mat.all-component-themes($theme);
+@include mat.all-component-themes($ev-theme);
+
+/* Modo oscuro (opt-in) */
+$ev-theme-dark: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$cyan-palette,
+    tertiary: mat.$blue-palette,
+    use-system-variables: true,
+    system-variables-prefix: 'ev'
+  ),
+  // density: -1
+));
+
+.ev-dark { @include mat.all-component-themes($ev-theme-dark); }
+
+/* Utilidades opcionales */
+:root {
+  --ev-radius: 12px;
+  --ev-shadow-1: 0 2px 10px rgba(0,0,0,.06);
+  --ev-shadow-2: 0 6px 20px rgba(0,0,0,.10);
+}
+.ev-card { border-radius: var(--ev-radius); box-shadow: var(--ev-shadow-1); transition: box-shadow .18s, transform .18s; }
+.ev-card:hover { box-shadow: var(--ev-shadow-2); transform: translateY(-1px); }

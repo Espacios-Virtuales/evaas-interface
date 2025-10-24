@@ -1,5 +1,5 @@
-import { JwtPayload, Role, UserSession } from '../models/auth';
-import { AuthResponse } from '../models/http';
+import { JwtPayload, Role, UserSession } from '../models/auth..model';
+import { AuthResponse } from '../models/http.model';
 import { decodeJwtPayload } from '../../utils/jwt';
 
 export function mapAuthResponseToSession(res: AuthResponse): UserSession {

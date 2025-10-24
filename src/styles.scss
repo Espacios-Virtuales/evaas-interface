@@ -1,7 +1,16 @@
 /* src/styles.scss */
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+/* Google Fonts: */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+/* Aplica la fuente globalmente */
+html, body {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+               Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
 
 :root {
   --ev-primary: #003E6B;
@@ -23,4 +32,28 @@
   --fg: #fff;
   background: var(--bg) !important;
   color: var(--fg) !important;
+}
+
+
+// Ajusta a tu brand - ajustar diálogos full screen
+.full-dialog .mat-dialog-container {
+  width: 90vw !important;
+  height: 90vh !important;
+  max-width: 1000px;
+  max-height: 95vh;
+  padding: 2rem;
+}
+
+
+/* Micro-transiciones para animate.enter/leave */
+.fade-in   { animation: ev-fade-in .22s ease-out; }
+.fade-out  { animation: ev-fade-out .18s ease-in forwards; }
+.slide-up  { animation: ev-slide-up .22s ease-out; }
+
+@keyframes ev-fade-in { from {opacity:0} to {opacity:1} }
+@keyframes ev-fade-out { from {opacity:1} to {opacity:0} }
+@keyframes ev-slide-up { from {opacity:0; transform: translateY(8px)} to {opacity:1; transform: translateY(0)} }
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in, .fade-out, .slide-up { animation: none !important; }
 }
