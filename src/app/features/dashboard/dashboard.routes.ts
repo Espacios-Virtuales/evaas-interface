@@ -22,7 +22,13 @@ export const DASHBOARD_ROUTES: Routes = [
         title: 'Recursos',
         loadComponent: () =>
             lazy(import('./resources/resources-dashboard.component'), 'ResourcesDashboardComponent'),
-      }    
+      },
+      {
+        path: 'projects',
+        title: 'Proyectos',
+        loadComponent: () =>
+            lazy(import('./objects/grid/objects-grid.component'), 'ObjectsGridComponent'),
+      }  
     ],
   },
 ];

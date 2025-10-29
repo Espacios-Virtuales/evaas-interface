@@ -12,7 +12,26 @@
 .ev-sidebar {
   width: 260px; min-width: 260px; background: #0D1B2A; color: #fff;
   transition: width .2s ease;
-  .brand-link { color: #fff; text-decoration: none; font-weight: 700; }
+  
+  /* Refineria 2 */
+  .brand {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 64px; /* o el alto que uses para tu topbar */
+  }
+  .brand-link {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.5rem;
+
+    i {
+      display: block;
+      font-size: 1.6rem;
+      color: var(--ev-accent);
+    }
+  }
+
   .menu { display: flex; flex-direction: column; padding: .5rem; }
   .menu-item {
     color: #cbd5e1; padding: .6rem .9rem; border-radius: .5rem; text-decoration: none;

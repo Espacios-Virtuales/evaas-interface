@@ -4,6 +4,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable, tap } from 'rxjs';
 import { SoftwareItem, SoftwareItemRaw } from '../models/software.model'; 
+import { computeVirtualTotal } from '../../utils/virtual-paginator'; 
+
 import {
   ProvisionRequest, ProvisionResponse, ProvisionJob,
   ProvisionStatus, Provider, Tier, DbEngine
@@ -24,34 +26,28 @@ export class SoftwareService {
   // cache en memoria (último job creado) – usa Signals para ergonomía Angular 16+
   readonly lastProvisionJob = signal<ProvisionJob | null>(null);
 
-  // Busca software con paginación estándar
+  // Busca software con paginación del broker (1-based)
   list(pageIndex = 0, pageSize = 10, search = ''): Observable<Page<SoftwareItem>> {
-    const apiPage = pageIndex + 1;
-    const apiSize = Math.max(1, pageSize);
+    // Broker 1-based
+    const apiPage = Math.max(1, pageIndex + 1);
+    const perPage = Math.max(1, pageSize);
   
     const params = new HttpParams()
+      .set('q', (search ?? '').trim())
       .set('page', String(apiPage))
-      .set('size', String(apiSize))
-      .set('q', (search ?? '').trim());
+      .set('perPage', String(perPage));
   
-    // ⚠️ NO tipamos aquí a Page<SoftwareItemRaw> porque el backend varía el shape
     return this.http.get<unknown>(API.integrations.software, { params }).pipe(
       map((raw: any) => {
-        // 1) normalizar “lista”
         const list =
           Array.isArray(raw?.content) ? raw.content :
           Array.isArray(raw?.items)   ? raw.items   :
-          Array.isArray(raw)          ? raw         :
-          [];
+          Array.isArray(raw)          ? raw         : [];
   
-        // 2) total robusto
-        const total =
-          typeof raw?.total === 'number' ? raw.total :
-          typeof raw?.count === 'number' ? raw.count :
-          list.length;
-  
-        // 3) mapear seguro
         const content: SoftwareItem[] = list.map((r: any) => this.enrich(r as SoftwareItemRaw));
+  
+        // 👇 total virtual, MISMA FORMA de retorno
+        const total = computeVirtualTotal(pageIndex, pageSize, content.length);
   
         return { total, content } as Page<SoftwareItem>;
       })
@@ -60,7 +56,7 @@ export class SoftwareService {
   
   // Nuevo: enriquece la respuesta del broker y la deja en memoria
   createProject(payload: ProvisionRequest): Observable<ProvisionJob> {
-    return this.http.post<BrokerProvisionApiResponse>(API.provisions.software, payload).pipe(
+    return this.http.post<BrokerProvisionApiResponse>(API.project.software, payload).pipe(
       map((res): ProvisionJob => {
         const status = mapApiStatusToProvisionStatus(res.statusCode);
         const d = res.details?.[0];

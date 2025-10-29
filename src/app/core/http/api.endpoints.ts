@@ -12,7 +12,8 @@ export const API = {
   integrations: {
     software:   `${environment.apiUrl}/integrations/software`,
   },
-  provisions: {
-      software: `${environment.apiUrl}/provisions/software`, 
+  project: {
+    software: `${environment.apiUrl}/project/software`, 
+    view: `${environment.apiUrl}/project/cards`, 
   }
 };

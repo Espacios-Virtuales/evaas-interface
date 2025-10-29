@@ -21,8 +21,8 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(MatSnackBarModule),
 
     // ✅ Angular 20: inicializador de entorno (no async)
-    provideEnvironmentInitializer(() => {
+    /*provideEnvironmentInitializer(() => {
       inject(SessionWatcherService);
-    }),
+    }),*/
   ]
 };

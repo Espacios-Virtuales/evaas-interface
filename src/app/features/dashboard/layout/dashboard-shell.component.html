@@ -3,22 +3,27 @@
   <!-- Sidebar -->
   <aside class="ev-sidebar" [class.collapsed]="!isSidebarOpen()">
     <div class="brand px-3 py-3">
-      <a routerLink="/dashboard" class="brand-link">EVAAS</a>
+      <a routerLink="/dashboard" class="brand-link">
+        <i class="bi bi-house-fill"></i>
+      </a>
     </div>
 
     <nav class="menu">
       <a routerLink="/dashboard" class="menu-item" routerLinkActive="active">
         <i class="bi bi-speedometer2"></i> <span>Resumen</span>
       </a>
-
       <!-- Ejemplo de visibilidad por rol -->
       <a
         routerLink="/dashboard/resources"
         class="menu-item"
         routerLinkActive="active"
-        *hasRole="'ROLE_ADMIN'"
+        *hasRole="'ROLE_USER'"
       >
         <i class="bi bi-boxes"></i> <span>Recursos</span>
+      </a>
+
+      <a routerLink="/dashboard/projects" class="menu-item" routerLinkActive="active">
+        <i class="bi bi-boxes"></i> <span>Proyectos</span>
       </a>
     </nav>
   </aside>

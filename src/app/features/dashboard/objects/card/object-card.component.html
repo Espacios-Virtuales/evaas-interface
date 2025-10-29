@@ -1,0 +1,23 @@
+<article class="ev-card text-center p-4">
+  <!-- Icono principal -->
+  <div class="icon-wrap mb-3">
+    <i *ngIf="item?.icon" class="{{ item?.icon }} fs-1 text-primary"></i>
+  </div>
+
+  <!-- Título -->
+  <h3 class="fw-semibold h6 mb-2">{{ item?.name }}</h3>
+
+  <!-- Tecnología + versión -->
+  <div class="text-muted small mb-1" *ngIf="item?.techName">
+    <i class="bi bi-cpu me-1"></i>
+    <ng-container *ngIf="item?.version">v{{item?.version}}</ng-container>
+  </div>
+
+  <!-- Cloud -->
+  <div class="text-muted small mb-1" *ngIf="item?.cloud">
+    <i class="bi bi-cloud me-1"></i>{{ item?.cloud }}
+  </div>
+
+  <!-- Descripción -->
+  <p class="small text-secondary mt-2 mb-0" *ngIf="item?.description">{{ item?.description }}</p>
+</article>

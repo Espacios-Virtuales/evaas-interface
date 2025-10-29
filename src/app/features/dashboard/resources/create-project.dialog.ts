@@ -1,6 +1,6 @@
 import { Component, Inject, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,9 +8,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
 import { SoftwareItem } from '../../../core/models/software.model'; 
-import { SoftwareService } from '../../../core/services/software.service'; 
+import { ProjectsService } from '../../../core/services/project.service';  
 import { Provider, Tier, DbEngine, ProvisionRequest } from  '../../../core/models/provisions.model';
 
 @Component({
@@ -19,7 +18,7 @@ import { Provider, Tier, DbEngine, ProvisionRequest } from  '../../../core/model
   imports: [
     CommonModule, ReactiveFormsModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatCheckboxModule, MatButtonModule, MatIconModule
+    MatCheckboxModule, MatButtonModule, MatIconModule, MatDialogModule
   ],
   templateUrl: './create-project.dialog.html',
   styleUrls: ['./create-project.dialog.scss']
@@ -27,7 +26,7 @@ import { Provider, Tier, DbEngine, ProvisionRequest } from  '../../../core/model
 export class CreateProjectDialogComponent {
   private fb = inject(FormBuilder);
   private ref = inject(MatDialogRef<CreateProjectDialogComponent>);
-  private service = inject(SoftwareService);
+  private service = inject(ProjectsService);
 
   providers = [
     { value: Provider.GCP, label: 'GCP' },

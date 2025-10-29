@@ -57,3 +57,29 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .fade-in, .fade-out, .slide-up { animation: none !important; }
 }
+
+/* Aplica solo a este diálogo gracias a panelClass */
+.evaas-dialog .mat-mdc-dialog-container {
+  /* contenedor */
+  padding: 0; /* mover padding al contenido para más control */
+  --mdc-dialog-container-color: var(--mat-sys-surface, #fff);
+  --mdc-dialog-shape: 16px; /* borde suave */
+}
+
+.evaas-dialog .mat-mdc-dialog-surface {
+  border-radius: 16px;
+  overflow: hidden; /* evita barras raras si algo se desborda */
+}
+
+.evaas-dialog .mat-mdc-dialog-content {
+  max-height: 70vh; /* controla el scroll SOLO aquí */
+  padding: 24px 24px 8px;
+}
+
+.evaas-dialog .mat-mdc-dialog-title {
+  padding: 20px 24px 0 24px;
+}
+
+.evaas-dialog .mat-mdc-dialog-actions {
+  padding: 8px 16px 16px;
+}

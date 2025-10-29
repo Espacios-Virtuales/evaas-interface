@@ -1,0 +1,38 @@
+.ev-card {
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s ease;
+    cursor: pointer;
+  
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+    }
+  
+    .icon-wrap {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 0.5rem;
+      border-radius: 50%;
+      background: rgba(43, 212, 224, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  
+      i {
+        color: var(--ev-primary, #003E6B);
+      }
+    }
+  
+    h3 {
+      color: var(--ev-primary, #003E6B);
+      letter-spacing: 0.2px;
+    }
+  
+    p {
+      line-height: 1.4;
+    }
+  }
+  
