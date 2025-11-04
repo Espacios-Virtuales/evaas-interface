@@ -53,47 +53,6 @@ export class SoftwareService {
       })
     );
   }
-  
-  // Nuevo: enriquece la respuesta del broker y la deja en memoria
-  createProject(payload: ProvisionRequest): Observable<ProvisionJob> {
-    return this.http.post<BrokerProvisionApiResponse>(API.project.software, payload).pipe(
-      map((res): ProvisionJob => {
-        const status = mapApiStatusToProvisionStatus(res.statusCode);
-        const d = res.details?.[0];
-        if (!d) {
-          // En caso de respuesta inesperada
-          return { id: crypto.randomUUID(), status: ProvisionStatus.ERROR, message: 'Respuesta sin detalles' } as ProvisionJob;
-        }
-
-        const prov = d.provisioning;
-        const job: ProvisionJob = {
-          id: d.id,
-          status,
-          message: res.status,
-          name: d.name,
-          technologyName: d.technology?.name ?? d.name,
-          homepageUrl: d.technology?.homepageUrl,
-          registryUrl: d.technology?.registryUrl,
-          provider: mapApiProvider(prov.cloudProvider),
-          fqdn: prov.fqdn,
-          compute: {
-            tier: mapApiTier(prov.compute.tier),
-            cpu: prov.compute.vcpu,
-            ram: prov.compute.ramGb,
-          },
-          database: {
-            enabled: !!prov.database.enabled,
-            engine: mapApiDbEngine(prov.database.engine),
-            version: prov.database.version ?? undefined,
-          },
-          gitRepo: d.gitRepo ?? undefined,
-        };
-
-        return job;
-      }),
-      tap(job => this.lastProvisionJob.set(job)) // cache en memoria
-    );
-  }
 
   private enrich = (raw: SoftwareItemRaw): SoftwareItem => {
     const displayName = raw.version ? `${raw.name} ${raw.version}` : raw.name;

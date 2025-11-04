@@ -16,6 +16,7 @@ import { SoftwareItem } from '../../../core/models/software.model';
 import { CreateProjectDialogComponent } from './create-project.dialog'; 
 import { combineLatest, of, Subscription } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { ToastService } from '../../../core/services/toast'; 
 
 
 
@@ -40,6 +41,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 export class ResourcesDashboardComponent implements OnDestroy {
   private service = inject(SoftwareService);
   private dialog = inject(MatDialog);
+  private toast: ToastService = inject(ToastService);
 
   // estado
   readonly pageIndex = signal(0);     // UI: 0-based
@@ -48,7 +50,7 @@ export class ResourcesDashboardComponent implements OnDestroy {
   readonly loading   = signal(true);
   readonly error     = signal<string | null>(null);
   readonly items     = signal<SoftwareItem[]>([]);
-  readonly cols      = ['name', 'vendor', 'category', 'actions'] as const;
+  readonly cols      = ['name', 'homepage', 'npm', 'actions'] as const;
 
   // búsqueda
   readonly search = new FormControl<string>('', { nonNullable: true });
@@ -119,11 +121,18 @@ export class ResourcesDashboardComponent implements OnDestroy {
       autoFocus: false,
       restoreFocus: true,
       panelClass: 'evaas-dialog'
-    }).afterClosed().subscribe(done => {
-      if (done) {
-        // recarga manteniendo criterios actuales
-        // basta con "tocar" pageIndex para re-disparar el stream
-        this.pageIndex.set(this.pageIndex());
+    })
+    .afterClosed()
+    .subscribe(r => {
+      // debug 5 segundos, luego quítalo:
+      console.log('[afterClosed]', r);
+  
+      if (!r) return;                 // cancelado
+      if (r.ok) {
+        this.toast.success(`Proyecto “${r.name ?? 'nuevo'}” creado con éxito 🚀`);
+        this.pageIndex.set(this.pageIndex());    // re-dispara la carga
+      } else if (r.error) {
+        this.toast.error(r.error);
       }
     });
   }

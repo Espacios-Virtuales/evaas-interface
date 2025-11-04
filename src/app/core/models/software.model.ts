@@ -6,8 +6,8 @@ export interface SoftwareItemRaw {
   name: string;
   version?: string;
   slug?: string;
-  category?: string;
-  vendor?: string;
+  homepage?: string;
+  npm?: string;
   provider?: Provider; // opcional: vincula el proveedor al software
 }
 

@@ -2,7 +2,7 @@
 export enum Tier { STARTER='starter', STANDARD='standard', PRO='pro' }
 export enum DbEngine { POSTGRES='postgres', MYSQL='mysql', MONGODB='mongodb' }
 export enum Provider { GCP='gcp', AWS='aws', DIGITAL_OCEAN='digitalOcean' }
-export enum ProvisionStatus { QUEUED='queued', PROVISIONING='provisioning', READY='ready', ERROR='error' }
+export enum ProvisionStatus { QUEUED='queued', PROVISIONING='provisioning', READY='ready', ERROR='error',  CREATED = 'CREATED', ACCEPTED = 'ACCEPTED',FAILED = 'FAILED'}
 
 export interface ComputeSpec {
   tier: Tier;
@@ -34,7 +34,8 @@ export interface ProvisionResponse {
   message?: string;
 }
 
-// “Job” enriquecido para tener todo lo que entrega el broker en memoria
+
+// “Job” enriquecido 
 export interface ProvisionJob extends ProvisionResponse {
   name: string;
   technologyName: string;

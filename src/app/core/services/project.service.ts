@@ -1,18 +1,28 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
-import { PageResult, ProjectCardItem, SpringPage } from '../models/project.model';
+import { PageResult, ProjectCardItem, ProjectDto, ProjectUpdateRequest, SpringPage } from '../models/project.model';
 import { API } from '../http/api.endpoints';
-import { ProvisionRequest } from '../models/provisions.model';
+import { ProvisionRequest, ProvisionResponse } from '../models/provisions.model';
+import { ProvisionStatus } from '../types/project.types';
+
 
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
   private http = inject(HttpClient);
 
-  /** Crear proyecto (no guardamos nada en memoria). */
+  /** Crear proyecto: SIEMPRE entrega ProvisionResponse mínimo */
   createProject(payload: ProvisionRequest) {
-    return this.http.post<{ id: string; status: string; message?: string }>(API.project.software, payload);
+    return this.http
+      .post<ApiProvisionResponse>(API.project.software, payload)
+      .pipe(
+        map((r): ProvisionResponse => ({
+          id: r?.details?.[0]?.id ?? 'unknown',            // id real de details[0]
+          status: r?.status as ProvisionStatus,            // mapea al enum si aplica
+          message: r?.message                              // opcional
+        }))
+      );
   }
 
   /** Listar tarjetas desde /project/cards con búsqueda y paginación (0-based en UI). */
@@ -30,5 +40,20 @@ export class ProjectsService {
         pageSize: p.size ?? pageSize
       }))
     );
+  }
+
+  /** GET /projects/{id} → ProjectDto */
+  getProject(id: string): Observable<ProjectDto> {
+    return this.http.get<ProjectDto>(API.project.byId(id));
+  }
+
+  /** PUT /projects/{id} (solo campos esenciales) */
+  updateProject(id: string, payload: ProjectDto): Observable<ProjectDto> {
+    return this.http.put<ProjectDto>(API.project.byId(id), payload);
+  }
+
+  /** DELETE /projects/{id} */
+  deleteProject(id: string): Observable<void> {
+    return this.http.delete<void>(API.project.byId(id));
   }
 }

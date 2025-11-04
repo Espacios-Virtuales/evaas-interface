@@ -1,6 +1,6 @@
 import { Component, Inject, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,9 +8,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { SoftwareItem } from '../../../core/models/software.model'; 
-import { ProjectsService } from '../../../core/services/project.service';  
-import { Provider, Tier, DbEngine, ProvisionRequest } from  '../../../core/models/provisions.model';
+
+import { SoftwareItem } from '../../../core/models/software.model';
+import { ProjectsService } from '../../../core/services/project.service';
+import { Provider, Tier, DbEngine, ProvisionRequest } from '../../../core/models/provisions.model';
+
 
 @Component({
   standalone: true,
@@ -27,6 +29,7 @@ export class CreateProjectDialogComponent {
   private fb = inject(FormBuilder);
   private ref = inject(MatDialogRef<CreateProjectDialogComponent>);
   private service = inject(ProjectsService);
+
 
   providers = [
     { value: Provider.GCP, label: 'GCP' },
@@ -62,18 +65,14 @@ export class CreateProjectDialogComponent {
   });
 
   constructor(@Inject(MAT_DIALOG_DATA) public data: SoftwareItem) {
-    // valores por defecto amistosos al abrir
     const suggested = (data.slug || data.name).toLowerCase().replace(/\s+/g, '-');
-    this.form.patchValue({
-      projectName: `${suggested}-app`,
-    });
+    this.form.patchValue({ projectName: `${suggested}-app` });
   }
 
   submit() {
     if (this.form.invalid) return;
 
     const v = this.form.value;
-
     const payload: ProvisionRequest = {
       technology: (this.data.slug || this.data.name).toLowerCase(),
       version: this.data.version,
@@ -91,8 +90,17 @@ export class CreateProjectDialogComponent {
 
     this.submitting = true;
     this.service.createProject(payload).subscribe({
-      next: () => this.ref.close(true),
-      error: () => { this.submitting = false; }
+      next: (res /* ProvisionResponse */) => {
+        this.ref.close({
+          ok: true,
+          response: res,
+          name: this.form.value.projectName
+        });
+      },
+      error: (err) => {
+        console.error('[CreateProjectDialog] createProject error', err);
+        this.ref.close({ ok: false, error: 'No fue posible crear el proyecto. Intenta nuevamente.' });
+      }
     });
   }
 

@@ -15,14 +15,26 @@
       <td mat-cell *matCellDef="let r"> {{ r.displayName }} </td>
     </ng-container>
 
-    <ng-container matColumnDef="vendor">
-      <th mat-header-cell *matHeaderCellDef> Vendor </th>
-      <td mat-cell *matCellDef="let r"> {{ r.vendor || '—' }} </td>
+    <!-- homepage (no vendor) -->
+    <ng-container matColumnDef="homepage">
+      <th mat-header-cell *matHeaderCellDef> Home URL </th>
+      <td mat-cell *matCellDef="let r">
+        <a *ngIf="r.homepage; else noHome" [href]="r.homepage" target="_blank" rel="noopener">
+          {{ r.homepage }}
+        </a>
+        <ng-template #noHome>—</ng-template>
+      </td>
     </ng-container>
 
-    <ng-container matColumnDef="category">
-      <th mat-header-cell *matHeaderCellDef> Categoría </th>
-      <td mat-cell *matCellDef="let r"> {{ r.category || '—' }} </td>
+    <!-- npm (no category) -->
+    <ng-container matColumnDef="npm">
+      <th mat-header-cell *matHeaderCellDef> NPM </th>
+      <td mat-cell *matCellDef="let r">
+        <a *ngIf="r.npm; else noNpm" [href]="r.npm" target="_blank" rel="noopener">
+          {{ r.npm }}
+        </a>
+        <ng-template #noNpm>—</ng-template>
+      </td>
     </ng-container>
 
     <ng-container matColumnDef="actions">
@@ -41,11 +53,7 @@
   <div class="py-2" *ngIf="loading()">Cargando…</div>
   <div class="py-2 text-danger" *ngIf="error()">{{ error() }}</div>
 
-  <mat-paginator
-    [length]="total()"
-    [pageIndex]="pageIndex()"
-    [pageSize]="pageSize()"
-    [pageSizeOptions]="[5,10,20,50]"
+  <mat-paginator [length]="total()" [pageIndex]="pageIndex()" [pageSize]="pageSize()" [pageSizeOptions]="[5,10,20,50]"
     (page)="onPage($event)">
   </mat-paginator>
 </section>

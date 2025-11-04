@@ -15,5 +15,6 @@ export const API = {
   project: {
     software: `${environment.apiUrl}/project/software`, 
     view: `${environment.apiUrl}/project/cards`, 
+    byId: (id: string) => `${environment.apiUrl}/project/${encodeURIComponent(id)}`,
   }
 };

@@ -26,13 +26,16 @@ src/
 │  └─ features/
 │  │  ├─ auth/                # login / register / rutas
 │  │  └─ dashboard/           # layout / home / rutas
+│  │  │ └─ home/
+│  │  │ └─ layout/
+│  │  │ └─ objects/
 │  └─ utils/
-│
+└─ material-theme.scss
 └─ styles.scss
 ```
 
 **Stack:**\
-Angular 20 + RxJS + Bootstrap 5 + Signals + JWT + Docker
+Angular 20 + RxJS + Bootstrap 5 / Material UI + Signals + JWT + Docker
 
 ------------------------------------------------------------------------
 
@@ -51,10 +54,10 @@ export const environment = {
 
 ## 🚀 Servidor de desarrollo
 
-Ejecuta el proyecto en modo local con:
+### ⚙️ Servidor local y compilación
 
 ``` bash
-ng serve
+ng serve            # Levanta el proyecto en localhost:4200
 ```
 
 Luego abre en tu navegador:\
@@ -67,10 +70,17 @@ archivos fuente.
 
 ## 🧩 Comandos útiles
 
-### Crear nuevos componentes
+### Generadores rápidos
 
 ``` bash
-ng generate component component-name
+
+ng g c features/auth/login                         # Componente
+ng g s core/services/auth --skip-tests --flat      # Servicio
+ng g guard core/guards/auth --functional           # Guard funcional
+ng g interceptor core/http/auth --functional       # Interceptor
+ng g directive core/auth/directives/has-role 
+ng g pipe shared/pipes/field-error                 # Pipe
+
 ```
 
 ### Construir para producción
@@ -102,7 +112,6 @@ La documentación detallada está en [`docs/`](docs/):
 - 📊 **Diagramas**
   - [Diagramas Principales](docs/diagramas)
 
-
 - 🐞 **Flujos de Sesiones**
   - [Flujos Completos](docs/flujos)
 
@@ -120,16 +129,19 @@ El proyecto consume endpoints protegidos mediante JWT desde:
 
     https://api.evaas.lat
 
-Endpoints principales: - `POST /users/register` - `POST /auth/login` -
-`GET /users/me` - `GET /clients` - `GET /resources`
+Endpoints principales: - `POST /users/register` - `POST /login` -
+- `GET /integrations/software` - `POST /project/software` - `GET /project/{id}` - `GET /project/card` 
 
 **Endpoints principales:**
 ```http
 POST /users/register
-POST /auth/login
-GET /users/me
-GET /clients
-GET /resources
+POST /login
+POST /logout
+GET /integrations/software
+POST /project
+GET /project/{id}
+PUT /project/{id}
+DELETE /project/{id}
 ```
 
 ------------------------------------------------------------------------
