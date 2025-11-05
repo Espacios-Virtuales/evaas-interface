@@ -1,4 +1,4 @@
-import { JwtPayload, Role, UserSession } from '../models/auth..model';
+import { JwtPayload, Role, UserSession } from '../models/auth.model';
 import { AuthResponse } from '../models/http.model';
 import { decodeJwtPayload } from '../../utils/jwt';
 

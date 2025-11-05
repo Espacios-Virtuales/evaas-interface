@@ -1,4 +1,4 @@
-import { Role } from "./auth..model";
+import { Role } from "./auth.model";
 
 export interface RegisterRequest {
     email: string;

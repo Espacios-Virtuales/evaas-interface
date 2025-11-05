@@ -1,6 +1,6 @@
 // core/auth/auth.store.ts
 import { Injectable, signal, computed, effect } from '@angular/core';
-import { UserSession } from '../models/auth..model';
+import { UserSession } from '../models/auth.model';
 
 const KEY = 'session';
 
