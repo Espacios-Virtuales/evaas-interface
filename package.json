@@ -10,9 +10,11 @@
     "build:vercel": "ng build --configuration=production",
     "start:vercel": "vercel dev",
     "check:api:health": "curl -I https://api.evaas.lat/v3/api-docs | grep 'HTTP'",
-    "check:api:preflight": "curl -i -X OPTIONS https://api.evaas.lat/login -H \"Origin: http://localhost:8181\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type,authorization\" | grep -E \"HTTP/|Access-Control-Allow\""
+    "check:api:preflight": "curl -i -X OPTIONS https://api.evaas.lat/auth/login -H \"Origin: http://localhost:8181\" -H \"Access-Control-Request-Method: POST\" -H \"Access-Control-Request-Headers: content-type,authorization\" | grep -E \"HTTP/|Access-Control-Allow\""
   },
-  "engines": { "node": "20.x" },
+  "engines": {
+    "node": "20.x"
+  },
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,

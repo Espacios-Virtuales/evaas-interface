@@ -124,9 +124,6 @@ export class ResourcesDashboardComponent implements OnDestroy {
     })
     .afterClosed()
     .subscribe(r => {
-      // debug 5 segundos, luego quítalo:
-      console.log('[afterClosed]', r);
-  
       if (!r) return;                 // cancelado
       if (r.ok) {
         this.toast.success(`Proyecto “${r.name ?? 'nuevo'}” creado con éxito 🚀`);

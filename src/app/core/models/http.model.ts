@@ -15,14 +15,6 @@ export interface RegistrationResponse {
     enabled: boolean;
 }
 
-export interface RegistrationResponse {
-    id: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    enabled: boolean;
-}
-
 export interface AuthRequest { 
     email: string; 
     password: string; 

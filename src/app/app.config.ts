@@ -7,8 +7,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/http/auth-interceptor';
 import { errorInterceptor } from './core/http/error-interceptor';
 import { refreshTokenInterceptor } from './core/http/refresh-token-interceptor';
-import { SessionWatcherService } from './core/auth/session-watcher.service.ts';
-
+import { SessionWatcherService } from './core/auth/session-watcher.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,9 +19,8 @@ export const appConfig: ApplicationConfig = {
     ])),
     importProvidersFrom(MatSnackBarModule),
 
-    // ✅ Angular 20: inicializador de entorno (no async)
-    /*provideEnvironmentInitializer(() => {
+    provideEnvironmentInitializer(() => {
       inject(SessionWatcherService);
-    }),*/
+    }),
   ]
 };

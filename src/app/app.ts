@@ -1,8 +1,7 @@
 // src/app/app.ts
-import { Component, signal, inject } from '@angular/core';
-import { SessionWatcherService } from './core/auth/session-watcher.service.ts';
+import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { ToastsComponent } from './shared/components/toasts/toasts.js';
+import { ToastsComponent } from './shared/components/toasts/toasts';
 
 @Component({
   selector: 'app-root',

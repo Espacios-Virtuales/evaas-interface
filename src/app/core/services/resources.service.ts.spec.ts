@@ -6,14 +6,13 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { ResourcesService } from './resources.service';
-import { environment } from '../../../environments/environment.development'; 
+import { API } from '../http/api.endpoints';
 
 describe('ResourcesService', () => {
   let service: ResourcesService;
   let httpMock: HttpTestingController;
 
-  const base = environment.apiUrl;
-  const url = `${base}/integrations/software`;
+  const url = API.integrations.software;
 
   beforeEach(() => {
     TestBed.configureTestingModule({

@@ -3,10 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { PageResult, ProjectCardItem, ProjectDto, ProjectUpdateRequest, SpringPage } from '../models/project.model';
 import { API } from '../http/api.endpoints';
-import { ProvisionRequest, ProvisionResponse } from '../models/provisions.model';
-import { ProvisionStatus } from '../types/project.types';
-
-
+import { ProvisionRequest, ProvisionResponse, ProvisionStatus } from '../models/provisions.model';
+import { ApiProvisionResponse } from '../types/api.type';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {

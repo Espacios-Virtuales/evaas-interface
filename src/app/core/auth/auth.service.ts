@@ -19,18 +19,12 @@ export class AuthService {
   }
 
   login(payload: AuthRequest): Observable<UserSession> {
-    console.log('[AuthService] login() payload', payload);
     return this.http.post<AuthResponse>(API.auth.login, payload).pipe(
-      tap(res => console.log('[AuthService] AuthResponse', res)),
       map(res => mapAuthResponseToSession(res)),
       tap(session => {
-        console.log('[AuthService] setSession()', session);
         this.store.setSession(session);
       }),
-      catchError(err => {
-        console.error('[AuthService] login ERROR', err);
-        return throwError(() => err);
-      })
+      catchError(err => throwError(() => err))
     );
   }
   

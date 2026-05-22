@@ -4,6 +4,7 @@ import { DbEngine, Provider, ProvisionStatus, Tier } from './provisions.model';
 export interface BrokerProvisionApiResponse {
   statusCode: number;        // 201
   status: 'CREATED' | string;
+  message?: string;
   details: BrokerProvisionDetail[];
 }
 

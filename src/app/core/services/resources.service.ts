@@ -1,13 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { from, Observable } from 'rxjs';
-import { environment } from '../../../environments/environment.development'; 
+import { Observable } from 'rxjs';
+import { API } from '../http/api.endpoints';
 import { PackageItem, PageResult } from '../models/resources.model';
 
 @Injectable({ providedIn: 'root' })
 export class ResourcesService {
   private http = inject(HttpClient);
-  private base = environment.apiUrl;
 
   /**
    * Busca paquetes de software/cloud (proxy NPM) con paginación estándar.
@@ -22,8 +21,6 @@ export class ResourcesService {
       .set('page', page)
       .set('perPage', perPage);
 
-    return this.http.get<PageResult<PackageItem>>(
-      `${this.base}/integrations/software`, { params }
-    );
+    return this.http.get<PageResult<PackageItem>>(API.integrations.software, { params });
   }
 }
