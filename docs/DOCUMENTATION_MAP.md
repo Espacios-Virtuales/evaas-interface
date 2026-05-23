@@ -52,6 +52,7 @@ Documentos:
 - `phase-1-summary.md`
 - `phase-2a-summary.md`
 - `phase-2b-summary.md`
+- `phase-2c-admin-placeholder.md`
 - `phase-2c-dashboard-shell-refactor-plan.md`
 
 ### flows/
@@ -79,7 +80,11 @@ Documentos:
 
 - `client-dashboard-v0.md`
 - `client-ui-decisions-v0.md`
+- `dashboard-access-matrix.md`
 - `dashboard-shared-ui-audit.md`
+- `dashboard-shared-ui-candidates.md`
+- `dashboard-state-model.md`
+- `dashboard-ui-inventory.md`
 
 ### backend/
 

@@ -93,5 +93,7 @@ npm run build
 
 - `../architecture/DASHBOARD_SHELL_ARCHITECTURE.md`
 - `../audits/dashboard-shell-audit-v0.md`
+- `../frontend/dashboard-ui-inventory.md`
+- `../frontend/dashboard-shared-ui-candidates.md`
 - `../policies/role-and-access-model-v0.md`
 - `role-routing-decision-v0.md`

@@ -9,4 +9,5 @@ Documentos:
 - `phase-1-summary.md`
 - `phase-2a-summary.md`
 - `phase-2b-summary.md`
+- `phase-2c-admin-placeholder.md`
 - `phase-2c-dashboard-shell-refactor-plan.md`

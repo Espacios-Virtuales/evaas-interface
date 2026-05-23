@@ -310,3 +310,12 @@ Si el build falla por version de Node, usar la version indicada por `.nvmrc`.
 - no eliminar legacy;
 - no mover recursos/proyectos;
 - no convertir componentes de proyecto en componentes shared antes de desacoplarlos.
+
+## Inventario UI relacionado
+
+La auditoria de UI/UX del dashboard vive en:
+
+- `../frontend/dashboard-ui-inventory.md`
+- `../frontend/dashboard-state-model.md`
+- `../frontend/dashboard-access-matrix.md`
+- `../frontend/dashboard-shared-ui-candidates.md`

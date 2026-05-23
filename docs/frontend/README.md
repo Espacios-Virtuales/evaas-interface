@@ -8,4 +8,8 @@ Documentos:
 
 - `client-dashboard-v0.md`
 - `client-ui-decisions-v0.md`
+- `dashboard-access-matrix.md`
 - `dashboard-shared-ui-audit.md`
+- `dashboard-shared-ui-candidates.md`
+- `dashboard-state-model.md`
+- `dashboard-ui-inventory.md`
