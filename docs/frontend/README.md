@@ -8,3 +8,4 @@ Documentos:
 
 - `client-dashboard-v0.md`
 - `client-ui-decisions-v0.md`
+- `dashboard-shared-ui-audit.md`
