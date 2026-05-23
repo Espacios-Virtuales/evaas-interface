@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
-import { MyResourceDto, MyToolAccessDto } from '../../core/models/evaas-contracts.model';
-import { MeService } from '../../core/services/me.service';
+import { MyResourceDto, MyToolAccessDto } from '../../../core/models/evaas-contracts.model';
+import { MeService } from '../../../core/services/me.service';
 
 type ClientDashboardData = {
   toolAccess: MyToolAccessDto[];

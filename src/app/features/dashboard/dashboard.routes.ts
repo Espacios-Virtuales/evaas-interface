@@ -29,7 +29,7 @@ export const DASHBOARD_ROUTES: Routes = [
         title: 'Panel Admin',
         data: { roles: ['ROLE_ADMIN'] },
         loadComponent: () =>
-          lazy(import('./home/home.component'), 'HomeComponent'),
+          lazy(import('./admin/admin-dashboard-placeholder.component'), 'AdminDashboardPlaceholderComponent'),
       },
       {
         path: DASHBOARD_LEGACY_PATHS.resources,
