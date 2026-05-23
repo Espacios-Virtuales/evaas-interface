@@ -25,11 +25,11 @@ Fase 1 alineó la base contractual sin construir features complejas:
 
 ## Cambios de documentación
 
-- `docs/api-contracts-v0.md`
-- `docs/auth-flow-v0.md`
-- `docs/role-and-access-model-v0.md`
-- `docs/client-admin-separation-v0.md`
-- `docs/phase-1-summary.md`
+- `docs/contracts/api-contracts-v0.md`
+- `docs/flows/auth-flow-v0.md`
+- `docs/policies/role-and-access-model-v0.md`
+- `docs/policies/client-admin-separation-v0.md`
+- `docs/phases/phase-1-summary.md`
 
 ## Hallazgo
 

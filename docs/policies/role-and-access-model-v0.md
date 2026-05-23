@@ -134,4 +134,4 @@ Si hay multiples roles, `ROLE_ADMIN` gana sobre `ROLE_CLIENT`.
 
 Documento de decision:
 
-- `docs/role-routing-decision-v0.md`
+- `docs/decisions/role-routing-decision-v0.md`
