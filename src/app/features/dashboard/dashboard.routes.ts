@@ -22,7 +22,7 @@ export const DASHBOARD_ROUTES: Routes = [
         title: 'Dashboard Cliente',
         data: { roles: ['ROLE_CLIENT', 'ROLE_USER', 'ROLE_COMPANY'] },
         loadComponent: () =>
-          lazy(import('../client/client-dashboard.component'), 'ClientDashboardComponent'),
+          lazy(import('./client/client-dashboard.component'), 'ClientDashboardComponent'),
       },
       {
         path: DASHBOARD_CHILD_PATHS.admin,
