@@ -1,0 +1,96 @@
+<section class="client-dashboard">
+  <header class="client-header">
+    <div>
+      <p class="eyebrow">EVAAS Interface</p>
+      <h1>Dashboard Cliente</h1>
+    </div>
+  </header>
+
+  <div class="state state-loading" *ngIf="loading()">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando contrato cliente...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="!loading() && error()">
+    <div>
+      <strong>No se pudo cargar la pantalla cliente.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="isEmpty()">
+    <strong>No hay herramientas ni recursos asignados.</strong>
+    <p>Cuando el backend entregue accesos para tu organización, aparecerán en esta pantalla.</p>
+  </div>
+
+  <div class="client-sections" *ngIf="!loading() && !error() && !isEmpty()">
+    <section class="client-section">
+      <div class="section-title">
+        <h2>Mis herramientas</h2>
+        <span>{{ toolAccess().length }}</span>
+      </div>
+
+      <div class="state state-empty compact" *ngIf="!hasToolAccess()">
+        No hay herramientas asignadas.
+      </div>
+
+      <div class="table-responsive" *ngIf="hasToolAccess()">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Organización</th>
+              <th>Herramienta</th>
+              <th>Estado</th>
+              <th>Acceso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of toolAccess(); trackBy: trackToolAccess">
+              <td>{{ item.organizationName || item.organizationId }}</td>
+              <td>{{ item.toolKey }}</td>
+              <td>
+                <span class="status-pill">{{ item.status }}</span>
+              </td>
+              <td>{{ toolAccessLabel(item) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="client-section">
+      <div class="section-title">
+        <h2>Mis recursos</h2>
+        <span>{{ resources().length }}</span>
+      </div>
+
+      <div class="state state-empty compact" *ngIf="!hasResources()">
+        No hay recursos asignados.
+      </div>
+
+      <div class="table-responsive" *ngIf="hasResources()">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Recurso</th>
+              <th>Estado</th>
+              <th>Configuración base</th>
+              <th>Acceso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of resources(); trackBy: trackResource">
+              <td>{{ resourceName(resource) }}</td>
+              <td>
+                <span class="status-pill muted">{{ resourceStatus(resource) }}</span>
+              </td>
+              <td>{{ resourceBaseConfiguration(resource) }}</td>
+              <td>{{ resourceAccess(resource) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</section>

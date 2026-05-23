@@ -1,35 +1,52 @@
 // src/app/core/http/api.endpoints.ts
 import { environment } from '../../../environments/environment';
 
+export function apiUrl(path: string): string {
+  return `${environment.apiUrl}${path}`;
+}
+
 export const API = {
   auth: {
-    register: `${environment.apiUrl}/user/register`,
-    login: `${environment.apiUrl}/auth/login`,
-    refresh: `${environment.apiUrl}/auth/refresh`,
-    logout: `${environment.apiUrl}/auth/logout`,
+    login: '/auth/login',
+    refresh: '/auth/refresh',
+    logout: '/auth/logout',
   },
   me: {
-    toolAccess: `${environment.apiUrl}/me/tool-access`,
+    toolAccess: '/me/tool-access',
+    resources: '/me/resources',
   },
   adminAccess: {
-    organizations: `${environment.apiUrl}/admin/access/organizations`,
-    organizationById: (id: number) =>
-      `${environment.apiUrl}/admin/access/organizations/${encodeURIComponent(String(id))}`,
-    toolAccess: `${environment.apiUrl}/admin/access/tool-access`,
-    toolAccessById: (id: number) =>
-      `${environment.apiUrl}/admin/access/tool-access/${encodeURIComponent(String(id))}`,
+    organizations: '/admin/access/organizations',
+    organizationById: (id: number) => `/admin/access/organizations/${encodeURIComponent(String(id))}`,
+    organizationToolAccess: (id: number) =>
+      `/admin/access/organizations/${encodeURIComponent(String(id))}/tool-access`,
+    organizationResources: (id: number) =>
+      `/admin/access/organizations/${encodeURIComponent(String(id))}/resources`,
   },
   adminCommerce: {
-    activations: `${environment.apiUrl}/admin/commerce/activations`,
+    activations: '/admin/commerce/activations',
+    activationById: (id: number) =>
+      `/admin/commerce/activations/${encodeURIComponent(String(id))}`,
     activationStatus: (id: number) =>
-      `${environment.apiUrl}/admin/commerce/activations/${encodeURIComponent(String(id))}/status`,
+      `/admin/commerce/activations/${encodeURIComponent(String(id))}/status`,
   },
-  integrations: {
-    software: `${environment.apiUrl}/integrations/software`,
+  adminResources: {
+    resources: '/admin/resources',
+    resourceById: (id: number) => `/admin/resources/${encodeURIComponent(String(id))}`,
   },
-  project: {
-    software: `${environment.apiUrl}/project/software`,
-    view: `${environment.apiUrl}/project/cards`,
-    byId: (id: string) => `${environment.apiUrl}/project/${encodeURIComponent(id)}`,
-  }
+  legacy: {
+    auth: {
+      register: '/user/register',
+    },
+    integrations: {
+      software: '/integrations/software',
+    },
+    project: {
+      software: '/project/software',
+      view: '/project/cards',
+      byId: (id: string) => `/project/${encodeURIComponent(id)}`,
+    },
+  },
 };
+
+export const LEGACY_API = API.legacy;

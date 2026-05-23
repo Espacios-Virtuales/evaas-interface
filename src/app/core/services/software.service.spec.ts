@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ProjectsService } from './project.service';
-import { API } from '../http/api.endpoints';
+import { LEGACY_API, apiUrl } from '../http/api.endpoints';
 import { ProvisionRequest, ProvisionStatus, Tier, Provider, DbEngine } from '../models/provisions.model';
 import { BrokerProvisionApiResponse } from '../models/broker-provision.api';
 
@@ -41,7 +41,9 @@ describe('ProjectsService.createProject (broker wrapper to domain mapping)', () 
       expect(job.message).toBe('created');
     });
 
-    const req = http.expectOne(r => r.method === 'POST' && r.url === API.project.software);
+    const req = http.expectOne(
+      r => r.method === 'POST' && r.url === apiUrl(LEGACY_API.project.software)
+    );
 
     const apiBody: BrokerProvisionApiResponse = {
       statusCode: 201,

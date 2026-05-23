@@ -3,7 +3,7 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { catchError, throwError } from 'rxjs';
-import { API } from '../http/api.endpoints';
+import { API, apiUrl } from '../http/api.endpoints';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const snack = inject(MatSnackBar);
@@ -13,7 +13,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       if (!(err instanceof HttpErrorResponse)) return throwError(() => err);
 
       // 1) Dejar que LO maneje el componente de login
-      if (req.url.startsWith(API.auth.login)) return throwError(() => err);
+      if (req.url.startsWith(apiUrl(API.auth.login))) return throwError(() => err);
 
       // 2) No mostrar error para 401/419 aquí — el refresh interceptor lo resuelve o hace logout
       if (err.status === 401 || err.status === 419) return throwError(() => err);

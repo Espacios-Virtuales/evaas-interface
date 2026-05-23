@@ -2,116 +2,78 @@
 
 Fecha: 2026-05-22
 
-Mantra técnico: Angular no decide acceso. Angular observa contratos. El backend sostiene la ley.
+Mantra tecnico: Angular no decide acceso. Angular observa contratos. El backend sostiene la ley.
 
-## Contratos registrados en Angular
+## Fuente contractual
+
+Backend esperado:
+
+```txt
+http://localhost:8091
+http://localhost:8091/swagger-ui/index.html
+http://localhost:8091/v3/api-docs
+```
+
+En esta ejecucion `GET http://localhost:8091/v3/api-docs` no respondio porque no habia servicio escuchando en el puerto 8091. Por eso los endpoints se alinearon con el contrato entregado para Fase 2A y los DTOs de recursos/payloads que no tenian campos verificables quedaron abiertos con `unknown` en vez de inventar nombres.
+
+## Registry Angular
+
+`src/app/core/http/api.endpoints.ts` expone rutas contractuales, no URLs absolutas. Las llamadas HTTP usan `apiUrl(path)` para resolver contra `environment.apiUrl`.
 
 ```ts
-API.auth.login          // POST /auth/login
-API.auth.refresh        // POST /auth/refresh
-API.auth.logout         // POST /auth/logout
+API.auth.login
+API.auth.refresh
+API.auth.logout
 
-API.me.toolAccess       // GET /me/tool-access
+API.me.toolAccess
+API.me.resources
 
 API.adminAccess.organizations
 API.adminAccess.organizationById(id)
-API.adminAccess.toolAccess
-API.adminAccess.toolAccessById(id)
+API.adminAccess.organizationToolAccess(id)
+API.adminAccess.organizationResources(id)
 
 API.adminCommerce.activations
+API.adminCommerce.activationById(id)
 API.adminCommerce.activationStatus(id)
+
+API.adminResources.resources
+API.adminResources.resourceById(id)
 ```
 
-## Contrato cliente
+## Legacy
 
-El contrato cliente inicial vive en `src/app/core/models/access-contracts.model.ts`.
+Los endpoints anteriores permanecen bajo `API.legacy` y `LEGACY_API` para que el codigo existente compile mientras se decide su continuidad:
 
 ```ts
-export type ToolAccessStatus = 'ENABLED' | 'DISABLED';
-
-export interface MyToolAccessDto {
-  toolKey: string;
-  organizationId: number;
-  organizationName: string;
-  status: ToolAccessStatus;
-  grantedAt: string;
-  revokedAt?: string | null;
-}
+LEGACY_API.auth.register
+LEGACY_API.integrations.software
+LEGACY_API.project.software
+LEGACY_API.project.view
+LEGACY_API.project.byId(id)
 ```
 
-La vista cliente no debe mostrar provider, externalOrderId, externalMembershipId, billing details, payloadHash ni lógica comercial interna.
+## DTOs
 
-## Contratos admin
+Los contratos de Fase 2A viven en `src/app/core/models/evaas-contracts.model.ts`:
 
-Los contratos admin conocidos también viven en `access-contracts.model.ts`:
-
+- `MyToolAccessDto`
+- `MyResourceDto`
 - `OrganizationDto`
-- `ExternalCommerceActivationDto`
 - `AdminToolAccessDto`
-- `ExternalCommerceActivationStatus`
+- `AdminResourceDto`
+- `ExternalCommerceActivationDto`
 
-Estos contratos están preparados para futuras pantallas admin, pero Fase 1 no construye panel admin.
+`src/app/core/models/access-contracts.model.ts` queda como re-export de compatibilidad.
 
-## Hallazgo
+## Auth
 
-El registry API quedó separado por dominio contractual: `auth`, `me`, `adminAccess` y `adminCommerce`.
+AuthService usa:
 
-## Impacto
+```txt
+POST /auth/login
+POST /auth/refresh
+POST /auth/logout
+```
 
-Reduce acoplamiento y evita mezclar vista cliente con administración interna o comercio externo.
-
-## Riesgo
-
-Bajo
-
-## Recomendación
-
-Mantener esta frontera. Si aparecen nuevos endpoints, agregarlos por dominio y no desde componentes.
-
-## Archivos involucrados
-
-- `src/app/core/http/api.endpoints.ts`
-- `src/app/core/models/access-contracts.model.ts`
-
-## Hallazgo
-
-El servicio cliente preparado es read-only.
-
-## Impacto
-
-Respeta el flujo de producto v0: Angular observa el contrato operacional emitido por backend y no administra acceso desde cliente.
-
-## Riesgo
-
-Bajo
-
-## Recomendación
-
-Usar `ToolAccessService.getMyToolAccess()` para la primera visualización cliente. No agregar mutaciones en este servicio.
-
-## Archivos involucrados
-
-- `src/app/core/services/tool-access.service.ts`
-- `src/app/core/services/tool-access.service.spec.ts`
-
-## Hallazgo
-
-Los endpoints heredados de recursos/proyectos siguen existiendo en `API`.
-
-## Impacto
-
-Permite que el código existente compile, pero no forman parte del foco contractual v0.
-
-## Riesgo
-
-Medio
-
-## Recomendación
-
-No expandirlos durante Fase 1. Revisarlos cuando se decida la continuidad de recursos/proyectos heredados.
-
-## Archivos involucrados
-
-- `src/app/core/http/api.endpoints.ts`
-- `src/app/core/services/project.service.ts`
-- `src/app/core/services/software.service.ts`
+El access token se adjunta en `authInterceptor`. El refresh flow evita loops en login/refresh y reintenta la request original luego de actualizar la sesion. Logout no envia el refresh token en body.

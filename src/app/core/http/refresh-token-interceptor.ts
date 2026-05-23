@@ -4,7 +4,7 @@ import { inject } from '@angular/core';
 import { BehaviorSubject, catchError, filter, finalize, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { AuthStore } from '../auth/auth.store';
-import { API } from '../http/api.endpoints';
+import { API, apiUrl } from '../http/api.endpoints';
 import { AuthFacade } from '../auth/auth.facade';
 
 let refreshing = false;
@@ -16,7 +16,11 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const facade = inject(AuthFacade);
 
   // Pasar directo las rutas de auth para evitar loops
-  if (req.url.startsWith(API.auth.login) || req.url.startsWith(API.auth.refresh)) {
+  if (
+    req.url.startsWith(apiUrl(API.auth.login)) ||
+    req.url.startsWith(apiUrl(API.auth.refresh)) ||
+    req.url.startsWith(apiUrl(API.auth.logout))
+  ) {
     return next(req);
   }
 

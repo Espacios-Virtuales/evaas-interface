@@ -6,13 +6,13 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { ResourcesService } from './resources.service';
-import { API } from '../http/api.endpoints';
+import { LEGACY_API, apiUrl } from '../http/api.endpoints';
 
 describe('ResourcesService', () => {
   let service: ResourcesService;
   let httpMock: HttpTestingController;
 
-  const url = API.integrations.software;
+  const url = apiUrl(LEGACY_API.integrations.software);
 
   beforeEach(() => {
     TestBed.configureTestingModule({

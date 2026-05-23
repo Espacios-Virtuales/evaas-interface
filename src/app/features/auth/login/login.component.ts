@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthRequest } from '../../../core/models/http.model';
+import { dashboardRouteForSession } from '../../../core/auth/role-routing';
 
 // Helper para tipar el formulario reactivo
 type LoginForm = {
@@ -41,7 +42,6 @@ export class LoginComponent {
       this.justRegistered.set(params.get('registered') === '1');
     });
   }
-    
 
   private extractErrorMessage(err: any): string {
     if (!err) return 'Error desconocido.';
@@ -55,7 +55,7 @@ export class LoginComponent {
 
     const payload: AuthRequest = this.form.getRawValue(); // <- strings no-null
     this.auth.login(payload).subscribe({
-      next: () => this.router.navigate(['/dashboard']),
+      next: session => this.router.navigate(dashboardRouteForSession(session)),
       error: (err: unknown) => {
         const msg = (err as any)?.error?.message ?? (err as any)?.message ?? 'Credenciales incorrectas.';
         this.serverError.set(msg);
@@ -63,5 +63,4 @@ export class LoginComponent {
       },
     });
   }
-
 }

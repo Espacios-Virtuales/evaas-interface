@@ -114,3 +114,24 @@ Mantener flexibilidad hasta confirmar contrato real. Después se puede tipar con
 - `src/app/core/models/http.model.ts`
 - `src/app/core/models/auth.model.ts`
 - `src/app/core/auth/auth.mapper.ts`
+
+## Actualizacion Fase 2B-Audit
+
+La navegacion post-login ya no debe apuntar siempre a cliente. Angular observa `UserSession.roles` y elige landing page con prioridad explicita:
+
+```txt
+ROLE_ADMIN   -> /dashboard/admin
+ROLE_CLIENT  -> /dashboard/client
+ROLE_USER    -> /dashboard/client
+ROLE_COMPANY -> /dashboard/client
+```
+
+Si hay multiples roles, `ROLE_ADMIN` gana sobre `ROLE_CLIENT`.
+
+`ROLE_USER` y `ROLE_COMPANY` quedan como compatibilidad legacy y aterrizan en cliente porque esa ruta depende de contratos `/me/*`, no de capacidades administrativas.
+
+`/dashboard/admin` existe solo como aterrizaje temporal. No es panel admin funcional.
+
+Documento de decision:
+
+- `docs/role-routing-decision-v0.md`

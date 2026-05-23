@@ -10,7 +10,7 @@ import {
   ProvisionRequest, ProvisionResponse, ProvisionJob,
   ProvisionStatus, Provider, Tier, DbEngine
 } from '../models/provisions.model';
-import { API } from '../http/api.endpoints';
+import { LEGACY_API, apiUrl } from '../http/api.endpoints';
 
 import {
   BrokerProvisionApiResponse,
@@ -37,7 +37,7 @@ export class SoftwareService {
       .set('page', String(apiPage))
       .set('perPage', String(perPage));
   
-    return this.http.get<unknown>(API.integrations.software, { params }).pipe(
+    return this.http.get<unknown>(apiUrl(LEGACY_API.integrations.software), { params }).pipe(
       map((raw: any) => {
         const list =
           Array.isArray(raw?.content) ? raw.content :

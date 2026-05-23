@@ -2,7 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, map, tap, catchError } from 'rxjs';
-import { API } from '../http/api.endpoints';
+import { API, LEGACY_API, apiUrl } from '../http/api.endpoints';
 import { UserSession } from '../models/auth.model';
 import { RegisterRequest, RegistrationResponse, AuthRequest, AuthResponse} from '../models/http.model';
 import { AuthStore } from './auth.store';
@@ -14,12 +14,12 @@ export class AuthService {
   private store = inject(AuthStore);
 
   register(payload: RegisterRequest): Observable<RegistrationResponse> {
-    return this.http.post<RegistrationResponse>(API.auth.register, payload)
+    return this.http.post<RegistrationResponse>(apiUrl(LEGACY_API.auth.register), payload)
       .pipe(catchError(err => throwError(() => err)));
   }
 
   login(payload: AuthRequest): Observable<UserSession> {
-    return this.http.post<AuthResponse>(API.auth.login, payload).pipe(
+    return this.http.post<AuthResponse>(apiUrl(API.auth.login), payload).pipe(
       map(res => mapAuthResponseToSession(res)),
       tap(session => {
         this.store.setSession(session);
@@ -29,11 +29,11 @@ export class AuthService {
   }
   
   refresh(refreshToken: string) {
-    return this.http.post<Partial<UserSession>>(API.auth.refresh, { refreshToken });
+    return this.http.post<Partial<UserSession>>(apiUrl(API.auth.refresh), { refreshToken });
   }
 
   logout(refreshToken: string | null) {
-    return this.http.post<void>(API.auth.logout, { }); // No enviamos el refreshToken por seguridad
+    return this.http.post<void>(apiUrl(API.auth.logout), { }); // No enviamos el refreshToken por seguridad
   }
 
   isAuthenticated(): boolean {

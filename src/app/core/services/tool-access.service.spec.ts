@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { API } from '../http/api.endpoints';
+import { API, apiUrl } from '../http/api.endpoints';
 import { ToolAccessService } from './tool-access.service';
 
 describe('ToolAccessService', () => {
@@ -33,7 +33,7 @@ describe('ToolAccessService', () => {
       ]);
     });
 
-    const req = http.expectOne(r => r.method === 'GET' && r.url === API.me.toolAccess);
+    const req = http.expectOne(r => r.method === 'GET' && r.url === apiUrl(API.me.toolAccess));
     req.flush([
       {
         toolKey: 'vps-enclaustrado',

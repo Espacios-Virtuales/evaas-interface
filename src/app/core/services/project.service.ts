@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { PageResult, ProjectCardItem, ProjectDto, ProjectUpdateRequest, SpringPage } from '../models/project.model';
-import { API } from '../http/api.endpoints';
+import { LEGACY_API, apiUrl } from '../http/api.endpoints';
 import { ProvisionRequest, ProvisionResponse, ProvisionStatus } from '../models/provisions.model';
 import { ApiProvisionResponse } from '../types/api.type';
 
@@ -13,7 +13,7 @@ export class ProjectsService {
   /** Crear proyecto: SIEMPRE entrega ProvisionResponse mínimo */
   createProject(payload: ProvisionRequest) {
     return this.http
-      .post<ApiProvisionResponse>(API.project.software, payload)
+      .post<ApiProvisionResponse>(apiUrl(LEGACY_API.project.software), payload)
       .pipe(
         map((r): ProvisionResponse => ({
           id: r?.details?.[0]?.id ?? 'unknown',            // id real de details[0]
@@ -30,7 +30,7 @@ export class ProjectsService {
       .set('size', pageSize)
       .set('q', (q ?? '').trim());
 
-    return this.http.get<SpringPage<ProjectCardItem>>(API.project.view, { params }).pipe(
+    return this.http.get<SpringPage<ProjectCardItem>>(apiUrl(LEGACY_API.project.view), { params }).pipe(
       map(p => ({
         content: p.content ?? [],
         total: p.totalElements ?? (p.content?.length ?? 0),
@@ -42,16 +42,16 @@ export class ProjectsService {
 
   /** GET /projects/{id} → ProjectDto */
   getProject(id: string): Observable<ProjectDto> {
-    return this.http.get<ProjectDto>(API.project.byId(id));
+    return this.http.get<ProjectDto>(apiUrl(LEGACY_API.project.byId(id)));
   }
 
   /** PUT /projects/{id} (solo campos esenciales) */
   updateProject(id: string, payload: ProjectDto): Observable<ProjectDto> {
-    return this.http.put<ProjectDto>(API.project.byId(id), payload);
+    return this.http.put<ProjectDto>(apiUrl(LEGACY_API.project.byId(id)), payload);
   }
 
   /** DELETE /projects/{id} */
   deleteProject(id: string): Observable<void> {
-    return this.http.delete<void>(API.project.byId(id));
+    return this.http.delete<void>(apiUrl(LEGACY_API.project.byId(id)));
   }
 }
