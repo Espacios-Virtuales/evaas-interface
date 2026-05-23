@@ -5,6 +5,11 @@ import { lazy } from '../../shared/lazy';
 import { authGuard } from '../../core/auth/auth-guard';
 import { DASHBOARD_CHILD_PATHS } from '../../core/auth/role-routing';
 
+const DASHBOARD_LEGACY_PATHS = {
+  resources: 'resources',
+  projects: 'projects',
+} as const;
+
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: PATHS.dashboard,
@@ -27,13 +32,13 @@ export const DASHBOARD_ROUTES: Routes = [
           lazy(import('./home/home.component'), 'HomeComponent'),
       },
       {
-        path: 'resources',
+        path: DASHBOARD_LEGACY_PATHS.resources,
         title: 'Recursos',
         loadComponent: () =>
             lazy(import('./resources/resources-dashboard.component'), 'ResourcesDashboardComponent'),
       },
       {
-        path: 'projects',
+        path: DASHBOARD_LEGACY_PATHS.projects,
         title: 'Proyectos',
         loadComponent: () =>
             lazy(import('./objects/grid/objects-grid.component'), 'ObjectsGridComponent'),

@@ -1,20 +1,17 @@
-<!-- src/app/features/dashboard/layout/dashboard-shell.component.html -->
 <div class="ev-shell d-flex">
-  <!-- Sidebar -->
   <aside class="ev-sidebar" [class.collapsed]="!isSidebarOpen()">
     <div class="brand px-3 py-3">
-      <a routerLink="/dashboard" class="brand-link">
+      <a [routerLink]="dashboardLink" class="brand-link">
         <i class="bi bi-house-fill"></i>
       </a>
     </div>
 
     <nav class="menu">
-      <a routerLink="/dashboard" class="menu-item" routerLinkActive="active">
+      <a [routerLink]="dashboardLink" class="menu-item" routerLinkActive="active">
         <i class="bi bi-speedometer2"></i> <span>Resumen</span>
       </a>
-      <!-- Ejemplo de visibilidad por rol -->
       <a
-        routerLink="/dashboard/resources"
+        [routerLink]="resourcesLink"
         class="menu-item"
         routerLinkActive="active"
         *hasRole="'ROLE_USER'"
@@ -22,13 +19,12 @@
         <i class="bi bi-boxes"></i> <span>Recursos</span>
       </a>
 
-      <a routerLink="/dashboard/projects" class="menu-item" routerLinkActive="active">
+      <a [routerLink]="projectsLink" class="menu-item" routerLinkActive="active">
         <i class="bi bi-box2-heart"></i> <span>Proyectos</span> 
       </a>
     </nav>
   </aside>
 
-  <!-- Main -->
   <div class="ev-main flex-grow-1 d-flex flex-column">
     <header class="ev-topbar d-flex align-items-center">
       <button class="btn btn-link toggle" (click)="toggleSidebar()" aria-label="Alternar sidebar">
@@ -56,7 +52,6 @@
   </div>
 </div>
 
-<!-- Modal de usuario -->
 <dialog id="userDlg" class="ev-dialog">
   <form method="dialog">
     <h3 class="h6 mb-3">Cuenta</h3>
