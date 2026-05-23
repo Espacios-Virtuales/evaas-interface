@@ -6,4 +6,5 @@ Usar esta carpeta para decisiones con contexto, regla aplicada y efecto tecnico,
 
 Documentos:
 
+- `ADR-001-dashboard-shell.md`
 - `role-routing-decision-v0.md`

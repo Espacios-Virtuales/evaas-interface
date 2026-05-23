@@ -30,6 +30,7 @@ Define la forma del sistema frontend: boundaries, mapa de carpetas, responsabili
 
 Documentos:
 
+- `DASHBOARD_SHELL_ARCHITECTURE.md`
 - `architecture-map.md`
 - `dashboard-shell-boundaries.md`
 
@@ -109,6 +110,7 @@ Contiene decisiones puntuales con impacto en implementacion.
 
 Documentos:
 
+- `ADR-001-dashboard-shell.md`
 - `role-routing-decision-v0.md`
 
 ### audits/

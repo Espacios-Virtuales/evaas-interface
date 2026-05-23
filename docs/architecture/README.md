@@ -6,5 +6,6 @@ Usar esta carpeta para mapas de arquitectura, boundaries entre features y decisi
 
 Documentos:
 
+- `DASHBOARD_SHELL_ARCHITECTURE.md`
 - `architecture-map.md`
 - `dashboard-shell-boundaries.md`
