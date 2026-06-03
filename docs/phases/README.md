@@ -11,3 +11,4 @@ Documentos:
 - `phase-2b-summary.md`
 - `phase-2c-admin-placeholder.md`
 - `phase-2c-dashboard-shell-refactor-plan.md`
+- `phase-3-admin-overview.md`
