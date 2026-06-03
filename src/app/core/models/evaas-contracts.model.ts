@@ -16,6 +16,7 @@ export interface MyResourceDto {
 export interface OrganizationDto {
   id: number;
   name: string;
+  status?: string;
   ownerUserId?: number;
   ownerEmail?: string;
   createdAt?: string;

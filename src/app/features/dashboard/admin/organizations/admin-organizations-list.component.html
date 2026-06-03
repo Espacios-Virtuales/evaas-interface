@@ -1,0 +1,60 @@
+<section class="admin-organizations" aria-labelledby="admin-organizations-title">
+  <header class="admin-organizations__header">
+    <div>
+      <p class="admin-organizations__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-organizations-title">Organizaciones</h1>
+      <p>Listado operacional de organizaciones registradas en EVAAS.</p>
+    </div>
+
+    <a class="admin-organizations__back" routerLink="/dashboard/admin">Volver al overview</a>
+  </header>
+
+  <div class="state state-loading" *ngIf="loading()">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando organizaciones...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="!loading() && error()">
+    <div>
+      <strong>No se pudo cargar organizaciones.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="isEmpty()">
+    <strong>No hay organizaciones disponibles.</strong>
+    <p>Cuando el backend entregue organizaciones, aparecerán en esta pantalla.</p>
+  </div>
+
+  <section class="admin-organizations__table" *ngIf="!loading() && !error() && !isEmpty()">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th *ngIf="showId()">ID</th>
+            <th *ngIf="showName()">Nombre</th>
+            <th *ngIf="showStatus()">Estado</th>
+            <th *ngIf="showCreatedAt()">Creada</th>
+            <th *ngIf="showUpdatedAt()">Actualizada</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let organization of organizations(); trackBy: trackOrganization">
+            <td *ngIf="showId()">{{ formatValue(organization.id) }}</td>
+            <td *ngIf="showName()">{{ formatValue(organization.name) }}</td>
+            <td *ngIf="showStatus()">{{ formatValue(organization.status) }}</td>
+            <td *ngIf="showCreatedAt()">{{ formatDate(organization.createdAt) }}</td>
+            <td *ngIf="showUpdatedAt()">{{ formatDate(organization.updatedAt) }}</td>
+            <td>
+              <a class="admin-organizations__detail" [routerLink]="['/dashboard/admin/organizations', organization.id]">
+                Ver detalle
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

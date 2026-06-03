@@ -12,3 +12,4 @@ Documentos:
 - `phase-2c-admin-placeholder.md`
 - `phase-2c-dashboard-shell-refactor-plan.md`
 - `phase-3-admin-overview.md`
+- `phase-3-admin-organizations-list.md`

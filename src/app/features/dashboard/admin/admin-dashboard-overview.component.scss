@@ -63,6 +63,7 @@ h2 {
   gap: 12px;
   min-height: 160px;
   padding: 18px;
+  text-decoration: none;
 }
 
 .admin-overview__block p {
@@ -75,6 +76,19 @@ h2 {
   color: #526173;
   font-size: 0.85rem;
   font-weight: 700;
+}
+
+.admin-overview__block--link {
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.admin-overview__block--link:hover,
+.admin-overview__block--link:focus-visible {
+  border-color: #b8c9d9;
+  box-shadow: 0 12px 28px rgba(27, 39, 51, 0.08);
+  outline: 0;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 720px) {
