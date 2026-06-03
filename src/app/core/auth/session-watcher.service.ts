@@ -49,6 +49,7 @@ export class SessionWatcherService {
 
       const s = this.store.session();
       if (!s) return;
+      if (!s.refreshExp) return;
 
       const refreshExpMs =
         s.refreshExp instanceof Date ? s.refreshExp.getTime() : new Date(s.refreshExp).getTime();

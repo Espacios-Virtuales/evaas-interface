@@ -44,7 +44,7 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (req, next) => {
           filter(done => done === true),
           take(1),
           switchMap(() => {
-            const token = store.session()?.accessToken;
+            const token = store.getValidToken();
             const retry = token
               ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
               : req;
@@ -64,11 +64,11 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (req, next) => {
           if (!curr) throw new Error('No session in store during refresh.');
           store.setSession({
             ...curr,
-            ...partialSession, // debe traer al menos accessToken + accessTokenExp; opcional refreshExp/refreshToken
+            ...partialSession, // debe traer al menos token + tokenExp; opcional refreshExp/refreshToken
           });
 
-          // Reintentar la request original con el nuevo access token
-          const newToken = store.session()?.accessToken;
+          // Reintentar la request original con el nuevo token
+          const newToken = store.getValidToken();
           const retry = newToken
             ? req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } })
             : req;

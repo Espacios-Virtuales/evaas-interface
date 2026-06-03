@@ -6,6 +6,7 @@ Usar esta carpeta para resumir que se hizo, que quedo pendiente y que restriccio
 
 Documentos:
 
+- `phase-admin-auth-token-fix.md`
 - `phase-1-summary.md`
 - `phase-2a-summary.md`
 - `phase-2b-summary.md`

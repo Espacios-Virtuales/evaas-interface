@@ -6,7 +6,7 @@ import { API, LEGACY_API, apiUrl } from '../http/api.endpoints';
 import { UserSession } from '../models/auth.model';
 import { RegisterRequest, RegistrationResponse, AuthRequest, AuthResponse} from '../models/http.model';
 import { AuthStore } from './auth.store';
-import { mapAuthResponseToSession } from './auth.mapper';
+import { mapAuthResponseToSession, mapAuthResponseToSessionPatch } from './auth.mapper';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -29,7 +29,9 @@ export class AuthService {
   }
   
   refresh(refreshToken: string) {
-    return this.http.post<Partial<UserSession>>(apiUrl(API.auth.refresh), { refreshToken });
+    return this.http.post<AuthResponse>(apiUrl(API.auth.refresh), { refreshToken }).pipe(
+      map(res => mapAuthResponseToSessionPatch(res)),
+    );
   }
 
   logout(refreshToken: string | null) {
@@ -41,7 +43,7 @@ export class AuthService {
   }
 
   getAccessToken(): string | null {
-    return this.store.session()?.accessToken ?? null;
+    return this.store.getValidToken();
   }
 
   getSession(): UserSession | null {

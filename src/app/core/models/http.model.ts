@@ -21,11 +21,12 @@ export interface AuthRequest {
 }
 
 export interface AuthResponse { 
-    token: string; 
-    username: string;
-    role: Role[];
-    issuedAt: string;         
-    refreshToken: string;
-    refreshExpiresIn: number; 
-    message: string;
+    token: string;
+    username?: string;
+    role?: Role[];
+    issuedAt?: string;
+    refreshToken?: string;
+    refreshExpiresIn?: number;
+    expiresIn?: number;
+    message?: string;
 }

@@ -19,10 +19,10 @@ export interface UserSession {
     email: string;
     roles: string[];        // ['ROLE_USER', ...] (puedes derivarlo de role.roleEnum)
     privileges: string[];   // ['READ','WRITE',...]
-    accessToken: string;
-    accessTokenExp: Date;   // new Date(payload.exp * 1000)
-    refreshToken: string;
-    refreshExp: Date;       // new Date(Date.parse(issuedAt) + refreshExpiresIn * 1000)
+    token: string;
+    tokenExp: Date;         // new Date(payload.exp * 1000)
+    refreshToken?: string;
+    refreshExp?: Date;      // new Date(Date.parse(issuedAt) + refreshExpiresIn * 1000)
     loginAt?: Date;
 }
 

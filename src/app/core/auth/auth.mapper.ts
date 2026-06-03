@@ -3,6 +3,11 @@ import { AuthResponse } from '../models/http.model';
 import { decodeJwtPayload } from '../../utils/jwt';
 
 export function mapAuthResponseToSession(res: AuthResponse): UserSession {
+  const token = normalizeToken(res.token);
+  if (!token) {
+    throw new Error('Backend login response did not include a valid token.');
+  }
+
   // --- Normaliza role ---
   const rolesRaw: Role[] = Array.isArray(res.role)
     ? res.role
@@ -17,28 +22,74 @@ export function mapAuthResponseToSession(res: AuthResponse): UserSession {
     .map(p => p.type);
 
   // --- Decodifica payload JWT ---
-  const payload = decodeJwtPayload<JwtPayload>(res.token);
-  const accessTokenExp = payload?.exp
+  const payload = decodeJwtPayload<JwtPayload>(token);
+  const tokenExp = payload?.exp
     ? new Date(payload.exp * 1000)
-    : new Date(Date.now() + 10 * 60 * 1000); // fallback 10min
+    : res.expiresIn
+      ? new Date(Date.now() + res.expiresIn * 1000)
+      : null;
 
-  // --- Calcula refreshExp ---
-  const issuedAtMs = Date.parse(res.issuedAt);
-  const refreshExp = isNaN(issuedAtMs)
-    ? new Date(Date.now() + res.refreshExpiresIn * 1000)
-    : new Date(issuedAtMs + res.refreshExpiresIn * 1000);
+  if (!tokenExp || tokenExp.getTime() <= Date.now()) {
+    throw new Error('Backend login response included an expired token.');
+  }
 
-  // NEW: fijamos loginAt desde issuedAt si es válido; si no, ahora.
+  // --- Calcula refreshExp solo cuando el backend informa refreshExpiresIn ---
+  const issuedAtMs = res.issuedAt ? Date.parse(res.issuedAt) : NaN;
+  const refreshExp = res.refreshExpiresIn
+    ? isNaN(issuedAtMs)
+      ? new Date(Date.now() + res.refreshExpiresIn * 1000)
+      : new Date(issuedAtMs + res.refreshExpiresIn * 1000)
+    : undefined;
+
   const loginAt = isNaN(issuedAtMs) ? new Date() : new Date(issuedAtMs);
 
   return {
-    email: res.username,
+    email: res.username ?? payload?.sub ?? '',
     roles,
     privileges,
-    accessToken: res.token,
-    accessTokenExp,
+    token,
+    tokenExp,
     refreshToken: res.refreshToken,
     refreshExp,
-    loginAt, // NEW
+    loginAt,
   };
+}
+
+export function mapAuthResponseToSessionPatch(res: AuthResponse): Partial<UserSession> {
+  const token = normalizeToken(res.token);
+  if (!token) {
+    throw new Error('Backend refresh response did not include a valid token.');
+  }
+
+  const payload = decodeJwtPayload<JwtPayload>(token);
+  const tokenExp = payload?.exp
+    ? new Date(payload.exp * 1000)
+    : res.expiresIn
+      ? new Date(Date.now() + res.expiresIn * 1000)
+      : null;
+
+  if (!tokenExp || tokenExp.getTime() <= Date.now()) {
+    throw new Error('Backend refresh response included an expired token.');
+  }
+
+  const issuedAtMs = res.issuedAt ? Date.parse(res.issuedAt) : NaN;
+  const refreshExp = res.refreshExpiresIn
+    ? isNaN(issuedAtMs)
+      ? new Date(Date.now() + res.refreshExpiresIn * 1000)
+      : new Date(issuedAtMs + res.refreshExpiresIn * 1000)
+    : undefined;
+
+  return {
+    token,
+    tokenExp,
+    refreshToken: res.refreshToken,
+    refreshExp,
+  };
+}
+
+function normalizeToken(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const token = value.trim();
+  if (!token || token === 'null' || token === 'undefined') return null;
+  return token;
 }
