@@ -13,7 +13,7 @@ import { AdminAccessService } from '../../../../core/services/admin-access.servi
 interface DetailField {
   label: string;
   value: unknown;
-  kind?: 'date' | 'url' | 'structured';
+  kind?: 'date' | 'status' | 'url' | 'structured';
 }
 
 @Component({
@@ -41,7 +41,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'ID', value: organization.id },
       { label: 'Nombre', value: organization.name },
       { label: 'Owner email', value: organization.ownerEmail },
-      { label: 'Estado', value: organization.status },
+      { label: 'Owner user ID', value: organization.ownerUserId },
+      { label: 'Estado', value: organization.status, kind: 'status' as const },
       { label: 'Creada', value: organization.createdAt, kind: 'date' as const },
       { label: 'Actualizada', value: organization.updatedAt, kind: 'date' as const },
     ].filter(field => this.hasValue(field.value));
@@ -50,7 +51,23 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
   readonly showToolAccessId = computed(() => this.hasToolAccessValue('id'));
+  readonly showToolAccessToolName = computed(() => this.hasToolAccessValue('toolName'));
+  readonly showToolAccessOrganizationId = computed(() => this.hasToolAccessValue('organizationId'));
+  readonly showToolAccessOrganizationName = computed(() => this.hasToolAccessValue('organizationName'));
+  readonly showToolAccessUserEmail = computed(() => this.hasToolAccessValue('userEmail'));
   readonly showToolAccessRevokedAt = computed(() => this.hasToolAccessValue('revokedAt'));
+
+  readonly operationalStatements = computed(() => [
+    this.hasToolAccess()
+      ? 'Esta organizacion posee accesos registrados.'
+      : 'Esta organizacion aun no posee accesos registrados.',
+    this.hasResources()
+      ? 'Esta organizacion posee recursos asociados.'
+      : 'Esta organizacion aun no posee recursos asociados.',
+    this.hasToolAccess() && this.hasResources()
+      ? 'La continuidad inicial cuenta con accesos y recursos observables.'
+      : 'La continuidad inicial aun no cuenta con accesos y recursos observables al mismo tiempo.',
+  ]);
 
   ngOnInit(): void {
     this.route.paramMap
@@ -106,21 +123,48 @@ export class AdminOrganizationDetailComponent implements OnInit {
   resourceFields(resource: AdminResourceDto): DetailField[] {
     return [
       { label: 'ID', value: this.valueFromKeys(resource, ['id']) },
-      { label: 'Clave', value: this.valueFromKeys(resource, ['resourceKey', 'key']) },
       { label: 'Nombre', value: this.valueFromKeys(resource, ['name', 'resourceName']) },
+      { label: 'Clave', value: this.valueFromKeys(resource, ['resourceKey', 'key']) },
       { label: 'Tipo', value: this.valueFromKeys(resource, ['type', 'resourceType']) },
-      { label: 'Estado', value: this.valueFromKeys(resource, ['status']) },
+      { label: 'Estado', value: this.valueFromKeys(resource, ['status']), kind: 'status' as const },
+      { label: 'Visibilidad', value: this.valueFromKeys(resource, ['visibility']) },
       {
-        label: 'Metadata',
+        label: 'URL',
+        value: this.valueFromKeys(resource, ['url', 'operationalUrl', 'link']),
+        kind: 'url' as const,
+      },
+      { label: 'Creado', value: this.valueFromKeys(resource, ['createdAt']), kind: 'date' as const },
+      { label: 'Actualizado', value: this.valueFromKeys(resource, ['updatedAt']), kind: 'date' as const },
+      {
+        label: 'Metadata / config',
         value: this.valueFromKeys(resource, ['metadata', 'config', 'configuration']),
         kind: 'structured' as const,
       },
-      {
-        label: 'Link operacional',
-        value: this.valueFromKeys(resource, ['operationalUrl', 'link', 'url']),
-        kind: 'url' as const,
-      },
     ].filter(field => this.hasValue(field.value));
+  }
+
+  resourceTitle(resource: AdminResourceDto): string {
+    return this.formatValue(
+      this.valueFromKeys(resource, ['name', 'resourceName', 'resourceKey', 'key', 'type', 'id']),
+    );
+  }
+
+  statusClass(value: unknown): string {
+    const normalized = this.formatValue(value).toLowerCase();
+
+    if (['active', 'enabled', 'available', 'ready', 'ok'].includes(normalized)) {
+      return 'status-pill status-pill--success';
+    }
+
+    if (['disabled', 'revoked', 'inactive', 'suspended', 'cancelled', 'failed'].includes(normalized)) {
+      return 'status-pill status-pill--muted';
+    }
+
+    if (['pending', 'processing', 'received'].includes(normalized)) {
+      return 'status-pill status-pill--pending';
+    }
+
+    return 'status-pill';
   }
 
   formatValue(value: unknown): string {
@@ -147,7 +191,12 @@ export class AdminOrganizationDetailComponent implements OnInit {
     }
   }
 
-  private hasToolAccessValue(key: keyof Pick<AdminToolAccessDto, 'id' | 'revokedAt'>): boolean {
+  private hasToolAccessValue(
+    key: keyof Pick<
+      AdminToolAccessDto,
+      'id' | 'toolName' | 'organizationId' | 'organizationName' | 'userEmail' | 'revokedAt'
+    >,
+  ): boolean {
     return this.toolAccess().some(access => this.hasValue(access[key]));
   }
 
