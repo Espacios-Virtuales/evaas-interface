@@ -25,6 +25,16 @@ export const DASHBOARD_ROUTES: Routes = [
           lazy(import('./client/client-dashboard.component'), 'ClientDashboardComponent'),
       },
       {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/organizations/:id`,
+        title: 'Detalle Organizacion Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/organization-detail/admin-organization-detail.component'),
+            'AdminOrganizationDetailComponent',
+          ),
+      },
+      {
         path: `${DASHBOARD_CHILD_PATHS.admin}/organizations`,
         title: 'Organizaciones Admin',
         data: { roles: ['ROLE_ADMIN'] },
