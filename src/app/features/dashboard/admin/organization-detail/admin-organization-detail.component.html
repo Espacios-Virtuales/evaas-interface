@@ -5,7 +5,7 @@
       <h1 id="admin-organization-detail-title">
         {{ organization()?.name || 'Detalle de organizacion' }}
       </h1>
-      <p>Universo minimo de la organizacion registrada en EVAAS.</p>
+      <p>Observacion operacional de la organizacion registrada en EVAAS.</p>
     </div>
 
     <a class="admin-organization-detail__back" routerLink="/dashboard/admin/organizations">
@@ -26,20 +26,33 @@
   </div>
 
   <ng-container *ngIf="!loading() && !error() && organization()">
-    <section class="admin-organization-detail__section" aria-labelledby="organization-base-title">
-      <h2 id="organization-base-title">Datos base</h2>
+    <section class="admin-organization-detail__section" aria-labelledby="organization-summary-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Organization summary</p>
+          <h2 id="organization-summary-title">Resumen de organizacion</h2>
+        </div>
+      </div>
 
       <dl class="admin-organization-detail__facts" *ngIf="organizationFields().length > 0">
         <div *ngFor="let field of organizationFields()">
           <dt>{{ field.label }}</dt>
-          <dd *ngIf="field.kind !== 'date'">{{ formatValue(field.value) }}</dd>
+          <dd *ngIf="field.kind === 'status'">
+            <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
+          </dd>
           <dd *ngIf="field.kind === 'date'">{{ formatDate($any(field.value)) }}</dd>
+          <dd *ngIf="field.kind !== 'date' && field.kind !== 'status'">{{ formatValue(field.value) }}</dd>
         </div>
       </dl>
     </section>
 
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">
-      <h2 id="organization-access-title">Accesos habilitados</h2>
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Tool access</p>
+          <h2 id="organization-access-title">Accesos habilitados</h2>
+        </div>
+      </div>
 
       <div class="state state-empty" *ngIf="!hasToolAccess()">
         <strong>Esta organizacion no tiene accesos habilitados.</strong>
@@ -52,6 +65,10 @@
             <tr>
               <th *ngIf="showToolAccessId()">ID</th>
               <th>Tool key</th>
+              <th *ngIf="showToolAccessToolName()">Tool name</th>
+              <th *ngIf="showToolAccessOrganizationId()">Organization ID</th>
+              <th *ngIf="showToolAccessOrganizationName()">Organization</th>
+              <th *ngIf="showToolAccessUserEmail()">Usuario</th>
               <th>Estado</th>
               <th>Otorgado</th>
               <th *ngIf="showToolAccessRevokedAt()">Revocado</th>
@@ -61,7 +78,13 @@
             <tr *ngFor="let access of toolAccess(); trackBy: trackToolAccess">
               <td *ngIf="showToolAccessId()">{{ formatValue(access.id) }}</td>
               <td>{{ formatValue(access.toolKey) }}</td>
-              <td>{{ formatValue(access.status) }}</td>
+              <td *ngIf="showToolAccessToolName()">{{ formatValue(access.toolName) }}</td>
+              <td *ngIf="showToolAccessOrganizationId()">{{ formatValue(access.organizationId) }}</td>
+              <td *ngIf="showToolAccessOrganizationName()">{{ formatValue(access.organizationName) }}</td>
+              <td *ngIf="showToolAccessUserEmail()">{{ formatValue(access.userEmail) }}</td>
+              <td>
+                <span [class]="statusClass(access.status)">{{ formatValue(access.status) }}</span>
+              </td>
               <td>{{ formatDate(access.grantedAt) }}</td>
               <td *ngIf="showToolAccessRevokedAt()">{{ formatDate(access.revokedAt) }}</td>
             </tr>
@@ -71,7 +94,12 @@
     </section>
 
     <section class="admin-organization-detail__section" aria-labelledby="organization-resources-title">
-      <h2 id="organization-resources-title">Recursos asociados</h2>
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Resources</p>
+          <h2 id="organization-resources-title">Recursos asociados</h2>
+        </div>
+      </div>
 
       <div class="state state-empty" *ngIf="!hasResources()">
         <strong>Esta organizacion no tiene recursos asociados.</strong>
@@ -80,9 +108,17 @@
 
       <div class="admin-organization-detail__resources" *ngIf="hasResources()">
         <article class="admin-organization-detail__resource" *ngFor="let resource of resources(); trackBy: trackResource">
+          <h3>{{ resourceTitle(resource) }}</h3>
+
           <dl>
             <div *ngFor="let field of resourceFields(resource)">
               <dt>{{ field.label }}</dt>
+              <dd *ngIf="field.kind === 'status'">
+                <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
+              </dd>
+              <dd *ngIf="field.kind === 'date'">
+                {{ formatDate($any(field.value)) }}
+              </dd>
               <dd *ngIf="field.kind === 'structured'">
                 <pre>{{ formatStructuredValue(field.value) }}</pre>
               </dd>
@@ -91,13 +127,37 @@
                   {{ formatValue(field.value) }}
                 </a>
               </dd>
-              <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url'">
+              <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
                 {{ formatValue(field.value) }}
               </dd>
             </div>
           </dl>
         </article>
       </div>
+    </section>
+
+    <section class="admin-organization-detail__section" aria-labelledby="organization-operational-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Operational status</p>
+          <h2 id="organization-operational-title">Estado operacional</h2>
+        </div>
+      </div>
+
+      <ul class="admin-organization-detail__status-list">
+        <li *ngFor="let statement of operationalStatements()">{{ statement }}</li>
+      </ul>
+    </section>
+
+    <section class="admin-organization-detail__section admin-organization-detail__section--muted" aria-labelledby="organization-flow-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Future program flow placeholder</p>
+          <h2 id="organization-flow-title">Flujo operativo</h2>
+        </div>
+      </div>
+
+      <p>Proximamente: programa, fases y avance del proyecto.</p>
     </section>
   </ng-container>
 </section>

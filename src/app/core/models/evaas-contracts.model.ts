@@ -26,6 +26,7 @@ export interface OrganizationDto {
 export interface AdminToolAccessDto {
   id: number;
   toolKey: string;
+  toolName?: string;
   organizationId: number;
   organizationName: string;
   userId?: number;

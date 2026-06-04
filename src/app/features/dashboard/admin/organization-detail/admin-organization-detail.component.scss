@@ -32,6 +32,7 @@
 
 h1,
 h2,
+h3,
 p {
   margin: 0;
 }
@@ -46,7 +47,13 @@ h2 {
   color: #10243c;
   font-size: 1.05rem;
   font-weight: 750;
-  margin-bottom: 16px;
+}
+
+h3 {
+  color: #243246;
+  font-size: 1rem;
+  font-weight: 750;
+  margin-bottom: 14px;
 }
 
 .admin-organization-detail__header p:not(.admin-organization-detail__eyebrow) {
@@ -118,6 +125,32 @@ h2 {
   padding: 20px;
 }
 
+.admin-organization-detail__section--muted {
+  background: #fbfcfe;
+}
+
+.admin-organization-detail__section--muted p {
+  color: #526173;
+}
+
+.admin-organization-detail__section-header {
+  align-items: flex-start;
+  border-bottom: 1px solid #edf1f6;
+  display: flex;
+  justify-content: space-between;
+  margin: -2px 0 18px;
+  padding-bottom: 14px;
+}
+
+.admin-organization-detail__section-kicker {
+  color: #526173;
+  font-size: 0.74rem;
+  font-weight: 750;
+  letter-spacing: 0;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
 .admin-organization-detail__facts,
 .admin-organization-detail__resource dl {
   display: grid;
@@ -145,6 +178,37 @@ dd {
   color: #243246;
   margin: 4px 0 0;
   overflow-wrap: anywhere;
+}
+
+.status-pill {
+  background: #edf1f6;
+  border: 1px solid #d8e0ea;
+  border-radius: 999px;
+  color: #33465d;
+  display: inline-flex;
+  font-size: 0.76rem;
+  font-weight: 750;
+  line-height: 1;
+  padding: 6px 10px;
+  text-transform: uppercase;
+}
+
+.status-pill--success {
+  background: #eaf7ef;
+  border-color: #b8dfc4;
+  color: #21623a;
+}
+
+.status-pill--muted {
+  background: #f3f5f8;
+  border-color: #d8e0ea;
+  color: #526173;
+}
+
+.status-pill--pending {
+  background: #fff7e7;
+  border-color: #ead39d;
+  color: #7a5616;
 }
 
 .table {
@@ -175,6 +239,20 @@ dd {
   border: 1px solid #dfe7ef;
   border-radius: 8px;
   padding: 16px;
+}
+
+.admin-organization-detail__status-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-organization-detail__status-list li {
+  border-left: 3px solid #5c7897;
+  color: #243246;
+  padding: 2px 0 2px 12px;
 }
 
 pre {
