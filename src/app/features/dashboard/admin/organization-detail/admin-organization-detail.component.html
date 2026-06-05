@@ -63,29 +63,21 @@
         <table class="table align-middle">
           <thead>
             <tr>
-              <th *ngIf="showToolAccessId()">ID</th>
               <th>Tool key</th>
               <th *ngIf="showToolAccessToolName()">Tool name</th>
-              <th *ngIf="showToolAccessOrganizationId()">Organization ID</th>
-              <th *ngIf="showToolAccessOrganizationName()">Organization</th>
-              <th *ngIf="showToolAccessUserEmail()">Usuario</th>
               <th>Estado</th>
-              <th>Otorgado</th>
+              <th *ngIf="showToolAccessGrantedAt()">Otorgado</th>
               <th *ngIf="showToolAccessRevokedAt()">Revocado</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let access of toolAccess(); trackBy: trackToolAccess">
-              <td *ngIf="showToolAccessId()">{{ formatValue(access.id) }}</td>
               <td>{{ formatValue(access.toolKey) }}</td>
               <td *ngIf="showToolAccessToolName()">{{ formatValue(access.toolName) }}</td>
-              <td *ngIf="showToolAccessOrganizationId()">{{ formatValue(access.organizationId) }}</td>
-              <td *ngIf="showToolAccessOrganizationName()">{{ formatValue(access.organizationName) }}</td>
-              <td *ngIf="showToolAccessUserEmail()">{{ formatValue(access.userEmail) }}</td>
               <td>
                 <span [class]="statusClass(access.status)">{{ formatValue(access.status) }}</span>
               </td>
-              <td>{{ formatDate(access.grantedAt) }}</td>
+              <td *ngIf="showToolAccessGrantedAt()">{{ formatDate(access.grantedAt) }}</td>
               <td *ngIf="showToolAccessRevokedAt()">{{ formatDate(access.revokedAt) }}</td>
             </tr>
           </tbody>
@@ -120,7 +112,10 @@
                 {{ formatDate($any(field.value)) }}
               </dd>
               <dd *ngIf="field.kind === 'structured'">
-                <pre>{{ formatStructuredValue(field.value) }}</pre>
+                <details class="admin-organization-detail__metadata">
+                  <summary>Ver metadata</summary>
+                  <pre>{{ formatStructuredValue(field.value) }}</pre>
+                </details>
               </dd>
               <dd *ngIf="field.kind === 'url'">
                 <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
@@ -133,6 +128,20 @@
             </div>
           </dl>
         </article>
+      </div>
+    </section>
+
+    <section class="admin-organization-detail__section" aria-labelledby="organization-activations-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Commerce activations</p>
+          <h2 id="organization-activations-title">Activaciones asociadas</h2>
+        </div>
+      </div>
+
+      <div class="state state-empty admin-organization-detail__contract-pending">
+        <strong>Activaciones asociadas</strong>
+        <p>Pendiente de contrato backend filtrado por organizacion.</p>
       </div>
     </section>
 

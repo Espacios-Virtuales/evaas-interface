@@ -33,13 +33,14 @@ Authorization: Bearer {token}
 - Se agrego la ruta `/dashboard/admin/organizations/:id`.
 - Se reutilizo el Dashboard Shell existente, sin crear un nuevo layout.
 - Se reutilizo `AdminAccessService` para obtener organizacion, accesos y recursos reales.
-- Se muestran datos base disponibles: `id`, `name`, `ownerEmail`, `ownerUserId`, `status`, `createdAt` y `updatedAt`.
-- Se muestran accesos disponibles: `id`, `toolKey`, `toolName`, `organizationId`, `organizationName`, `userEmail`, `status`, `grantedAt` y `revokedAt`.
-- Se muestran recursos disponibles segun contrato recibido: `id`, `name`, `resourceKey`, `type`, `status`, `visibility`, `url`, `operationalUrl`, `createdAt`, `updatedAt`, `metadata`, `config` o `configuration`.
+- Se muestran datos base disponibles: `id`, `name`, `taxId`, `ownerEmail`, `ownerUserId`, `status`, `createdAt` y `updatedAt`.
+- Se muestran accesos disponibles: `toolKey`, `toolName`, `status`, `grantedAt` y `revokedAt`.
+- Se muestran recursos disponibles segun contrato recibido: `id`, `name`, `resourceKey`, `key`, `type`, `status`, `visibility`, `url`, `operationalUrl`, `createdAt`, `updatedAt`, `metadataJson`, `metadata`, `config` o `configuration`.
 - Se agregaron estados locales de loading, error, empty parcial y success.
 - Se agrego el enlace `Volver a Organizaciones`.
 - Se agregaron badges visuales locales para estados disponibles, sin extraer componente compartido.
 - Se agrego una lectura de estado operacional derivada solo de existencia real de accesos y recursos.
+- Se agrego el bloque `Activaciones asociadas` como placeholder contractual porque no existe endpoint backend filtrado por organizacion.
 - Se agrego un placeholder no funcional de `Flujo operativo`.
 
 ## Secciones visuales
@@ -47,6 +48,7 @@ Authorization: Bearer {token}
 - `Organization summary` / `Resumen de organizacion`.
 - `Tool access` / `Accesos habilitados`.
 - `Resources` / `Recursos asociados`.
+- `Commerce activations` / `Activaciones asociadas`.
 - `Operational status` / `Estado operacional`.
 - `Future program flow placeholder` / `Flujo operativo`.
 
@@ -55,7 +57,15 @@ Authorization: Bearer {token}
 - Loading: mientras se cargan organizacion, accesos y recursos.
 - Error: cuando falla la carga del detalle.
 - Empty parcial: cuando la organizacion existe sin accesos o sin recursos.
+- Activaciones pendientes: se informa que falta contrato backend filtrado por organizacion.
 - Success: cuando la organizacion y sus colecciones se renderizan con datos reales disponibles.
+
+## Limites actuales
+
+- La pantalla observa contratos existentes y no decide acceso.
+- No hay mutaciones desde Angular para organizacion, accesos ni recursos.
+- No se consultan todas las activaciones para filtrarlas en frontend.
+- El contrato pendiente para activaciones asociadas seria un endpoint backend filtrado por organizacion, por ejemplo `GET /admin/commerce/organizations/{id}/activations` o equivalente definido por backend.
 
 ## Fuera de alcance
 
@@ -65,6 +75,7 @@ Authorization: Bearer {token}
 - No se asignan accesos.
 - No se crean recursos.
 - No se conectan activaciones.
+- No se consultan activaciones globales para inferir relacion por organizacion.
 - No se agrega billing.
 - No se automatiza provision.
 - No se agregan datos falsos.
