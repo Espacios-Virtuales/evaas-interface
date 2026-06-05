@@ -45,6 +45,16 @@ export const DASHBOARD_ROUTES: Routes = [
           ),
       },
       {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/resources`,
+        title: 'Recursos Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/resources/admin-resources-list.component'),
+            'AdminResourcesListComponent',
+          ),
+      },
+      {
         path: DASHBOARD_CHILD_PATHS.admin,
         title: 'Panel Admin',
         data: { roles: ['ROLE_ADMIN'] },
