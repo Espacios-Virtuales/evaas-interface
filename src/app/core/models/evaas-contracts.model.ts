@@ -24,6 +24,12 @@ export interface OrganizationDto {
   updatedAt?: string;
 }
 
+export interface CreateOrganizationRequest {
+  name: string;
+  taxId?: string;
+  ownerUserId?: number;
+}
+
 export interface AdminToolAccessDto {
   id: number;
   toolKey: string;

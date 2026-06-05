@@ -6,8 +6,17 @@
       <p>Listado operacional de organizaciones registradas en EVAAS.</p>
     </div>
 
-    <a class="admin-organizations__back" routerLink="/dashboard/admin">Volver al overview</a>
+    <div class="admin-organizations__actions">
+      <button type="button" class="admin-organizations__primary" (click)="openCreateModal()">
+        Nueva organización
+      </button>
+      <a class="admin-organizations__back" routerLink="/dashboard/admin">Volver al overview</a>
+    </div>
   </header>
+
+  <div class="state state-success" *ngIf="createSuccess()">
+    <strong>{{ createSuccess() }}</strong>
+  </div>
 
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -57,4 +66,85 @@
       </table>
     </div>
   </section>
+
+  <div
+    class="admin-organizations__modal-backdrop"
+    *ngIf="createModalOpen()"
+    role="presentation"
+    (click)="closeCreateModal()"
+  >
+    <section
+      class="admin-organizations__modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-organization-create-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="admin-organizations__modal-header">
+        <div>
+          <p class="admin-organizations__eyebrow">Dashboard Admin</p>
+          <h2 id="admin-organization-create-title">Nueva organización</h2>
+        </div>
+
+        <button
+          type="button"
+          class="admin-organizations__icon-button"
+          aria-label="Cerrar"
+          [disabled]="createState() === 'loading'"
+          (click)="closeCreateModal()"
+        >
+          &times;
+        </button>
+      </header>
+
+      <form [formGroup]="createForm" (ngSubmit)="createOrganization()" class="admin-organizations__form">
+        <label>
+          <span>Nombre</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            autocomplete="organization"
+            [class.is-invalid]="createForm.controls.name.touched && createForm.controls.name.invalid"
+          />
+          <small *ngIf="createForm.controls.name.touched && createForm.controls.name.hasError('required')">
+            Nombre requerido.
+          </small>
+        </label>
+
+        <label>
+          <span>Tax ID</span>
+          <input type="text" class="form-control" formControlName="taxId" autocomplete="off" />
+        </label>
+
+        <label>
+          <span>Owner user ID</span>
+          <input type="number" class="form-control" formControlName="ownerUserId" min="1" />
+          <small>ownerUserId pendiente de definición operativa.</small>
+        </label>
+
+        <div class="admin-organizations__form-error" *ngIf="createState() === 'error' && createError()">
+          {{ createError() }}
+        </div>
+
+        <div class="admin-organizations__form-error" *ngIf="createState() === 'validation'">
+          Revisa los campos requeridos.
+        </div>
+
+        <footer class="admin-organizations__modal-actions">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [disabled]="createState() === 'loading'"
+            (click)="closeCreateModal()"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="admin-organizations__primary" [disabled]="createState() === 'loading'">
+            {{ createState() === 'loading' ? 'Creando...' : 'Crear organización' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
 </section>

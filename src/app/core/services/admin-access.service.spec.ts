@@ -28,6 +28,17 @@ describe('AdminAccessService', () => {
     req.flush([]);
   });
 
+  it('creates an organization', () => {
+    const payload = { name: 'EV', taxId: '76.000.000-0' };
+    service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
+
+    const req = http.expectOne(
+      r => r.method === 'POST' && r.url === apiUrl(API.adminAccess.organizations)
+    );
+    expect(req.request.body).toEqual(payload);
+    req.flush({ id: 7, name: 'EV' });
+  });
+
   it('gets an organization by id', () => {
     service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
 
