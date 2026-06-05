@@ -16,11 +16,18 @@ export interface MyResourceDto {
 export interface OrganizationDto {
   id: number;
   name: string;
+  taxId?: string;
   status?: string;
   ownerUserId?: number;
   ownerEmail?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CreateOrganizationRequest {
+  name: string;
+  taxId?: string;
+  ownerUserId?: number;
 }
 
 export interface AdminToolAccessDto {

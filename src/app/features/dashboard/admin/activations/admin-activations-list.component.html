@@ -1,0 +1,65 @@
+<section class="admin-activations" aria-labelledby="admin-activations-title">
+  <header class="admin-activations__header">
+    <div>
+      <p class="admin-activations__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-activations-title">Activaciones</h1>
+      <p>Inventario global de activaciones comerciales e internas.</p>
+    </div>
+
+    <a class="admin-activations__back" routerLink="/dashboard/admin">Volver al overview</a>
+  </header>
+
+  <div class="state state-loading" *ngIf="loading()">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando activaciones...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="!loading() && error()">
+    <div>
+      <strong>No se pudo cargar activaciones.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="isEmpty()">
+    <strong>No hay activaciones registradas todavía.</strong>
+  </div>
+
+  <section class="admin-activations__table" *ngIf="!loading() && !error() && !isEmpty()">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Provider</th>
+            <th>Producto</th>
+            <th>Comprador</th>
+            <th>Organización</th>
+            <th>Estado</th>
+            <th>Creado</th>
+            <th>Procesado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let activation of activations(); trackBy: trackActivation">
+            <td>{{ formatValue(activation.id) }}</td>
+            <td>{{ formatValue(activation.provider) }}</td>
+            <td>{{ formatValue(activation.productCode) }}</td>
+            <td>{{ formatValue(activation.buyerEmail) }}</td>
+            <td>{{ formatValue(activation.organizationName) }}</td>
+            <td>{{ formatValue(activation.status) }}</td>
+            <td>{{ formatDate(activation.createdAt) }}</td>
+            <td>{{ formatDate(activation.processedAt) }}</td>
+            <td>
+              <a class="admin-activations__detail" [routerLink]="['/dashboard/admin/activations', activation.id]">
+                Ver detalle
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

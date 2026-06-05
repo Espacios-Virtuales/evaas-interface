@@ -1,22 +1,40 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { OrganizationDto } from '../../../../core/models/evaas-contracts.model';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import {
+  CreateOrganizationRequest,
+  OrganizationDto,
+} from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+
+type CreateState = 'idle' | 'loading' | 'success' | 'error' | 'validation';
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-organizations-list',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-organizations-list.component.html',
   styleUrls: ['./admin-organizations-list.component.scss'],
 })
 export class AdminOrganizationsListComponent implements OnInit {
   private readonly adminAccess = inject(AdminAccessService);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly organizations = signal<OrganizationDto[]>([]);
+  readonly createModalOpen = signal(false);
+  readonly createState = signal<CreateState>('idle');
+  readonly createError = signal<string | null>(null);
+  readonly createSuccess = signal<string | null>(null);
+
+  readonly createForm = this.fb.nonNullable.group({
+    name: ['', Validators.required],
+    taxId: [''],
+    ownerUserId: this.fb.control<number | null>(null),
+  });
 
   readonly isEmpty = computed(
     () => !this.loading() && !this.error() && this.organizations().length === 0,
@@ -50,6 +68,58 @@ export class AdminOrganizationsListComponent implements OnInit {
     });
   }
 
+  openCreateModal(): void {
+    this.createForm.reset({ name: '', taxId: '', ownerUserId: null });
+    this.createState.set('idle');
+    this.createError.set(null);
+    this.createSuccess.set(null);
+    this.createModalOpen.set(true);
+  }
+
+  closeCreateModal(): void {
+    if (this.createState() === 'loading') return;
+    this.createModalOpen.set(false);
+    this.createState.set('idle');
+    this.createError.set(null);
+  }
+
+  createOrganization(): void {
+    if (!this.createForm.controls.name.value.trim()) {
+      this.createForm.controls.name.setErrors({ required: true });
+    }
+
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      this.createState.set('validation');
+      this.createError.set(null);
+      return;
+    }
+
+    this.createState.set('loading');
+    this.createError.set(null);
+    this.createSuccess.set(null);
+
+    this.adminAccess.createOrganization(this.createPayload()).subscribe({
+      next: organization => {
+        this.createState.set('success');
+        this.createModalOpen.set(false);
+        this.createSuccess.set('Organizacion creada correctamente.');
+        this.load();
+
+        if (organization?.id) {
+          this.router.navigate(['/dashboard/admin/organizations', organization.id]);
+        }
+      },
+      error: err => {
+        console.error('[AdminOrganizationsList] organization create error', err);
+        this.createState.set('error');
+        this.createError.set(
+          err?.error?.message ?? err?.message ?? 'No fue posible crear la organizacion.',
+        );
+      },
+    });
+  }
+
   trackOrganization(index: number, organization: OrganizationDto): string {
     return organization.id === undefined || organization.id === null ? String(index) : String(organization.id);
   }
@@ -71,5 +141,21 @@ export class AdminOrganizationsListComponent implements OnInit {
       const value = organization[key];
       return value !== undefined && value !== null && value !== '';
     });
+  }
+
+  private createPayload(): CreateOrganizationRequest {
+    const value = this.createForm.getRawValue();
+    const payload: CreateOrganizationRequest = { name: value.name.trim() };
+    const taxId = value.taxId.trim();
+
+    if (taxId) {
+      payload.taxId = taxId;
+    }
+
+    if (value.ownerUserId !== null && value.ownerUserId !== undefined) {
+      payload.ownerUserId = value.ownerUserId;
+    }
+
+    return payload;
   }
 }

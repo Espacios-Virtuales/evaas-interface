@@ -40,6 +40,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return [
       { label: 'ID', value: organization.id },
       { label: 'Nombre', value: organization.name },
+      { label: 'Tax ID', value: organization.taxId },
       { label: 'Owner email', value: organization.ownerEmail },
       { label: 'Owner user ID', value: organization.ownerUserId },
       { label: 'Estado', value: organization.status, kind: 'status' as const },
@@ -50,23 +51,17 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
-  readonly showToolAccessId = computed(() => this.hasToolAccessValue('id'));
   readonly showToolAccessToolName = computed(() => this.hasToolAccessValue('toolName'));
-  readonly showToolAccessOrganizationId = computed(() => this.hasToolAccessValue('organizationId'));
-  readonly showToolAccessOrganizationName = computed(() => this.hasToolAccessValue('organizationName'));
-  readonly showToolAccessUserEmail = computed(() => this.hasToolAccessValue('userEmail'));
+  readonly showToolAccessGrantedAt = computed(() => this.hasToolAccessValue('grantedAt'));
   readonly showToolAccessRevokedAt = computed(() => this.hasToolAccessValue('revokedAt'));
 
   readonly operationalStatements = computed(() => [
     this.hasToolAccess()
-      ? 'Esta organizacion posee accesos registrados.'
-      : 'Esta organizacion aun no posee accesos registrados.',
+      ? 'Organizacion con accesos registrados.'
+      : 'Organizacion sin accesos registrados.',
     this.hasResources()
-      ? 'Esta organizacion posee recursos asociados.'
-      : 'Esta organizacion aun no posee recursos asociados.',
-    this.hasToolAccess() && this.hasResources()
-      ? 'La continuidad inicial cuenta con accesos y recursos observables.'
-      : 'La continuidad inicial aun no cuenta con accesos y recursos observables al mismo tiempo.',
+      ? 'Organizacion con recursos asociados.'
+      : 'Organizacion sin recursos asociados.',
   ]);
 
   ngOnInit(): void {
@@ -137,7 +132,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'Actualizado', value: this.valueFromKeys(resource, ['updatedAt']), kind: 'date' as const },
       {
         label: 'Metadata / config',
-        value: this.valueFromKeys(resource, ['metadata', 'config', 'configuration']),
+        value: this.valueFromKeys(resource, ['metadataJson', 'metadata', 'config', 'configuration']),
         kind: 'structured' as const,
       },
     ].filter(field => this.hasValue(field.value));
@@ -182,6 +177,15 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   formatStructuredValue(value: unknown): string {
     if (!this.hasValue(value)) return '-';
+
+    if (typeof value === 'string') {
+      try {
+        return JSON.stringify(JSON.parse(value), null, 2);
+      } catch {
+        return value;
+      }
+    }
+
     if (typeof value !== 'object') return String(value);
 
     try {
@@ -194,7 +198,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
   private hasToolAccessValue(
     key: keyof Pick<
       AdminToolAccessDto,
-      'id' | 'toolName' | 'organizationId' | 'organizationName' | 'userEmail' | 'revokedAt'
+      'toolName' | 'grantedAt' | 'revokedAt'
     >,
   ): boolean {
     return this.toolAccess().some(access => this.hasValue(access[key]));

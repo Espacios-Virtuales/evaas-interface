@@ -45,6 +45,26 @@ export const DASHBOARD_ROUTES: Routes = [
           ),
       },
       {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/resources`,
+        title: 'Recursos Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/resources/admin-resources-list.component'),
+            'AdminResourcesListComponent',
+          ),
+      },
+      {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/activations`,
+        title: 'Activaciones Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/activations/admin-activations-list.component'),
+            'AdminActivationsListComponent',
+          ),
+      },
+      {
         path: DASHBOARD_CHILD_PATHS.admin,
         title: 'Panel Admin',
         data: { roles: ['ROLE_ADMIN'] },

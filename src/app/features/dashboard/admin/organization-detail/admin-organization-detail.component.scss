@@ -267,6 +267,16 @@ pre {
   white-space: pre-wrap;
 }
 
+.admin-organization-detail__metadata summary {
+  color: #17456f;
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.admin-organization-detail__contract-pending {
+  border-style: dashed;
+}
+
 @media (max-width: 720px) {
   .admin-organization-detail {
     padding: 20px 14px;

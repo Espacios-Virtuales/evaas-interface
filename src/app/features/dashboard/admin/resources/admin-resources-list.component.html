@@ -1,0 +1,85 @@
+<section class="admin-resources" aria-labelledby="admin-resources-title">
+  <header class="admin-resources__header">
+    <div>
+      <p class="admin-resources__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-resources-title">Recursos</h1>
+      <p>Inventario operacional global de recursos EVAAS.</p>
+    </div>
+
+    <a class="admin-resources__back" routerLink="/dashboard/admin">Volver al overview</a>
+  </header>
+
+  <div class="state state-loading" *ngIf="loading()">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando recursos...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="!loading() && error()">
+    <div>
+      <strong>No se pudo cargar recursos.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="isEmpty()">
+    <strong>No hay recursos registrados todavía.</strong>
+  </div>
+
+  <section class="admin-resources__table" *ngIf="!loading() && !error() && !isEmpty()">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Key</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Visibilidad</th>
+            <th>Organización</th>
+            <th>URL</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let resource of resources(); trackBy: trackResource">
+            <td>{{ resourceId(resource) }}</td>
+            <td>{{ resourceName(resource) }}</td>
+            <td>{{ resourceKey(resource) }}</td>
+            <td>{{ resourceType(resource) }}</td>
+            <td>{{ resourceStatus(resource) }}</td>
+            <td>{{ resourceVisibility(resource) }}</td>
+            <td>{{ resourceOrganization(resource) }}</td>
+            <td>
+              <ng-container *ngIf="resourceLinks(resource).length; else noUrl">
+                <a
+                  *ngFor="let link of resourceLinks(resource)"
+                  class="admin-resources__external"
+                  [href]="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {{ link.label }}
+                </a>
+              </ng-container>
+              <ng-template #noUrl>-</ng-template>
+            </td>
+            <td>
+              <a
+                *ngIf="resourceDetailLink(resource) as detailLink; else noDetailLink"
+                class="admin-resources__detail"
+                [routerLink]="detailLink"
+              >
+                Ver detalle
+              </a>
+              <ng-template #noDetailLink>
+                <span class="admin-resources__detail admin-resources__detail--disabled">Ver detalle</span>
+              </ng-template>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>
