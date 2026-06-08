@@ -39,6 +39,31 @@ describe('AdminAccessService', () => {
     req.flush({ id: 7, name: 'EV' });
   });
 
+  it('creates tool access', () => {
+    const payload = {
+      organizationId: 7,
+      toolKey: 'FARQBIM_DASHBOARD',
+      userId: 12,
+      externalCommerceActivationId: 24,
+    };
+    const response = {
+      id: 30,
+      organizationId: 7,
+      organizationName: 'EV',
+      toolKey: 'FARQBIM_DASHBOARD',
+      status: 'ENABLED',
+      grantedAt: '2026-06-08T12:00:00Z',
+    };
+
+    service.createToolAccess(payload).subscribe(result => expect(result).toEqual(response));
+
+    const req = http.expectOne(
+      r => r.method === 'POST' && r.url === apiUrl(API.adminAccess.toolAccess)
+    );
+    expect(req.request.body).toEqual(payload);
+    req.flush(response);
+  });
+
   it('gets an organization by id', () => {
     service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
 

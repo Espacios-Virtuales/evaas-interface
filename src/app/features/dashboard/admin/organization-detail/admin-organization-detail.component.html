@@ -52,7 +52,121 @@
           <p class="admin-organization-detail__section-kicker">Tool access</p>
           <h2 id="organization-access-title">Accesos habilitados</h2>
         </div>
+
+        <button
+          class="admin-organization-detail__action"
+          type="button"
+          (click)="openAssignmentForm()"
+          [disabled]="assignmentSubmitting()"
+        >
+          Asignar acceso
+        </button>
       </div>
+
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="assignmentSuccess() && !assignmentOpen()">
+        <strong>{{ assignmentSuccess() }}</strong>
+      </div>
+
+      <form
+        class="admin-organization-detail__assignment"
+        *ngIf="assignmentOpen()"
+        (ngSubmit)="submitAssignment()"
+        novalidate
+      >
+        <div class="admin-organization-detail__assignment-header">
+          <div>
+            <h3>Asignar acceso</h3>
+            <p>El organizationId se toma desde esta organizacion y no se edita manualmente.</p>
+          </div>
+
+          <button
+            class="admin-organization-detail__link-button"
+            type="button"
+            (click)="closeAssignmentForm()"
+            [disabled]="assignmentSubmitting()"
+          >
+            Cerrar
+          </button>
+        </div>
+
+        <div class="admin-organization-detail__assignment-grid">
+          <label>
+            <span>toolKey</span>
+            <input
+              type="text"
+              name="toolKey"
+              [(ngModel)]="assignmentForm.toolKey"
+              required
+              autocomplete="off"
+              placeholder="FARQBIM_DASHBOARD"
+              [disabled]="assignmentSubmitting()"
+            />
+          </label>
+
+          <label>
+            <span>userId</span>
+            <input
+              type="number"
+              name="userId"
+              [(ngModel)]="assignmentForm.userId"
+              min="1"
+              inputmode="numeric"
+              placeholder="123"
+              [disabled]="assignmentSubmitting()"
+            />
+          </label>
+
+          <label>
+            <span>externalCommerceActivationId</span>
+            <input
+              type="number"
+              name="externalCommerceActivationId"
+              [(ngModel)]="assignmentForm.externalCommerceActivationId"
+              min="1"
+              inputmode="numeric"
+              placeholder="789"
+              [disabled]="assignmentSubmitting()"
+            />
+          </label>
+        </div>
+
+        <div class="admin-organization-detail__suggestions" aria-label="Ejemplos sugeridos de toolKey">
+          <span>Ejemplos sugeridos:</span>
+          <button
+            type="button"
+            *ngFor="let toolKey of suggestedToolKeys"
+            (click)="useSuggestedToolKey(toolKey)"
+            [disabled]="assignmentSubmitting()"
+          >
+            {{ toolKey }}
+          </button>
+        </div>
+
+        <p class="admin-organization-detail__form-error" *ngIf="assignmentValidation()">
+          {{ assignmentValidation() }}
+        </p>
+        <p class="admin-organization-detail__form-error" *ngIf="assignmentError()">
+          {{ assignmentError() }}
+        </p>
+
+        <div class="admin-organization-detail__assignment-actions">
+          <button
+            class="admin-organization-detail__secondary-action"
+            type="button"
+            (click)="closeAssignmentForm()"
+            [disabled]="assignmentSubmitting()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="admin-organization-detail__primary-action"
+            type="submit"
+            [disabled]="assignmentSubmitting()"
+          >
+            {{ assignmentSubmitting() ? 'Asignando...' : 'Asignar acceso' }}
+          </button>
+        </div>
+      </form>
 
       <div class="state state-empty" *ngIf="!hasToolAccess()">
         <strong>Esta organizacion no tiene accesos habilitados.</strong>

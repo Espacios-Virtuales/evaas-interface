@@ -11,12 +11,18 @@ export const API = {
     refresh: '/auth/refresh',
     logout: '/auth/logout',
   },
+  onboarding: {
+    register: '/onboarding/register',
+    activate: '/onboarding/activate',
+    resendActivation: '/onboarding/resend-activation',
+  },
   me: {
     toolAccess: '/me/tool-access',
     resources: '/me/resources',
   },
   adminAccess: {
     organizations: '/admin/access/organizations',
+    toolAccess: '/admin/access/tool-access',
     organizationById: (id: number) => `/admin/access/organizations/${encodeURIComponent(String(id))}`,
     organizationToolAccess: (id: number) =>
       `/admin/access/organizations/${encodeURIComponent(String(id))}/tool-access`,

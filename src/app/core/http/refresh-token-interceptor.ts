@@ -19,7 +19,10 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (req, next) => {
   if (
     req.url.startsWith(apiUrl(API.auth.login)) ||
     req.url.startsWith(apiUrl(API.auth.refresh)) ||
-    req.url.startsWith(apiUrl(API.auth.logout))
+    req.url.startsWith(apiUrl(API.auth.logout)) ||
+    req.url.startsWith(apiUrl(API.onboarding.register)) ||
+    req.url.startsWith(apiUrl(API.onboarding.activate)) ||
+    req.url.startsWith(apiUrl(API.onboarding.resendActivation))
   ) {
     return next(req);
   }

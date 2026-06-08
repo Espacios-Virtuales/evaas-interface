@@ -44,6 +44,13 @@ export interface AdminToolAccessDto {
   revokedAt?: string | null;
 }
 
+export interface CreateToolAccessPayload {
+  organizationId: number;
+  toolKey: string;
+  userId?: number;
+  externalCommerceActivationId?: number;
+}
+
 export interface AdminResourceDto {
   [key: string]: unknown;
 }
