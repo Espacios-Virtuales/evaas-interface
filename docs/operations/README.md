@@ -6,4 +6,4 @@ Usar esta carpeta para ejecucion local, despliegues, soporte, validaciones recur
 
 Documentos actuales:
 
-- ninguno.
+- `admin-dashboard-data-baseline.md`
