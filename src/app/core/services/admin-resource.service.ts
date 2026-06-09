@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API, apiUrl } from '../http/api.endpoints';
-import { AdminResourceDto } from '../models/evaas-contracts.model';
+import { AdminResourceDto, CreateAdminResourcePayload } from '../models/evaas-contracts.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminResourceService {
@@ -16,7 +16,7 @@ export class AdminResourceService {
     return this.http.get<AdminResourceDto>(apiUrl(API.adminResources.resourceById(id)));
   }
 
-  createResource(payload: unknown): Observable<AdminResourceDto> {
+  createResource(payload: CreateAdminResourcePayload): Observable<AdminResourceDto> {
     return this.http.post<AdminResourceDto>(apiUrl(API.adminResources.resources), payload);
   }
 }

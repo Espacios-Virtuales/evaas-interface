@@ -55,6 +55,18 @@ export interface AdminResourceDto {
   [key: string]: unknown;
 }
 
+export interface CreateAdminResourcePayload {
+  organizationId: number;
+  toolAccessId?: number;
+  type: string;
+  key?: string;
+  name: string;
+  url?: string;
+  status?: string;
+  visibility?: string;
+  metadataJson?: string;
+}
+
 export type ExternalCommerceActivationStatus =
   | 'RECEIVED'
   | 'ACTIVE'

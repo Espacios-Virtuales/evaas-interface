@@ -38,7 +38,7 @@ describe('AdminResourceService', () => {
   });
 
   it('creates a resource', () => {
-    const payload = { name: 'resource' };
+    const payload = { organizationId: 7, type: 'API', name: 'resource' };
     service.createResource(payload).subscribe();
 
     const req = http.expectOne(

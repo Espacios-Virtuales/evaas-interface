@@ -8,10 +8,12 @@ import { Observable, distinctUntilChanged, forkJoin, map, switchMap, throwError 
 import {
   AdminResourceDto,
   AdminToolAccessDto,
+  CreateAdminResourcePayload,
   CreateToolAccessPayload,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 
 interface DetailField {
   label: string;
@@ -23,6 +25,17 @@ interface AssignmentForm {
   toolKey: string;
   userId: string;
   externalCommerceActivationId: string;
+}
+
+interface ResourceForm {
+  name: string;
+  type: string;
+  key: string;
+  toolAccessId: string;
+  url: string;
+  status: string;
+  visibility: string;
+  metadataJson: string;
 }
 
 interface OrganizationDetailResult {
@@ -41,6 +54,7 @@ interface OrganizationDetailResult {
 export class AdminOrganizationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly adminAccess = inject(AdminAccessService);
+  private readonly adminResources = inject(AdminResourceService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
@@ -53,12 +67,28 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly assignmentSuccess = signal<string | null>(null);
   readonly assignmentError = signal<string | null>(null);
   readonly assignmentValidation = signal<string | null>(null);
+  readonly resourceCreateOpen = signal(false);
+  readonly resourceCreateSubmitting = signal(false);
+  readonly resourceCreateSuccess = signal<string | null>(null);
+  readonly resourceCreateError = signal<string | null>(null);
+  readonly resourceCreateValidation = signal<string | null>(null);
   readonly currentOrganizationId = signal<number | null>(null);
 
   assignmentForm: AssignmentForm = {
     toolKey: '',
     userId: '',
     externalCommerceActivationId: '',
+  };
+
+  resourceForm: ResourceForm = {
+    name: '',
+    type: 'API',
+    key: '',
+    toolAccessId: '',
+    url: '',
+    status: 'ACTIVE',
+    visibility: 'ADMIN_ONLY',
+    metadataJson: '',
   };
 
   readonly suggestedToolKeys = [
@@ -70,6 +100,22 @@ export class AdminOrganizationDetailComponent implements OnInit {
     'POWER_BI_DASHBOARD',
     'REPOSITORY_ACCESS',
   ];
+
+  readonly suggestedResourceTypes = [
+    'API',
+    'WORDPRESS',
+    'VPS',
+    'POWER_BI',
+    'REPOSITORY',
+    'DASHBOARD',
+    'WORKER',
+    'DOCUMENTATION',
+    'OTHER',
+  ];
+
+  readonly suggestedResourceStatuses = ['PLANNED', 'ACTIVE', 'MAINTENANCE', 'DISABLED'];
+
+  readonly suggestedResourceVisibilities = ['ADMIN_ONLY', 'USER_VISIBLE'];
 
   readonly organizationFields = computed(() => {
     const organization = this.organization();
@@ -119,7 +165,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.resources.set([]);
           this.currentOrganizationId.set(id);
           this.assignmentSuccess.set(null);
+          this.resourceCreateSuccess.set(null);
           this.closeAssignmentForm();
+          this.closeResourceCreateForm();
 
           return this.loadOrganizationDetail(id);
         }),
@@ -158,6 +206,53 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.resetAssignmentForm();
   }
 
+  openResourceCreateForm(): void {
+    this.resourceCreateOpen.set(true);
+    this.resourceCreateSuccess.set(null);
+    this.resourceCreateError.set(null);
+    this.resourceCreateValidation.set(null);
+  }
+
+  closeResourceCreateForm(): void {
+    this.resourceCreateOpen.set(false);
+    this.resourceCreateSubmitting.set(false);
+    this.resourceCreateError.set(null);
+    this.resourceCreateValidation.set(null);
+    this.resetResourceForm();
+  }
+
+  submitResourceCreate(): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId) {
+      this.resourceCreateValidation.set('No se pudo determinar la organizacion desde la ruta actual.');
+      return;
+    }
+
+    const payload = this.buildResourceCreatePayload(organizationId);
+    if (!payload) return;
+
+    this.resourceCreateSubmitting.set(true);
+    this.resourceCreateError.set(null);
+    this.resourceCreateValidation.set(null);
+    this.resourceCreateSuccess.set(null);
+
+    this.adminResources.createResource(payload).pipe(
+      switchMap(() => this.adminAccess.getOrganizationResources(organizationId)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: resources => {
+        this.resources.set(Array.isArray(resources) ? resources : []);
+        this.resourceCreateSubmitting.set(false);
+        this.resourceCreateSuccess.set('Recurso creado correctamente.');
+        this.closeResourceCreateForm();
+      },
+      error: err => {
+        this.resourceCreateSubmitting.set(false);
+        this.resourceCreateError.set(this.resourceCreateErrorMessage(err));
+      },
+    });
+  }
+
   submitAssignment(): void {
     const organizationId = this.currentOrganizationId();
     if (!organizationId) {
@@ -193,6 +288,12 @@ export class AdminOrganizationDetailComponent implements OnInit {
   useSuggestedToolKey(toolKey: string): void {
     this.assignmentForm.toolKey = toolKey;
     this.assignmentValidation.set(null);
+  }
+
+  toolAccessLabel(access: AdminToolAccessDto): string {
+    const toolName = this.hasValue(access.toolName) ? ` - ${access.toolName}` : '';
+    const user = this.hasValue(access.userEmail) ? ` (${access.userEmail})` : '';
+    return `${access.id} - ${access.toolKey}${toolName}${user}`;
   }
 
   trackToolAccess(index: number, access: AdminToolAccessDto): string {
@@ -315,6 +416,58 @@ export class AdminOrganizationDetailComponent implements OnInit {
     };
   }
 
+  private buildResourceCreatePayload(organizationId: number): CreateAdminResourcePayload | null {
+    const name = this.resourceForm.name.trim();
+    const type = this.resourceForm.type.trim();
+    const key = this.resourceForm.key.trim();
+    const url = this.resourceForm.url.trim();
+    const status = this.resourceForm.status.trim();
+    const visibility = this.resourceForm.visibility.trim();
+    const metadataJson = this.resourceForm.metadataJson.trim();
+    const toolAccessId = this.parseResourceOptionalPositiveInteger(this.resourceForm.toolAccessId, 'toolAccessId');
+
+    if (!name) {
+      this.resourceCreateValidation.set('name es requerido.');
+      return null;
+    }
+
+    if (!type) {
+      this.resourceCreateValidation.set('type es requerido.');
+      return null;
+    }
+
+    if (toolAccessId === null) return null;
+
+    if (url && !this.isValidUrl(url)) {
+      this.resourceCreateValidation.set('url debe tener formato URL valido.');
+      return null;
+    }
+
+    if (metadataJson) {
+      if (!this.isValidJson(metadataJson)) {
+        this.resourceCreateValidation.set('metadataJson debe ser JSON valido.');
+        return null;
+      }
+
+      if (this.containsSecretLikeContent(metadataJson)) {
+        this.resourceCreateValidation.set('metadataJson no debe contener secretos, tokens ni credenciales.');
+        return null;
+      }
+    }
+
+    return {
+      organizationId,
+      name,
+      type,
+      ...(key ? { key } : {}),
+      ...(toolAccessId !== undefined ? { toolAccessId } : {}),
+      ...(url ? { url } : {}),
+      ...(status ? { status } : {}),
+      ...(visibility ? { visibility } : {}),
+      ...(metadataJson ? { metadataJson } : {}),
+    };
+  }
+
   private parseOptionalPositiveInteger(value: string, label: string): number | undefined | null {
     const trimmed = value.trim();
     if (!trimmed) return undefined;
@@ -328,11 +481,37 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return parsed;
   }
 
+  private parseResourceOptionalPositiveInteger(value: string, label: string): number | undefined | null {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+
+    const parsed = Number(trimmed);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      this.resourceCreateValidation.set(`${label} debe ser numerico.`);
+      return null;
+    }
+
+    return parsed;
+  }
+
   private resetAssignmentForm(): void {
     this.assignmentForm = {
       toolKey: '',
       userId: '',
       externalCommerceActivationId: '',
+    };
+  }
+
+  private resetResourceForm(): void {
+    this.resourceForm = {
+      name: '',
+      type: 'API',
+      key: '',
+      toolAccessId: '',
+      url: '',
+      status: 'ACTIVE',
+      visibility: 'ADMIN_ONLY',
+      metadataJson: '',
     };
   }
 
@@ -358,6 +537,52 @@ export class AdminOrganizationDetailComponent implements OnInit {
     }
 
     return 'No fue posible asignar el acceso. Intenta nuevamente.';
+  }
+
+  private resourceCreateErrorMessage(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'No fue posible crear el recurso. Intenta nuevamente.';
+    }
+
+    if (err.status === 400) {
+      return 'El backend rechazo el payload. Revisa name, type, toolAccessId, url y metadataJson.';
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return 'No tienes permisos suficientes para crear recursos en esta organizacion.';
+    }
+
+    if (err.status === 404) {
+      return 'No se encontro la organizacion o el acceso asociado indicado.';
+    }
+
+    if (err.status === 409) {
+      return 'El recurso ya existe o entra en conflicto con el estado actual.';
+    }
+
+    return 'No fue posible crear el recurso. Intenta nuevamente.';
+  }
+
+  private isValidUrl(value: string): boolean {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  private isValidJson(value: string): boolean {
+    try {
+      JSON.parse(value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private containsSecretLikeContent(value: string): boolean {
+    return /\b(password|passwd|secret|token|accessToken|apiKey|privateKey|credential|authorization|bearer)\b/i.test(value);
   }
 
   private hasToolAccessValue(

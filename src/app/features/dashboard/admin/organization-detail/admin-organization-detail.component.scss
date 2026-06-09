@@ -28,8 +28,10 @@ button:disabled{cursor:not-allowed;opacity:.62}
 .admin-organization-detail__assignment-grid,.admin-organization-detail__facts,.admin-organization-detail__resource dl{display:grid;gap:14px;margin:0}
 .admin-organization-detail__assignment-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
 .admin-organization-detail__assignment-grid label{display:grid;gap:6px}
+.admin-organization-detail__assignment-field--wide{grid-column:1/-1}
 .admin-organization-detail__assignment-grid span,.admin-organization-detail__suggestions span{color:#526173;font-size:.78rem;font-weight:750}
-.admin-organization-detail__assignment-grid input{border:1px solid #c9d4df;border-radius:6px;color:#243246;min-height:40px;padding:8px 10px}
+.admin-organization-detail__assignment-grid input,.admin-organization-detail__assignment-grid select,.admin-organization-detail__assignment-grid textarea{border:1px solid #c9d4df;border-radius:6px;color:#243246;min-height:40px;padding:8px 10px}
+.admin-organization-detail__assignment-grid textarea{resize:vertical}
 .admin-organization-detail__suggestions,.admin-organization-detail__assignment-actions{display:flex;flex-wrap:wrap;gap:8px}
 .admin-organization-detail__suggestions button{background:#f6f8fb;border:1px solid #d8e0ea;border-radius:999px;color:#33465d;cursor:pointer;font-size:.74rem;font-weight:750;padding:6px 10px}
 .admin-organization-detail__assignment-actions{justify-content:flex-end}
