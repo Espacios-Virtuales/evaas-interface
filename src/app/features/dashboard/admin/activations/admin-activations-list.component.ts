@@ -1,22 +1,55 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { ExternalCommerceActivationDto } from '../../../../core/models/evaas-contracts.model';
+import {
+  CreateActivationPayload,
+  ExternalCommerceActivationDto,
+  ExternalCommerceActivationStatus,
+} from '../../../../core/models/evaas-contracts.model';
 import { AdminCommerceService } from '../../../../core/services/admin-commerce.service';
+
+type CreateState = 'idle' | 'loading' | 'success' | 'error' | 'validation';
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-activations-list',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './admin-activations-list.component.html',
   styleUrls: ['./admin-activations-list.component.scss'],
 })
 export class AdminActivationsListComponent implements OnInit {
   private readonly adminCommerce = inject(AdminCommerceService);
+  private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly activations = signal<ExternalCommerceActivationDto[]>([]);
+  readonly createModalOpen = signal(false);
+  readonly createState = signal<CreateState>('idle');
+  readonly createError = signal<string | null>(null);
+  readonly createSuccess = signal<string | null>(null);
+
+  readonly providerOptions = ['INTERNAL', 'MANUAL', 'WOOCOMMERCE', 'PAYPAL', 'TRANSBANK'];
+  readonly statusOptions: ExternalCommerceActivationStatus[] = [
+    'RECEIVED',
+    'ACTIVE',
+    'SUSPENDED',
+    'CANCELLED',
+    'EXPIRED',
+    'FAILED',
+  ];
+
+  readonly createForm = this.fb.nonNullable.group({
+    provider: ['INTERNAL', Validators.required],
+    productCode: ['', Validators.required],
+    buyerEmail: ['', [Validators.required, Validators.email]],
+    organizationName: ['', Validators.required],
+    status: ['RECEIVED' as ExternalCommerceActivationStatus, Validators.required],
+    externalOrderId: [''],
+    externalMembershipId: [''],
+    idempotencyKey: [''],
+  });
 
   readonly isEmpty = computed(
     () => !this.loading() && !this.error() && this.activations().length === 0,
@@ -44,6 +77,61 @@ export class AdminActivationsListComponent implements OnInit {
     });
   }
 
+  openCreateModal(): void {
+    this.createForm.reset({
+      provider: 'INTERNAL',
+      productCode: '',
+      buyerEmail: '',
+      organizationName: '',
+      status: 'RECEIVED',
+      externalOrderId: '',
+      externalMembershipId: '',
+      idempotencyKey: '',
+    });
+    this.createState.set('idle');
+    this.createError.set(null);
+    this.createSuccess.set(null);
+    this.createModalOpen.set(true);
+  }
+
+  closeCreateModal(): void {
+    if (this.createState() === 'loading') return;
+    this.createModalOpen.set(false);
+    this.createState.set('idle');
+    this.createError.set(null);
+  }
+
+  createActivation(): void {
+    this.trimRequiredControls();
+
+    if (this.createForm.invalid) {
+      this.createForm.markAllAsTouched();
+      this.createState.set('validation');
+      this.createError.set(null);
+      return;
+    }
+
+    this.createState.set('loading');
+    this.createError.set(null);
+    this.createSuccess.set(null);
+
+    this.adminCommerce.createActivation(this.createPayload()).subscribe({
+      next: () => {
+        this.createState.set('success');
+        this.createModalOpen.set(false);
+        this.createSuccess.set('Activacion creada correctamente.');
+        this.load();
+      },
+      error: err => {
+        console.error('[AdminActivationsList] activation create error', err);
+        this.createState.set('error');
+        this.createError.set(
+          err?.error?.message ?? err?.message ?? 'No fue posible crear la activacion.',
+        );
+      },
+    });
+  }
+
   trackActivation(index: number, activation: ExternalCommerceActivationDto): string {
     return activation.id === undefined || activation.id === null ? String(index) : String(activation.id);
   }
@@ -58,5 +146,49 @@ export class AdminActivationsListComponent implements OnInit {
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
+  }
+
+  private trimRequiredControls(): void {
+    const controls = this.createForm.controls;
+    const trimKeys: Array<keyof Pick<CreateActivationPayload, 'provider' | 'productCode' | 'buyerEmail' | 'organizationName'>> = [
+      'provider',
+      'productCode',
+      'buyerEmail',
+      'organizationName',
+    ];
+
+    for (const key of trimKeys) {
+      const control = controls[key];
+      control.setValue(control.value.trim());
+    }
+  }
+
+  private createPayload(): CreateActivationPayload {
+    const value = this.createForm.getRawValue();
+    const payload: CreateActivationPayload = {
+      provider: value.provider.trim(),
+      productCode: value.productCode.trim(),
+      buyerEmail: value.buyerEmail.trim(),
+      organizationName: value.organizationName.trim(),
+      status: value.status,
+    };
+
+    const externalOrderId = value.externalOrderId.trim();
+    const externalMembershipId = value.externalMembershipId.trim();
+    const idempotencyKey = value.idempotencyKey.trim();
+
+    if (externalOrderId) {
+      payload.externalOrderId = externalOrderId;
+    }
+
+    if (externalMembershipId) {
+      payload.externalMembershipId = externalMembershipId;
+    }
+
+    if (idempotencyKey) {
+      payload.idempotencyKey = idempotencyKey;
+    }
+
+    return payload;
   }
 }

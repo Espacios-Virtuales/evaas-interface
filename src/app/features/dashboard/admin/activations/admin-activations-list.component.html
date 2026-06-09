@@ -6,8 +6,17 @@
       <p>Inventario global de activaciones comerciales e internas.</p>
     </div>
 
-    <a class="admin-activations__back" routerLink="/dashboard/admin">Volver al overview</a>
+    <div class="admin-activations__actions">
+      <button type="button" class="admin-activations__primary" (click)="openCreateModal()">
+        Nueva activación
+      </button>
+      <a class="admin-activations__back" routerLink="/dashboard/admin">Volver al overview</a>
+    </div>
   </header>
+
+  <div class="state state-success" *ngIf="createSuccess()">
+    <strong>{{ createSuccess() }}</strong>
+  </div>
 
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -62,4 +71,148 @@
       </table>
     </div>
   </section>
+
+  <div
+    class="admin-activations__modal-backdrop"
+    *ngIf="createModalOpen()"
+    role="presentation"
+    (click)="closeCreateModal()"
+  >
+    <section
+      class="admin-activations__modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-activation-create-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="admin-activations__modal-header">
+        <div>
+          <p class="admin-activations__eyebrow">Dashboard Admin</p>
+          <h2 id="admin-activation-create-title">Nueva activación</h2>
+        </div>
+
+        <button
+          type="button"
+          class="admin-activations__icon-button"
+          aria-label="Cerrar"
+          [disabled]="createState() === 'loading'"
+          (click)="closeCreateModal()"
+        >
+          &times;
+        </button>
+      </header>
+
+      <form [formGroup]="createForm" (ngSubmit)="createActivation()" class="admin-activations__form">
+        <label>
+          <span>Provider</span>
+          <select
+            class="form-select"
+            formControlName="provider"
+            [class.is-invalid]="createForm.controls.provider.touched && createForm.controls.provider.invalid"
+          >
+            <option *ngFor="let provider of providerOptions" [value]="provider">{{ provider }}</option>
+          </select>
+          <small *ngIf="createForm.controls.provider.touched && createForm.controls.provider.hasError('required')">
+            Provider requerido.
+          </small>
+        </label>
+
+        <label>
+          <span>Producto</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="productCode"
+            autocomplete="off"
+            [class.is-invalid]="createForm.controls.productCode.touched && createForm.controls.productCode.invalid"
+          />
+          <small *ngIf="createForm.controls.productCode.touched && createForm.controls.productCode.hasError('required')">
+            Producto requerido.
+          </small>
+        </label>
+
+        <label>
+          <span>Email comprador</span>
+          <input
+            type="email"
+            class="form-control"
+            formControlName="buyerEmail"
+            autocomplete="email"
+            [class.is-invalid]="createForm.controls.buyerEmail.touched && createForm.controls.buyerEmail.invalid"
+          />
+          <small *ngIf="createForm.controls.buyerEmail.touched && createForm.controls.buyerEmail.hasError('required')">
+            Email requerido.
+          </small>
+          <small *ngIf="createForm.controls.buyerEmail.touched && createForm.controls.buyerEmail.hasError('email')">
+            Ingresa un correo valido.
+          </small>
+        </label>
+
+        <label>
+          <span>Organización</span>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="organizationName"
+            autocomplete="organization"
+            [class.is-invalid]="createForm.controls.organizationName.touched && createForm.controls.organizationName.invalid"
+          />
+          <small *ngIf="createForm.controls.organizationName.touched && createForm.controls.organizationName.hasError('required')">
+            Organización requerida.
+          </small>
+        </label>
+
+        <label>
+          <span>Estado</span>
+          <select
+            class="form-select"
+            formControlName="status"
+            [class.is-invalid]="createForm.controls.status.touched && createForm.controls.status.invalid"
+          >
+            <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+          </select>
+          <small *ngIf="createForm.controls.status.touched && createForm.controls.status.hasError('required')">
+            Estado requerido.
+          </small>
+        </label>
+
+        <label>
+          <span>External order ID</span>
+          <input type="text" class="form-control" formControlName="externalOrderId" autocomplete="off" />
+        </label>
+
+        <label>
+          <span>External membership ID</span>
+          <input type="text" class="form-control" formControlName="externalMembershipId" autocomplete="off" />
+        </label>
+
+        <label>
+          <span>Idempotency key</span>
+          <input type="text" class="form-control" formControlName="idempotencyKey" autocomplete="off" />
+        </label>
+
+        <div class="admin-activations__form-error" *ngIf="createState() === 'error' && createError()">
+          {{ createError() }}
+        </div>
+
+        <div class="admin-activations__form-error" *ngIf="createState() === 'validation'">
+          Revisa los campos requeridos.
+        </div>
+
+        <footer class="admin-activations__modal-actions">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            [disabled]="createState() === 'loading'"
+            (click)="closeCreateModal()"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="admin-activations__primary" [disabled]="createState() === 'loading'">
+            {{ createState() === 'loading' ? 'Creando...' : 'Crear activación' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
 </section>

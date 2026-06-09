@@ -2,7 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API, apiUrl } from '../http/api.endpoints';
-import { ExternalCommerceActivationDto } from '../models/evaas-contracts.model';
+import {
+  CreateActivationPayload,
+  ExternalCommerceActivationDto,
+} from '../models/evaas-contracts.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminCommerceService {
@@ -16,7 +19,7 @@ export class AdminCommerceService {
     return this.http.get<ExternalCommerceActivationDto>(apiUrl(API.adminCommerce.activationById(id)));
   }
 
-  createActivation(payload: unknown): Observable<ExternalCommerceActivationDto> {
+  createActivation(payload: CreateActivationPayload): Observable<ExternalCommerceActivationDto> {
     return this.http.post<ExternalCommerceActivationDto>(
       apiUrl(API.adminCommerce.activations),
       payload

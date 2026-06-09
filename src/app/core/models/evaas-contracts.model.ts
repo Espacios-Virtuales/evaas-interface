@@ -91,3 +91,14 @@ export interface ExternalCommerceActivationDto {
   updatedAt?: string;
   processedAt?: string | null;
 }
+
+export interface CreateActivationPayload {
+  provider: string;
+  externalOrderId?: string;
+  externalMembershipId?: string;
+  productCode: string;
+  buyerEmail: string;
+  organizationName: string;
+  status: ExternalCommerceActivationStatus;
+  idempotencyKey?: string;
+}
