@@ -1,288 +1,45 @@
-.admin-organization-detail {
-  background: #f6f8fb;
-  color: #142033;
-  min-height: 100vh;
-  padding: 32px;
-}
-
-.admin-organization-detail__header,
-.admin-organization-detail__section,
-.state {
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 1180px;
-}
-
-.admin-organization-detail__header {
-  align-items: flex-start;
-  display: flex;
-  gap: 16px;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-
-.admin-organization-detail__eyebrow {
-  color: #526173;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0;
-  margin: 0 0 6px;
-  text-transform: uppercase;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin: 0;
-}
-
-h1 {
-  color: #10243c;
-  font-size: 1.75rem;
-  font-weight: 750;
-}
-
-h2 {
-  color: #10243c;
-  font-size: 1.05rem;
-  font-weight: 750;
-}
-
-h3 {
-  color: #243246;
-  font-size: 1rem;
-  font-weight: 750;
-  margin-bottom: 14px;
-}
-
-.admin-organization-detail__header p:not(.admin-organization-detail__eyebrow) {
-  color: #526173;
-  margin-top: 8px;
-}
-
-.admin-organization-detail__back,
-.admin-organization-detail a {
-  color: #17456f;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.admin-organization-detail__back:hover,
-.admin-organization-detail__back:focus-visible,
-.admin-organization-detail a:hover,
-.admin-organization-detail a:focus-visible {
-  color: #10243c;
-  text-decoration: underline;
-}
-
-.state,
-.admin-organization-detail__section {
-  background: #ffffff;
-  border: 1px solid #dfe7ef;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(27, 39, 51, 0.05);
-}
-
-.state {
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding: 16px 18px;
-}
-
-.state p {
-  color: #526173;
-  margin-top: 4px;
-}
-
-.state-loading {
-  justify-content: flex-start;
-}
-
-.state-error {
-  border-color: #f1b9bd;
-  color: #8e1f2d;
-}
-
-.state-empty {
-  box-shadow: none;
-  color: #526173;
-  display: block;
-  margin: 0;
-  max-width: none;
-}
-
-.state-empty strong {
-  color: #243246;
-}
-
-.admin-organization-detail__section {
-  margin-bottom: 20px;
-  overflow: hidden;
-  padding: 20px;
-}
-
-.admin-organization-detail__section--muted {
-  background: #fbfcfe;
-}
-
-.admin-organization-detail__section--muted p {
-  color: #526173;
-}
-
-.admin-organization-detail__section-header {
-  align-items: flex-start;
-  border-bottom: 1px solid #edf1f6;
-  display: flex;
-  justify-content: space-between;
-  margin: -2px 0 18px;
-  padding-bottom: 14px;
-}
-
-.admin-organization-detail__section-kicker {
-  color: #526173;
-  font-size: 0.74rem;
-  font-weight: 750;
-  letter-spacing: 0;
-  margin-bottom: 4px;
-  text-transform: uppercase;
-}
-
-.admin-organization-detail__facts,
-.admin-organization-detail__resource dl {
-  display: grid;
-  gap: 14px;
-  margin: 0;
-}
-
-.admin-organization-detail__facts {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.admin-organization-detail__facts div,
-.admin-organization-detail__resource dl div {
-  min-width: 0;
-}
-
-dt {
-  color: #526173;
-  font-size: 0.78rem;
-  font-weight: 750;
-  text-transform: uppercase;
-}
-
-dd {
-  color: #243246;
-  margin: 4px 0 0;
-  overflow-wrap: anywhere;
-}
-
-.status-pill {
-  background: #edf1f6;
-  border: 1px solid #d8e0ea;
-  border-radius: 999px;
-  color: #33465d;
-  display: inline-flex;
-  font-size: 0.76rem;
-  font-weight: 750;
-  line-height: 1;
-  padding: 6px 10px;
-  text-transform: uppercase;
-}
-
-.status-pill--success {
-  background: #eaf7ef;
-  border-color: #b8dfc4;
-  color: #21623a;
-}
-
-.status-pill--muted {
-  background: #f3f5f8;
-  border-color: #d8e0ea;
-  color: #526173;
-}
-
-.status-pill--pending {
-  background: #fff7e7;
-  border-color: #ead39d;
-  color: #7a5616;
-}
-
-.table {
-  margin: 0;
-}
-
-.table th {
-  color: #526173;
-  font-size: 0.78rem;
-  font-weight: 750;
-  padding: 12px 18px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.table td {
-  color: #243246;
-  padding: 14px 18px;
-  vertical-align: middle;
-}
-
-.admin-organization-detail__resources {
-  display: grid;
-  gap: 12px;
-}
-
-.admin-organization-detail__resource {
-  border: 1px solid #dfe7ef;
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.admin-organization-detail__status-list {
-  display: grid;
-  gap: 10px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.admin-organization-detail__status-list li {
-  border-left: 3px solid #5c7897;
-  color: #243246;
-  padding: 2px 0 2px 12px;
-}
-
-pre {
-  background: #f6f8fb;
-  border: 1px solid #dfe7ef;
-  border-radius: 6px;
-  color: #243246;
-  margin: 6px 0 0;
-  max-height: 240px;
-  overflow: auto;
-  padding: 10px;
-  white-space: pre-wrap;
-}
-
-.admin-organization-detail__metadata summary {
-  color: #17456f;
-  cursor: pointer;
-  font-weight: 750;
-}
-
-.admin-organization-detail__contract-pending {
-  border-style: dashed;
-}
-
-@media (max-width: 720px) {
-  .admin-organization-detail {
-    padding: 20px 14px;
-  }
-
-  .admin-organization-detail__header {
-    display: grid;
-  }
-}
+.admin-organization-detail{background:#f6f8fb;color:#142033;min-height:100vh;padding:32px}
+.admin-organization-detail__header,.admin-organization-detail__section,.state{margin:auto auto 20px;max-width:1180px}
+.admin-organization-detail__header,.admin-organization-detail__section-header,.admin-organization-detail__assignment-header{align-items:flex-start;display:flex;gap:16px;justify-content:space-between}
+.admin-organization-detail__eyebrow,.admin-organization-detail__section-kicker,dt{color:#526173;font-size:.78rem;font-weight:750;letter-spacing:0;text-transform:uppercase}
+.admin-organization-detail__eyebrow{font-weight:700;margin:0 0 6px}
+.admin-organization-detail__section-kicker{font-size:.74rem;margin-bottom:4px}
+h1,h2,h3,p{margin:0}h1,h2{color:#10243c;font-weight:750}h1{font-size:1.75rem}h2{font-size:1.05rem}h3{color:#243246;font-size:1rem;font-weight:750;margin-bottom:14px}
+.admin-organization-detail__header p:not(.admin-organization-detail__eyebrow),.state p,.admin-organization-detail__section--muted p,.admin-organization-detail__assignment-header p{color:#526173;margin-top:6px}
+.admin-organization-detail a,.admin-organization-detail__back,.admin-organization-detail__link-button{color:#17456f;font-weight:700;text-decoration:none}
+.state,.admin-organization-detail__section{background:#fff;border:1px solid #dfe7ef;border-radius:8px}
+.state{align-items:center;display:flex;gap:12px;justify-content:space-between;padding:16px 18px}
+.state-loading{justify-content:flex-start}
+.state-error,.admin-organization-detail__form-error{color:#8e1f2d}
+.state-error{border-color:#f1b9bd}
+.state-success{border-color:#b8dfc4;color:#21623a}
+.state-empty{box-shadow:none;color:#526173;display:block;margin:0;max-width:none}
+.state-empty strong{color:#243246}
+.admin-organization-detail__section{overflow:hidden;padding:20px}
+.admin-organization-detail__section--muted{background:#fbfcfe}
+.admin-organization-detail__section-header{border-bottom:1px solid #edf1f6;margin:-2px 0 18px;padding-bottom:14px}
+.admin-organization-detail__action,.admin-organization-detail__primary-action,.admin-organization-detail__secondary-action{border:1px solid #17456f;border-radius:6px;cursor:pointer;font-weight:750;min-height:40px;padding:8px 14px}
+.admin-organization-detail__action,.admin-organization-detail__primary-action{background:#17456f;color:#fff}
+.admin-organization-detail__secondary-action{background:#fff;color:#17456f}
+button:disabled{cursor:not-allowed;opacity:.62}
+.admin-organization-detail__section-state{box-shadow:none;display:block;margin:0 0 16px;max-width:none}
+.admin-organization-detail__assignment{border:1px solid #dfe7ef;border-radius:8px;display:grid;gap:16px;margin-bottom:18px;padding:16px}
+.admin-organization-detail__link-button{background:transparent;border:0;cursor:pointer;padding:0}
+.admin-organization-detail__assignment-grid,.admin-organization-detail__facts,.admin-organization-detail__resource dl{display:grid;gap:14px;margin:0}
+.admin-organization-detail__assignment-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.admin-organization-detail__assignment-grid label{display:grid;gap:6px}
+.admin-organization-detail__assignment-field--wide{grid-column:1/-1}
+.admin-organization-detail__assignment-grid span,.admin-organization-detail__suggestions span{color:#526173;font-size:.78rem;font-weight:750}
+.admin-organization-detail__assignment-grid input,.admin-organization-detail__assignment-grid select,.admin-organization-detail__assignment-grid textarea{border:1px solid #c9d4df;border-radius:6px;color:#243246;min-height:40px;padding:8px 10px}
+.admin-organization-detail__assignment-grid textarea{resize:vertical}
+.admin-organization-detail__suggestions,.admin-organization-detail__assignment-actions{display:flex;flex-wrap:wrap;gap:8px}
+.admin-organization-detail__suggestions button{background:#f6f8fb;border:1px solid #d8e0ea;border-radius:999px;color:#33465d;cursor:pointer;font-size:.74rem;font-weight:750;padding:6px 10px}
+.admin-organization-detail__assignment-actions{justify-content:flex-end}
+.admin-organization-detail__facts{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.admin-organization-detail__facts div,.admin-organization-detail__resource dl div{min-width:0}
+dd{color:#243246;margin:4px 0 0;overflow-wrap:anywhere}
+.status-pill{background:#edf1f6;border:1px solid #d8e0ea;border-radius:999px;color:#33465d;display:inline-flex;font-size:.76rem;font-weight:750;line-height:1;padding:6px 10px;text-transform:uppercase}
+.status-pill--success{background:#eaf7ef;color:#21623a}.status-pill--muted{color:#526173}.status-pill--pending{background:#fff7e7;color:#7a5616}
+.admin-organization-detail__resources,.admin-organization-detail__status-list{display:grid;gap:12px}.admin-organization-detail__resource{border:1px solid #dfe7ef;border-radius:8px;padding:16px}.admin-organization-detail__status-list{list-style:none;margin:0;padding:0}
+pre{background:#f6f8fb;max-height:240px;overflow:auto;padding:10px;white-space:pre-wrap}
+@media (max-width:720px){.admin-organization-detail{padding:20px 14px}.admin-organization-detail__header,.admin-organization-detail__section-header,.admin-organization-detail__assignment-header,.admin-organization-detail__assignment-actions{display:grid}.admin-organization-detail__action,.admin-organization-detail__primary-action,.admin-organization-detail__secondary-action{width:100%}}

@@ -44,8 +44,27 @@ export interface AdminToolAccessDto {
   revokedAt?: string | null;
 }
 
+export interface CreateToolAccessPayload {
+  organizationId: number;
+  toolKey: string;
+  userId?: number;
+  externalCommerceActivationId?: number;
+}
+
 export interface AdminResourceDto {
   [key: string]: unknown;
+}
+
+export interface CreateAdminResourcePayload {
+  organizationId: number;
+  toolAccessId?: number;
+  type: string;
+  key?: string;
+  name: string;
+  url?: string;
+  status?: string;
+  visibility?: string;
+  metadataJson?: string;
 }
 
 export type ExternalCommerceActivationStatus =
@@ -71,4 +90,15 @@ export interface ExternalCommerceActivationDto {
   createdAt?: string;
   updatedAt?: string;
   processedAt?: string | null;
+}
+
+export interface CreateActivationPayload {
+  provider: string;
+  externalOrderId?: string;
+  externalMembershipId?: string;
+  productCode: string;
+  buyerEmail: string;
+  organizationName: string;
+  status: ExternalCommerceActivationStatus;
+  idempotencyKey?: string;
 }

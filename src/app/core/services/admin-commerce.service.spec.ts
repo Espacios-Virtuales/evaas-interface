@@ -38,7 +38,14 @@ describe('AdminCommerceService', () => {
   });
 
   it('creates an activation', () => {
-    const payload = { externalOrderId: 'order-1' };
+    const payload = {
+      provider: 'INTERNAL',
+      externalOrderId: 'order-1',
+      productCode: 'FARQBIM_SETUP',
+      buyerEmail: 'buyer@example.com',
+      organizationName: 'Buyer Org',
+      status: 'RECEIVED',
+    };
     service.createActivation(payload).subscribe();
 
     const req = http.expectOne(
