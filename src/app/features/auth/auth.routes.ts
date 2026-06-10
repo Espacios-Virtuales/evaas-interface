@@ -16,4 +16,16 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () =>
       lazy(import('./register/register.component'), 'RegisterComponent'),
   },
+  {
+    path: PATHS.authActivate,
+    title: 'Activar cuenta',
+    loadComponent: () =>
+      lazy(import('./activate/account-activation.component'), 'AccountActivationComponent'),
+  },
+  {
+    path: PATHS.altaEvaas,
+    title: 'Alta EVAAS',
+    loadComponent: () =>
+      lazy(import('../onboarding/alta-evaas/alta-evaas.component'), 'AltaEvaasComponent'),
+  },
 ];

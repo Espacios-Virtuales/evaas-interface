@@ -5,6 +5,19 @@ export function apiUrl(path: string): string {
   return `${environment.apiUrl}${path}`;
 }
 
+const publicApiPathPrefixes = [
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/logout',
+  '/onboarding/register',
+  '/onboarding/activate',
+  '/onboarding/resend-activation',
+] as const;
+
+export function isPublicApiUrl(url: string): boolean {
+  return publicApiPathPrefixes.some(path => url.startsWith(apiUrl(path)));
+}
+
 export const API = {
   auth: {
     login: '/auth/login',
@@ -13,7 +26,7 @@ export const API = {
   },
   onboarding: {
     register: '/onboarding/register',
-    activate: '/onboarding/activate',
+    activate: (code: string) => `/onboarding/activate/${encodeURIComponent(code)}`,
     resendActivation: '/onboarding/resend-activation',
   },
   me: {
