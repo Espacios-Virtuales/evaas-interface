@@ -4,7 +4,7 @@ import { inject } from '@angular/core';
 import { BehaviorSubject, catchError, filter, finalize, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { AuthStore } from '../auth/auth.store';
-import { API, apiUrl } from '../http/api.endpoints';
+import { isPublicApiUrl } from '../http/api.endpoints';
 import { AuthFacade } from '../auth/auth.facade';
 
 let refreshing = false;
@@ -15,15 +15,8 @@ export const refreshTokenInterceptor: HttpInterceptorFn = (req, next) => {
   const store = inject(AuthStore);
   const facade = inject(AuthFacade);
 
-  // Pasar directo las rutas de auth para evitar loops
-  if (
-    req.url.startsWith(apiUrl(API.auth.login)) ||
-    req.url.startsWith(apiUrl(API.auth.refresh)) ||
-    req.url.startsWith(apiUrl(API.auth.logout)) ||
-    req.url.startsWith(apiUrl(API.onboarding.register)) ||
-    req.url.startsWith(apiUrl(API.onboarding.activate)) ||
-    req.url.startsWith(apiUrl(API.onboarding.resendActivation))
-  ) {
+  // Pasar directo las rutas publicas para evitar loops de refresh.
+  if (isPublicApiUrl(req.url)) {
     return next(req);
   }
 

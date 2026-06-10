@@ -2,17 +2,10 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthStore } from '../auth/auth.store';
-import { API, apiUrl } from './api.endpoints';
+import { isPublicApiUrl } from './api.endpoints';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  if (
-    req.url.startsWith(apiUrl(API.auth.login)) ||
-    req.url.startsWith(apiUrl(API.auth.refresh)) ||
-    req.url.startsWith(apiUrl(API.auth.logout)) ||
-    req.url.startsWith(apiUrl(API.onboarding.register)) ||
-    req.url.startsWith(apiUrl(API.onboarding.activate)) ||
-    req.url.startsWith(apiUrl(API.onboarding.resendActivation))
-  ) {
+  if (isPublicApiUrl(req.url)) {
     return next(req);
   }
 
