@@ -7,6 +7,7 @@ Usar esta carpeta para resumir que se hizo, que quedo pendiente y que restriccio
 Documentos:
 
 - `phase-admin-auth-token-fix.md`
+- `phase-4-alta-evaas-onboarding.md`
 - `phase-4-account-activation.md`
 - `phase-auth-account-activation.md`
 - `phase-1-summary.md`

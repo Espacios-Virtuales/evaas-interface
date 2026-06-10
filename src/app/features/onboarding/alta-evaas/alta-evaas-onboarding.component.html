@@ -1,0 +1,142 @@
+<main class="alta-page">
+  <div class="shell">
+    <header class="hero">
+      <img src="/evaas-logo.png" alt="EVAAS" class="alta-logo" />
+      <div>
+        <p class="eyebrow">Onboarding profundo</p>
+        <h1>Alta EVAAS</h1>
+        <p class="subtitle">
+          Abordaje profundo para comprender tu proyecto antes de activar servicios digitales.
+        </p>
+      </div>
+    </header>
+
+    <section class="intro" aria-label="Introduccion">
+      <p>
+        Este espacio nos ayuda a leer el territorio de tu proyecto: identidad, formalización,
+        etapa actual, necesidades y consentimiento ético.
+      </p>
+    </section>
+
+    <section class="wizard" aria-label="Pasos de Alta EVAAS">
+      <nav class="steps" aria-label="Navegacion de pasos">
+        @for (step of steps; track step.title; let index = $index) {
+          <button
+            type="button"
+            class="step-button"
+            [class.active]="activeStepIndex() === index"
+            [class.done]="activeStepIndex() > index"
+            (click)="setStep(index)"
+            [attr.aria-current]="activeStepIndex() === index ? 'step' : null"
+          >
+            <span>{{ index + 1 }}</span>
+            <strong>{{ step.title }}</strong>
+          </button>
+        }
+      </nav>
+
+      <article class="step-panel">
+        <div class="step-heading">
+          <p>Paso {{ activeStepIndex() + 1 }} de {{ steps.length }}</p>
+          <h2>{{ activeStep().title }}</h2>
+          <span>{{ activeStep().description }}</span>
+        </div>
+
+        @switch (activeStepIndex()) {
+          @case (0) {
+            <div class="field-grid">
+              @for (field of identityFields; track field) {
+                <label class="field-preview">
+                  <span>{{ field }}</span>
+                  <input type="text" placeholder="Pendiente de completar" disabled />
+                </label>
+              }
+            </div>
+          }
+
+          @case (1) {
+            <div class="field-grid">
+              @for (field of companyFields; track field) {
+                <label class="field-preview">
+                  <span>{{ field }}</span>
+                  <input type="text" placeholder="Pendiente de completar" disabled />
+                </label>
+              }
+            </div>
+            <p class="note">
+              Podemos considerar un servicio preliminar de formalización o constitución de empresa
+              para preparar tu activación digital.
+            </p>
+          }
+
+          @case (2) {
+            <div class="field-grid">
+              @for (field of projectFields; track field) {
+                <label class="field-preview">
+                  <span>{{ field }}</span>
+                  <input type="text" placeholder="Pendiente de completar" disabled />
+                </label>
+              }
+            </div>
+          }
+
+          @case (3) {
+            <div class="pillar-grid">
+              @for (pillar of archetypePillars; track pillar.value) {
+                <div class="pillar">
+                  <strong>{{ pillar.label }}</strong>
+                  <code>{{ pillar.value }}</code>
+                </div>
+              }
+            </div>
+          }
+
+          @case (4) {
+            <div class="service-grid">
+              @for (service of services; track service) {
+                <span>{{ service }}</span>
+              }
+            </div>
+          }
+
+          @case (5) {
+            <p class="consent-copy">
+              Usaremos esta información solo para diagnóstico, contacto y preparación operacional de
+              tu proyecto. No realizamos scoring oculto ni decisiones automáticas. La revisión humana
+              sigue siendo central.
+            </p>
+            <div class="consent-list">
+              @for (field of consentFields; track field) {
+                <label>
+                  <input type="checkbox" disabled />
+                  <span>{{ field }}</span>
+                </label>
+              }
+            </div>
+          }
+        }
+
+        <footer class="actions">
+          <div class="step-actions">
+            <button type="button" class="btn btn-outline-secondary" (click)="previousStep()" [disabled]="activeStepIndex() === 0">
+              Anterior
+            </button>
+            <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="activeStepIndex() === steps.length - 1">
+              Siguiente
+            </button>
+          </div>
+
+          <div class="future-actions">
+            <button type="button" class="btn btn-outline-primary" disabled>
+              Guardar borrador
+            </button>
+            <button type="button" class="btn btn-success" disabled>
+              Enviar Alta EVAAS
+            </button>
+            <span>Próximo paso</span>
+          </div>
+        </footer>
+      </article>
+    </section>
+  </div>
+</main>

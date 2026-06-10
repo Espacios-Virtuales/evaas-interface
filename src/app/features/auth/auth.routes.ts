@@ -26,6 +26,9 @@ export const AUTH_ROUTES: Routes = [
     path: PATHS.altaEvaas,
     title: 'Alta EVAAS',
     loadComponent: () =>
-      lazy(import('../onboarding/alta-evaas/alta-evaas.component'), 'AltaEvaasComponent'),
+      lazy(
+        import('../onboarding/alta-evaas/alta-evaas-onboarding.component'),
+        'AltaEvaasOnboardingComponent'
+      ),
   },
 ];
