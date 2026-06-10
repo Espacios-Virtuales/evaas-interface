@@ -19,4 +19,8 @@ export class IntakeService {
   updateMyIntake(payload: AltaEvaasIntakePayload): Observable<AltaEvaasIntakeResponse> {
     return this.http.put<AltaEvaasIntakeResponse>(apiUrl(API.me.intake), payload);
   }
+
+  submitMyIntake(): Observable<AltaEvaasIntakeResponse> {
+    return this.http.post<AltaEvaasIntakeResponse>(apiUrl(API.me.intakeSubmit), {});
+  }
 }

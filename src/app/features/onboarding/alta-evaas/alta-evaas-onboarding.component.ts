@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { Subscription, catchError, of } from 'rxjs';
+import { Observable, Subscription, catchError, of, switchMap } from 'rxjs';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { AltaEvaasIntakePayload, AltaEvaasIntakeResponse } from '../../../core/models/intake.model';
 import { IntakeService } from '../../../core/services/intake.service';
@@ -14,6 +14,9 @@ type IntakeUiState =
   | 'draft loaded'
   | 'saving'
   | 'saved'
+  | 'submitting'
+  | 'submitted'
+  | 'validation-error'
   | 'error'
   | 'unauthenticated';
 
@@ -40,6 +43,8 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
   private intakeService = inject(IntakeService);
   private intakeSub?: Subscription;
   private saveSub?: Subscription;
+  private submitSub?: Subscription;
+  private lastSavedPayload = '';
 
   readonly steps: WizardStep[] = [
     {
@@ -91,7 +96,7 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
   readonly activeStep = computed(() => this.steps[this.activeStepIndex()]);
   readonly uiState = signal<IntakeUiState>('loading');
   readonly statusMessage = signal('Cargando borrador de Alta EVAAS...');
-  readonly validationMessage = signal<string | null>(null);
+  readonly validationMessages = signal<string[]>([]);
   readonly hasExistingIntake = signal(false);
   readonly secondaryPillars = signal<string[]>([]);
   readonly selectedServices = signal<string[]>([]);
@@ -135,6 +140,7 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.intakeSub?.unsubscribe();
     this.saveSub?.unsubscribe();
+    this.submitSub?.unsubscribe();
   }
 
   previousStep(): void {
@@ -163,34 +169,85 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
   }
 
   saveDraft(): void {
-    if (this.uiState() === 'saving' || this.uiState() === 'unauthenticated') return;
+    if (this.isBusy() || this.uiState() === 'unauthenticated' || this.uiState() === 'submitted') return;
 
-    this.validationMessage.set(null);
+    this.validationMessages.set([]);
     const payload = this.buildPayload();
     const validationError = this.validateDraft(payload);
     if (validationError) {
-      this.validationMessage.set(validationError);
+      this.validationMessages.set([validationError]);
+      this.uiState.set('validation-error');
       return;
     }
 
     this.uiState.set('saving');
     this.statusMessage.set('Guardando borrador de Alta EVAAS...');
 
-    const request$ = this.hasExistingIntake()
-      ? this.intakeService.updateMyIntake(payload)
-      : this.intakeService.createMyIntake(payload);
-
     this.saveSub?.unsubscribe();
-    this.saveSub = request$.subscribe({
+    this.saveSub = this.saveDraftPayload(payload).subscribe({
       next: response => {
         this.applyIntake(response);
         this.hasExistingIntake.set(true);
+        this.markPayloadSaved(payload);
         this.uiState.set('saved');
         this.statusMessage.set('Borrador guardado.');
       },
       error: () => {
         this.uiState.set('error');
         this.statusMessage.set('No pudimos guardar el borrador. Intenta nuevamente.');
+      },
+    });
+  }
+
+  submitIntake(): void {
+    if (this.isBusy() || this.uiState() === 'unauthenticated' || this.uiState() === 'submitted') return;
+
+    this.validationMessages.set([]);
+    const payload = this.buildPayload();
+    const draftValidationError = this.validateDraft(payload);
+    if (draftValidationError) {
+      this.validationMessages.set([draftValidationError]);
+      this.uiState.set('validation-error');
+      return;
+    }
+
+    const submitErrors = this.validateSubmit(payload);
+    if (submitErrors.length > 0) {
+      this.validationMessages.set(submitErrors);
+      this.uiState.set('validation-error');
+      this.statusMessage.set('Revisa los campos mínimos antes de enviar Alta EVAAS.');
+      return;
+    }
+
+    this.uiState.set('submitting');
+    this.statusMessage.set('Enviando Alta EVAAS para revisión humana...');
+
+    const draft$: Observable<AltaEvaasIntakeResponse | null> = this.hasExistingIntake() && !this.hasUnsavedChanges(payload)
+      ? of(null)
+      : this.saveDraftPayload(payload);
+
+    this.submitSub?.unsubscribe();
+    this.submitSub = draft$.pipe(
+      switchMap(response => {
+        if (response) {
+          this.applyIntake(response);
+          this.hasExistingIntake.set(true);
+          this.markPayloadSaved(payload);
+        }
+
+        return this.intakeService.submitMyIntake();
+      })
+    ).subscribe({
+      next: response => {
+        this.applyIntake(response);
+        this.hasExistingIntake.set(true);
+        this.markPayloadSaved(this.buildPayload());
+        this.uiState.set('submitted');
+        this.statusMessage.set('Alta EVAAS enviada correctamente. Revisaremos tu información para preparar el siguiente paso.');
+      },
+      error: () => {
+        this.uiState.set('error');
+        this.statusMessage.set('No pudimos enviar Alta EVAAS. Intenta nuevamente.');
       },
     });
   }
@@ -212,12 +269,14 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
         if (intake) {
           this.applyIntake(intake);
           this.hasExistingIntake.set(true);
+          this.markPayloadSaved(this.buildPayload());
           this.uiState.set('draft loaded');
           this.statusMessage.set('Borrador cargado.');
           return;
         }
 
         this.hasExistingIntake.set(false);
+        this.markPayloadSaved(this.buildPayload());
         this.uiState.set('empty/new intake');
         this.statusMessage.set('Aún no tienes un borrador. Puedes completar campos y guardar cuando quieras.');
       },
@@ -319,6 +378,45 @@ export class AltaEvaasOnboardingComponent implements OnInit, OnDestroy {
     }
 
     return null;
+  }
+
+  private validateSubmit(payload: AltaEvaasIntakePayload): string[] {
+    const errors: string[] = [];
+
+    if (!payload.projectName) errors.push('Indica el nombre de tu proyecto.');
+    if (!payload.primaryPillar) errors.push('Selecciona un pilar principal.');
+    if (!payload.mainNeed) errors.push('Describe la necesidad principal.');
+    if (payload.acceptsDataUseForDiagnosis !== true) {
+      errors.push('Debes aceptar el uso de datos para diagnóstico.');
+    }
+    if (payload.acceptsContact !== true) {
+      errors.push('Debes aceptar que podamos contactarte.');
+    }
+
+    return errors;
+  }
+
+  private saveDraftPayload(payload: AltaEvaasIntakePayload): Observable<AltaEvaasIntakeResponse> {
+    return this.hasExistingIntake()
+      ? this.intakeService.updateMyIntake(payload)
+      : this.intakeService.createMyIntake(payload);
+  }
+
+  private hasUnsavedChanges(payload: AltaEvaasIntakePayload): boolean {
+    return this.serializePayload(payload) !== this.lastSavedPayload;
+  }
+
+  private markPayloadSaved(payload: AltaEvaasIntakePayload): void {
+    this.lastSavedPayload = this.serializePayload(payload);
+  }
+
+  private serializePayload(payload: AltaEvaasIntakePayload): string {
+    return JSON.stringify(payload);
+  }
+
+  private isBusy(): boolean {
+    const state = this.uiState();
+    return state === 'loading' || state === 'saving' || state === 'submitting';
   }
 
   private looksLikeUrl(value: string): boolean {

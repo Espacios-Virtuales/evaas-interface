@@ -25,12 +25,19 @@
         <a class="btn btn-primary" routerLink="/auth/login">Ir a iniciar sesión</a>
       </section>
     } @else {
-      <section class="status-strip" [class.error]="uiState() === 'error'" aria-live="polite">
+      <section class="status-strip" [class.error]="uiState() === 'error' || uiState() === 'validation-error'" aria-live="polite">
         <strong>{{ uiState() }}</strong>
         <span>{{ statusMessage() }}</span>
       </section>
 
-      <form class="wizard" [formGroup]="form" (ngSubmit)="saveDraft()" aria-label="Pasos de Alta EVAAS">
+      @if (uiState() === 'submitted') {
+        <section class="auth-state" aria-live="polite">
+          <h2>Alta EVAAS enviada</h2>
+          <p>Alta EVAAS enviada correctamente. Revisaremos tu información para preparar el siguiente paso.</p>
+          <a class="btn btn-primary" routerLink="/dashboard">Ir al Dashboard</a>
+        </section>
+      } @else {
+      <form class="wizard" [formGroup]="form" aria-label="Pasos de Alta EVAAS">
         <nav class="steps" aria-label="Navegacion de pasos">
           @for (step of steps; track step.title; let index = $index) {
             <button
@@ -234,8 +241,12 @@
             }
           }
 
-          @if (validationMessage()) {
-            <p class="validation-message">{{ validationMessage() }}</p>
+          @if (validationMessages().length > 0) {
+            <div class="validation-message" aria-live="polite">
+              @for (message of validationMessages(); track message) {
+                <p>{{ message }}</p>
+              }
+            </div>
           }
 
           <footer class="actions">
@@ -249,17 +260,18 @@
             </div>
 
             <div class="future-actions">
-              <button type="submit" class="btn btn-outline-primary" [disabled]="uiState() === 'saving' || uiState() === 'loading'">
+              <button type="button" class="btn btn-outline-primary" (click)="saveDraft()" [disabled]="uiState() === 'saving' || uiState() === 'loading' || uiState() === 'submitting'">
                 Guardar borrador
               </button>
-              <button type="button" class="btn btn-success" disabled>
+              <button type="button" class="btn btn-success" (click)="submitIntake()" [disabled]="uiState() === 'saving' || uiState() === 'loading' || uiState() === 'submitting'">
                 Enviar Alta EVAAS
               </button>
-              <span>Submit vendrá en el próximo paso</span>
+              <span>La revisión humana abre el siguiente paso</span>
             </div>
           </footer>
         </article>
       </form>
+      }
     }
   </div>
 </main>
