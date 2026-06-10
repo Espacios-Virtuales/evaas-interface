@@ -32,6 +32,7 @@ export const API = {
   me: {
     toolAccess: '/me/tool-access',
     resources: '/me/resources',
+    intake: '/me/intake',
   },
   adminAccess: {
     organizations: '/admin/access/organizations',

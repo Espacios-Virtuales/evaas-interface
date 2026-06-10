@@ -5,6 +5,11 @@ import { lazy } from '../../shared/lazy';
 
 export const AUTH_ROUTES: Routes = [
   {
+    path: 'auth/login',
+    pathMatch: 'full',
+    redirectTo: PATHS.login,
+  },
+  {
     path: PATHS.login,
     title: 'Ingresar',
     loadComponent: () =>
