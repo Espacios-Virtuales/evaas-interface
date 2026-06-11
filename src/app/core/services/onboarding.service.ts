@@ -8,11 +8,19 @@ export interface ActivationResponse {
   message?: string;
 }
 
+export interface ResendActivationResponse {
+  message?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class OnboardingService {
   private http = inject(HttpClient);
 
   activateAccount(code: string): Observable<ActivationResponse> {
     return this.http.get<ActivationResponse>(apiUrl(API.onboarding.activate(code)));
+  }
+
+  resendActivation(email: string): Observable<ResendActivationResponse> {
+    return this.http.post<ResendActivationResponse>(apiUrl(API.onboarding.resendActivation), { email });
   }
 }
