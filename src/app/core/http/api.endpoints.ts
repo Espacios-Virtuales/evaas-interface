@@ -56,9 +56,6 @@ export const API = {
     resourceById: (id: number) => `/admin/resources/${encodeURIComponent(String(id))}`,
   },
   legacy: {
-    auth: {
-      register: '/user/register',
-    },
     integrations: {
       software: '/integrations/software',
     },
