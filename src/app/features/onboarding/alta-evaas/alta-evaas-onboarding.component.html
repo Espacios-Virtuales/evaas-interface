@@ -1,0 +1,277 @@
+<main class="alta-page">
+  <div class="shell">
+    <header class="hero">
+      <img src="/evaas-logo.png" alt="EVAAS" class="alta-logo" />
+      <div>
+        <p class="eyebrow">Onboarding profundo</p>
+        <h1>Alta EVAAS</h1>
+        <p class="subtitle">
+          Abordaje profundo para comprender tu proyecto antes de activar servicios digitales.
+        </p>
+      </div>
+    </header>
+
+    <section class="intro" aria-label="Introduccion">
+      <p>
+        Este espacio nos ayuda a leer el territorio de tu proyecto: identidad, formalización,
+        etapa actual, necesidades y consentimiento ético.
+      </p>
+    </section>
+
+    @if (uiState() === 'unauthenticated') {
+      <section class="auth-state" aria-live="polite">
+        <h2>Inicia sesión para continuar</h2>
+        <p>{{ statusMessage() }}</p>
+        <a class="btn btn-primary" routerLink="/auth/login">Ir a iniciar sesión</a>
+      </section>
+    } @else {
+      <section class="status-strip" [class.error]="uiState() === 'error' || uiState() === 'validation-error'" aria-live="polite">
+        <strong>{{ uiState() }}</strong>
+        <span>{{ statusMessage() }}</span>
+      </section>
+
+      @if (uiState() === 'submitted') {
+        <section class="auth-state" aria-live="polite">
+          <h2>Alta EVAAS enviada</h2>
+          <p>Alta EVAAS enviada correctamente. Revisaremos tu información para preparar el siguiente paso.</p>
+          <a class="btn btn-primary" routerLink="/dashboard">Ir al Dashboard</a>
+        </section>
+      } @else {
+      <form class="wizard" [formGroup]="form" aria-label="Pasos de Alta EVAAS">
+        <nav class="steps" aria-label="Navegacion de pasos">
+          @for (step of steps; track step.title; let index = $index) {
+            <button
+              type="button"
+              class="step-button"
+              [class.active]="activeStepIndex() === index"
+              [class.done]="activeStepIndex() > index"
+              (click)="setStep(index)"
+              [attr.aria-current]="activeStepIndex() === index ? 'step' : null"
+            >
+              <span>{{ index + 1 }}</span>
+              <strong>{{ step.title }}</strong>
+            </button>
+          }
+        </nav>
+
+        <article class="step-panel">
+          <div class="step-heading">
+            <p>Paso {{ activeStepIndex() + 1 }} de {{ steps.length }}</p>
+            <h2>{{ activeStep().title }}</h2>
+            <span>{{ activeStep().description }}</span>
+          </div>
+
+          @if (uiState() === 'loading') {
+            <div class="loading-panel">
+              <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              <p>Cargando borrador de Alta EVAAS...</p>
+            </div>
+          } @else {
+            @switch (activeStepIndex()) {
+              @case (0) {
+                <div class="field-grid">
+                  <label class="field-preview">
+                    <span>phone</span>
+                    <input type="tel" formControlName="phone" placeholder="+56 9 1234 5678" />
+                  </label>
+                  <label class="field-preview">
+                    <span>clientType</span>
+                    <input type="text" formControlName="clientType" placeholder="Persona, empresa, equipo" />
+                  </label>
+                  <label class="field-preview">
+                    <span>clientRut</span>
+                    <input type="text" formControlName="clientRut" placeholder="12.345.678-9" />
+                  </label>
+                </div>
+              }
+
+              @case (1) {
+                <div class="field-grid">
+                  <label class="field-preview">
+                    <span>companyRut</span>
+                    <input type="text" formControlName="companyRut" placeholder="76.123.456-7" />
+                  </label>
+                  <label class="field-preview">
+                    <span>companyName</span>
+                    <input type="text" formControlName="companyName" placeholder="Nombre legal o comercial" />
+                  </label>
+                  <label class="field-preview">
+                    <span>legalStage</span>
+                    <input type="text" formControlName="legalStage" placeholder="Idea, iniciada, formalizada" />
+                  </label>
+                  <label class="check-preview">
+                    <input type="checkbox" formControlName="hasCompany" />
+                    <span>hasCompany</span>
+                  </label>
+                  <label class="check-preview">
+                    <input type="checkbox" formControlName="needsCompanyConstitution" />
+                    <span>needsCompanyConstitution</span>
+                  </label>
+                </div>
+                @if (form.controls.needsCompanyConstitution.value) {
+                  <p class="note">
+                    Podemos considerar un servicio preliminar de formalización o constitución de empresa
+                    para preparar tu activación digital.
+                  </p>
+                }
+              }
+
+              @case (2) {
+                <div class="field-grid">
+                  <label class="field-preview">
+                    <span>projectName</span>
+                    <input type="text" formControlName="projectName" placeholder="Nombre del proyecto" />
+                  </label>
+                  <label class="field-preview">
+                    <span>currentStage</span>
+                    <input type="text" formControlName="currentStage" placeholder="Idea, validación, operación" />
+                  </label>
+                  <label class="field-preview">
+                    <span>websiteUrl</span>
+                    <input type="url" formControlName="websiteUrl" placeholder="https://tuproyecto.cl" />
+                  </label>
+                  <label class="check-preview">
+                    <input type="checkbox" formControlName="hasWebsite" />
+                    <span>hasWebsite</span>
+                  </label>
+                  <label class="check-preview">
+                    <input type="checkbox" formControlName="hasDomain" />
+                    <span>hasDomain</span>
+                  </label>
+                  <label class="check-preview">
+                    <input type="checkbox" formControlName="hasPayments" />
+                    <span>hasPayments</span>
+                  </label>
+                </div>
+              }
+
+              @case (3) {
+                <div class="field-grid">
+                  <label class="field-preview">
+                    <span>primaryPillar</span>
+                    <select formControlName="primaryPillar">
+                      <option value="">Seleccionar pilar</option>
+                      @for (pillar of pillarOptions; track pillar.value) {
+                        <option [value]="pillar.value">{{ pillar.label }}</option>
+                      }
+                    </select>
+                  </label>
+                  <label class="field-preview">
+                    <span>organizationArchetype</span>
+                    <input type="text" formControlName="organizationArchetype" placeholder="Arquetipo observado" />
+                  </label>
+                  <label class="field-preview">
+                    <span>mainNeed</span>
+                    <input type="text" formControlName="mainNeed" placeholder="Necesidad principal" />
+                  </label>
+                </div>
+
+                <div class="option-section">
+                  <h3>secondaryPillars</h3>
+                  <div class="pillar-grid">
+                    @for (pillar of pillarOptions; track pillar.value) {
+                      <label class="pillar selectable">
+                        <input
+                          type="checkbox"
+                          [checked]="isOptionSelected(secondaryPillars(), pillar.value)"
+                          (change)="toggleSecondaryPillar(pillar.value, $any($event.target).checked)"
+                        />
+                        <strong>{{ pillar.label }}</strong>
+                        <code>{{ pillar.value }}</code>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+
+              @case (4) {
+                <div class="option-section">
+                  <h3>selectedServices</h3>
+                  <div class="service-grid">
+                    @for (service of serviceOptions; track service) {
+                      <label>
+                        <input
+                          type="checkbox"
+                          [checked]="isOptionSelected(selectedServices(), service)"
+                          (change)="toggleSelectedService(service, $any($event.target).checked)"
+                        />
+                        <span>{{ service }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="field-grid">
+                  <label class="field-preview">
+                    <span>urgency</span>
+                    <input type="text" formControlName="urgency" placeholder="Baja, media, alta" />
+                  </label>
+                  <label class="field-preview">
+                    <span>budgetRange</span>
+                    <input type="text" formControlName="budgetRange" placeholder="Rango estimado" />
+                  </label>
+                  <label class="field-preview wide">
+                    <span>message</span>
+                    <textarea formControlName="message" rows="4" placeholder="Contexto, dudas o prioridades"></textarea>
+                  </label>
+                </div>
+              }
+
+              @case (5) {
+                <p class="consent-copy">
+                  Usaremos esta información solo para diagnóstico, contacto y preparación operacional de
+                  tu proyecto. No realizamos scoring oculto ni decisiones automáticas. La revisión humana
+                  sigue siendo central.
+                </p>
+                <div class="consent-list">
+                  <label>
+                    <input type="checkbox" formControlName="acceptsDataUseForDiagnosis" />
+                    <span>acceptsDataUseForDiagnosis</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" formControlName="acceptsContact" />
+                    <span>acceptsContact</span>
+                  </label>
+                  <label>
+                    <input type="checkbox" formControlName="wantsHumanReview" />
+                    <span>wantsHumanReview</span>
+                  </label>
+                </div>
+              }
+            }
+          }
+
+          @if (validationMessages().length > 0) {
+            <div class="validation-message" aria-live="polite">
+              @for (message of validationMessages(); track message) {
+                <p>{{ message }}</p>
+              }
+            </div>
+          }
+
+          <footer class="actions">
+            <div class="step-actions">
+              <button type="button" class="btn btn-outline-secondary" (click)="previousStep()" [disabled]="activeStepIndex() === 0">
+                Anterior
+              </button>
+              <button type="button" class="btn btn-primary" (click)="nextStep()" [disabled]="activeStepIndex() === steps.length - 1">
+                Siguiente
+              </button>
+            </div>
+
+            <div class="future-actions">
+              <button type="button" class="btn btn-outline-primary" (click)="saveDraft()" [disabled]="uiState() === 'saving' || uiState() === 'loading' || uiState() === 'submitting'">
+                Guardar borrador
+              </button>
+              <button type="button" class="btn btn-success" (click)="submitIntake()" [disabled]="uiState() === 'saving' || uiState() === 'loading' || uiState() === 'submitting'">
+                Enviar Alta EVAAS
+              </button>
+              <span>La revisión humana abre el siguiente paso</span>
+            </div>
+          </footer>
+        </article>
+      </form>
+      }
+    }
+  </div>
+</main>

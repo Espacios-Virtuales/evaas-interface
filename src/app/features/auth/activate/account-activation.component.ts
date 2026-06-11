@@ -22,7 +22,7 @@ export class AccountActivationComponent implements OnInit, OnDestroy {
   private redirectSub?: Subscription;
 
   state = signal<ActivationState>('loading');
-  message = signal('Activando tu cuenta…');
+  message = signal('Activando tu cuenta...');
 
   ngOnInit(): void {
     const code = this.route.snapshot.queryParamMap.get('code')?.trim();
@@ -39,7 +39,7 @@ export class AccountActivationComponent implements OnInit, OnDestroy {
           this.state.set('success');
           this.message.set('Cuenta activada exitosamente.');
           this.redirectSub = timer(1200).subscribe(() => {
-            this.router.navigate(['/', PATHS.altaEvaas]);
+            this.router.navigateByUrl(`/${PATHS.altaEvaas}`);
           });
           return;
         }

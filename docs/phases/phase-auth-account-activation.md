@@ -18,7 +18,7 @@ Implementar la ruta pública de activación de cuenta en EVAAS Interface. La API
 
 ## Estados UI
 
-- `loading`: `Activando tu cuenta…`
+- `loading`: `Activando tu cuenta...`
 - `success`: `Cuenta activada exitosamente.`
 - `error`: `No pudimos activar tu cuenta. El enlace puede estar vencido o ya utilizado.`
 
