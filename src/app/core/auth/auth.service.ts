@@ -2,7 +2,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError, map, tap, catchError } from 'rxjs';
-import { API, LEGACY_API, apiUrl } from '../http/api.endpoints';
+import { API, apiUrl } from '../http/api.endpoints';
 import { UserSession } from '../models/auth.model';
 import { RegisterRequest, RegistrationResponse, AuthRequest, AuthResponse} from '../models/http.model';
 import { AuthStore } from './auth.store';
@@ -14,7 +14,7 @@ export class AuthService {
   private store = inject(AuthStore);
 
   register(payload: RegisterRequest): Observable<RegistrationResponse> {
-    return this.http.post<RegistrationResponse>(apiUrl(LEGACY_API.auth.register), payload)
+    return this.http.post<RegistrationResponse>(apiUrl(API.onboarding.register), payload)
       .pipe(catchError(err => throwError(() => err)));
   }
 
