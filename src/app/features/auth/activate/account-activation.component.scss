@@ -73,9 +73,10 @@ h1 {
   font-size: 0.875rem;
 }
 
-.resend-placeholder {
+.recovery-actions {
   display: grid;
-  gap: 0.5rem;
+  justify-items: center;
+  gap: 1rem;
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 1px solid #e2e8f0;
@@ -83,8 +84,44 @@ h1 {
   font-size: 0.8125rem;
 }
 
+.resend-form {
+  display: grid;
+  gap: 0.65rem;
+  width: 100%;
+  text-align: left;
+
+  label {
+    color: $primary;
+    font-weight: 700;
+  }
+}
+
+.resend-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+
+.resend-message {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+
+  &.success {
+    color: $success;
+  }
+
+  &.error {
+    color: $danger;
+  }
+}
+
 @media (max-width: 420px) {
   .activation-panel {
     padding: 2rem 1.25rem;
+  }
+
+  .resend-row {
+    grid-template-columns: 1fr;
   }
 }

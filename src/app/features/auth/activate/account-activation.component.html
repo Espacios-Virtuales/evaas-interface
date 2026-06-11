@@ -15,11 +15,37 @@
       Te llevaremos a Alta EVAAS en unos segundos.
     </p>
 
-    <div class="resend-placeholder">
-      <button type="button" class="btn btn-outline-secondary btn-sm" disabled>
-        Reenviar correo de activación
-      </button>
-      <span>Disponible próximamente.</span>
+    <div *ngIf="state() === 'error'" class="recovery-actions">
+      <a class="btn btn-outline-primary btn-sm" routerLink="/auth/login">Ir a login</a>
+
+      <form [formGroup]="resendForm" (ngSubmit)="resendActivation()" class="resend-form" novalidate>
+        <label for="activation-email">Reenviar correo de activación</label>
+        <div class="resend-row">
+          <input
+            id="activation-email"
+            type="email"
+            class="form-control form-control-sm"
+            formControlName="email"
+            placeholder="usuario@dominio.com"
+            [class.is-invalid]="resendState() === 'validation' && resendForm.controls.email.invalid"
+          />
+          <button
+            type="submit"
+            class="btn btn-primary btn-sm"
+            [disabled]="resendState() === 'loading'"
+          >
+            {{ resendState() === 'loading' ? 'Enviando...' : 'Reenviar correo' }}
+          </button>
+        </div>
+        <p
+          *ngIf="resendMessage()"
+          class="resend-message"
+          [class.success]="resendState() === 'success'"
+          [class.error]="resendState() === 'error' || resendState() === 'validation'"
+        >
+          {{ resendMessage() }}
+        </p>
+      </form>
     </div>
   </section>
 </main>
