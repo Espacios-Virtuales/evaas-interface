@@ -86,16 +86,16 @@ export class AccountActivationComponent implements OnInit, OnDestroy {
 
     this.activationSub = this.onboarding.activateAccount(code).subscribe({
       next: response => {
-        if (response.activated === true) {
-          this.state.set('success');
-          this.message.set('Cuenta activada exitosamente.');
-          this.redirectSub = timer(1200).subscribe(() => {
-            this.router.navigateByUrl(`/${PATHS.altaEvaas}`);
-          });
+        if (response?.activated === false) {
+          this.showActivationError();
           return;
         }
 
-        this.showActivationError();
+        this.state.set('success');
+        this.message.set('Cuenta activada exitosamente.');
+        this.redirectSub = timer(1200).subscribe(() => {
+          this.router.navigateByUrl(`/${PATHS.altaEvaas}`);
+        });
       },
       error: () => this.showActivationError(),
     });

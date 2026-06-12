@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -17,13 +17,47 @@ import { PATHS } from '../../../utils/paths';
 export class DashboardShellComponent {
   private readonly authfacade = inject(AuthFacade);
   private readonly auth = inject(AuthService);
+  private readonly mobileMediaQuery = '(max-width: 768px)';
 
   readonly dashboardLink = ['/', PATHS.dashboard];
   readonly resourcesLink = ['/', PATHS.dashboard, 'resources'];
   readonly projectsLink = ['/', PATHS.dashboard, 'projects'];
   
-  isSidebarOpen = signal(true);
-  toggleSidebar() { this.isSidebarOpen.update(v => !v); }
+  readonly isMobileViewport = signal(this.matchesMobileViewport());
+  readonly isSidebarOpen = signal(!this.matchesMobileViewport());
+  readonly menuButtonLabel = computed(() => this.isSidebarOpen() ? 'Cerrar menú' : 'Abrir menú');
+
+  toggleSidebar(): void {
+    this.isSidebarOpen.update(v => !v);
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen.set(false);
+  }
+
+  closeSidebarAfterNavigation(): void {
+    if (this.isMobileViewport()) {
+      this.closeSidebar();
+    }
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    const wasMobile = this.isMobileViewport();
+    const isMobile = this.matchesMobileViewport();
+
+    if (wasMobile === isMobile) return;
+
+    this.isMobileViewport.set(isMobile);
+    this.isSidebarOpen.set(!isMobile);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.isMobileViewport() && this.isSidebarOpen()) {
+      this.closeSidebar();
+    }
+  }
 
   session = computed<UserSession | null>(() => this.auth.getSession());
   email = computed(() => this.session()?.email ?? null);
@@ -54,5 +88,9 @@ export class DashboardShellComponent {
 
   logout() {
     this.authfacade.logout();
+  }
+
+  private matchesMobileViewport(): boolean {
+    return typeof window !== 'undefined' && window.matchMedia(this.mobileMediaQuery).matches;
   }
 }

@@ -1,13 +1,32 @@
 <div class="ev-shell d-flex">
-  <aside class="ev-sidebar" [class.collapsed]="!isSidebarOpen()">
+  <button
+    *ngIf="isMobileViewport() && isSidebarOpen()"
+    type="button"
+    class="dashboard-backdrop"
+    aria-label="Cerrar menú"
+    (click)="closeSidebar()"
+  ></button>
+
+  <aside
+    id="dashboard-sidebar"
+    class="ev-sidebar"
+    [class.collapsed]="!isSidebarOpen() && !isMobileViewport()"
+    [class.is-open]="isSidebarOpen()"
+    [attr.aria-hidden]="isMobileViewport() && !isSidebarOpen()"
+  >
     <div class="brand px-3 py-3">
-      <a [routerLink]="dashboardLink" class="brand-link">
+      <a [routerLink]="dashboardLink" class="brand-link" (click)="closeSidebarAfterNavigation()">
         <i class="bi bi-house-fill"></i>
       </a>
     </div>
 
     <nav class="menu">
-      <a [routerLink]="dashboardLink" class="menu-item" routerLinkActive="active">
+      <a
+        [routerLink]="dashboardLink"
+        class="menu-item"
+        routerLinkActive="active"
+        (click)="closeSidebarAfterNavigation()"
+      >
         <i class="bi bi-speedometer2"></i> <span>Resumen</span>
       </a>
       <a
@@ -15,11 +34,17 @@
         class="menu-item"
         routerLinkActive="active"
         *hasRole="'ROLE_USER'"
+        (click)="closeSidebarAfterNavigation()"
       >
         <i class="bi bi-boxes"></i> <span>Recursos</span>
       </a>
 
-      <a [routerLink]="projectsLink" class="menu-item" routerLinkActive="active">
+      <a
+        [routerLink]="projectsLink"
+        class="menu-item"
+        routerLinkActive="active"
+        (click)="closeSidebarAfterNavigation()"
+      >
         <i class="bi bi-box2-heart"></i> <span>Proyectos</span> 
       </a>
     </nav>
@@ -27,7 +52,13 @@
 
   <div class="ev-main flex-grow-1 d-flex flex-column">
     <header class="ev-topbar d-flex align-items-center">
-      <button class="btn btn-link toggle" (click)="toggleSidebar()" aria-label="Alternar sidebar">
+      <button
+        class="btn btn-link toggle mobile-menu-button"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="menuButtonLabel()"
+        [attr.aria-expanded]="isSidebarOpen()"
+        aria-controls="dashboard-sidebar"
+      >
         <i class="bi" [ngClass]="isSidebarOpen() ? 'bi-layout-sidebar-inset' : 'bi-layout-sidebar'"></i>
       </button>
 

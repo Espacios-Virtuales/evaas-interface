@@ -37,7 +37,9 @@ Si la activacion ya inicio durante la vida del componente, la interfaz no vuelve
 - `success`: `Cuenta activada exitosamente.`
 - `error`: `El enlace puede haber expirado, ya fue utilizado o no es valido.`
 
-Cuando `activated === true`, la vista muestra exito y redirige a `/onboarding/alta-evaas` despues de una pausa breve.
+La UI considera exitosa la activacion ante HTTP 2xx. El campo `activated` solo se interpreta como fallo si viene explicitamente en `false`.
+
+En exito, la vista muestra `Cuenta activada exitosamente.` y redirige a `/onboarding/alta-evaas` despues de una pausa breve.
 
 ## Error recuperable
 
