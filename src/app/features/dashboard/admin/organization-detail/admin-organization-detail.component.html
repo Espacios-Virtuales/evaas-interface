@@ -143,8 +143,12 @@
         </div>
 
         <div class="state state-success admin-organization-detail__section-state" *ngIf="selectedUser()">
-          <strong>{{ selectedUser()?.email }} · ID {{ selectedUser()?.id }}</strong>
+          <strong>Usuario encontrado: {{ selectedUser()?.email }} · ID {{ selectedUserId() }}</strong>
           <p *ngIf="selectedUser()?.name">{{ selectedUser()?.name }}</p>
+          <p>
+            enabled: {{ formatValue(selectedUser()?.enabled) }}
+            · activated: {{ formatValue(selectedUser()?.activated) }}
+          </p>
         </div>
         <p class="admin-organization-detail__form-error" *ngIf="userLookupError()">
           {{ userLookupError() }}
@@ -169,10 +173,10 @@
             <select
               name="selectedActivationId"
               [(ngModel)]="assignmentForm.selectedActivationId"
-              [disabled]="assignmentSubmitting() || activationsLoading() || activationCandidates().length === 0"
+              [disabled]="assignmentSubmitting() || activationsLoading() || activationOptions().length === 0"
             >
               <option value="">Sin activacion seleccionada</option>
-              <option *ngFor="let activation of activationCandidates(); trackBy: trackActivation" [value]="activation.id">
+              <option *ngFor="let activation of activationOptions(); trackBy: trackActivation" [value]="activation.id">
                 {{ activationLabel(activation) }}
               </option>
             </select>
@@ -184,8 +188,11 @@
           <p>Vista transitoria filtrada en frontend hasta contar con filtro backend.</p>
           <p *ngIf="activationsLoading()">Cargando activaciones globales...</p>
           <p *ngIf="activationsError()">{{ activationsError() }}</p>
-          <p *ngIf="!activationsLoading() && !activationsError() && activationCandidates().length === 0">
-            No hay activaciones activas candidatas para la organizacion o el usuario seleccionado.
+          <p *ngIf="!activationsLoading() && !activationsError() && activations().length === 0">
+            No hay activaciones globales cargadas.
+          </p>
+          <p *ngIf="!activationsLoading() && !activationsError() && activations().length > 0 && activationCandidates().length === 0">
+            No hay coincidencias por organizacion o usuario; se muestran activaciones activas globales como seleccion transitoria.
           </p>
         </div>
 

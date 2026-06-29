@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { API, apiUrl } from '../http/api.endpoints';
 import {
   AdminResourceDto,
@@ -32,7 +33,9 @@ export class AdminAccessService {
   }
 
   findUserByEmail(email: string): Observable<AdminUserLookupDto> {
-    return this.http.get<AdminUserLookupDto>(apiUrl(API.adminUsers.byEmail(email)));
+    return this.http.get<unknown>(apiUrl(API.adminUsers.byEmail(email))).pipe(
+      map(response => this.normalizeUserLookup(response)),
+    );
   }
 
   getOrganizationById(id: number): Observable<OrganizationDto> {
@@ -45,5 +48,29 @@ export class AdminAccessService {
 
   getOrganizationResources(id: number): Observable<AdminResourceDto[]> {
     return this.http.get<AdminResourceDto[]>(apiUrl(API.adminAccess.organizationResources(id)));
+  }
+
+  private normalizeUserLookup(response: unknown): AdminUserLookupDto {
+    if (this.isUserLookupDto(response)) return response;
+
+    if (this.isRecord(response)) {
+      const data = response['data'];
+      if (this.isUserLookupDto(data)) return data;
+
+      const user = response['user'];
+      if (this.isUserLookupDto(user)) return user;
+    }
+
+    throw new Error('Invalid user lookup response');
+  }
+
+  private isUserLookupDto(value: unknown): value is AdminUserLookupDto {
+    return this.isRecord(value)
+      && typeof value['id'] === 'number'
+      && typeof value['email'] === 'string';
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null;
   }
 }

@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { API, apiUrl } from '../http/api.endpoints';
 import {
   CreateActivationPayload,
@@ -12,7 +13,9 @@ export class AdminCommerceService {
   private http = inject(HttpClient);
 
   getActivations(): Observable<ExternalCommerceActivationDto[]> {
-    return this.http.get<ExternalCommerceActivationDto[]>(apiUrl(API.adminCommerce.activations));
+    return this.http.get<unknown>(apiUrl(API.adminCommerce.activations)).pipe(
+      map(response => this.normalizeActivationList(response)),
+    );
   }
 
   getActivationById(id: number): Observable<ExternalCommerceActivationDto> {
@@ -31,5 +34,16 @@ export class AdminCommerceService {
       apiUrl(API.adminCommerce.activationStatus(id)),
       payload
     );
+  }
+
+  private normalizeActivationList(response: unknown): ExternalCommerceActivationDto[] {
+    if (Array.isArray(response)) return response as ExternalCommerceActivationDto[];
+
+    if (typeof response !== 'object' || response === null) return [];
+
+    const record = response as Record<string, unknown>;
+    const list = record['content'] ?? record['data'] ?? record['items'] ?? [];
+
+    return Array.isArray(list) ? list as ExternalCommerceActivationDto[] : [];
   }
 }
