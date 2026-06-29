@@ -457,36 +457,54 @@
         <p>Cuando existan recursos reales para esta organizacion, apareceran aqui.</p>
       </div>
 
-      <div class="admin-organization-detail__resources-list" *ngIf="hasResources()">
-        <article class="admin-organization-detail__resource-row" *ngFor="let resource of resources(); trackBy: trackResource">
-          <div class="admin-organization-detail__resource-main">
-            <h3>{{ resourceTitle(resource) }}</h3>
-            <p>
-              {{ resourceKey(resource) }} · {{ resourceType(resource) }}
-              · <span [class]="statusClass(resourceStatus(resource))">{{ formatValue(resourceStatus(resource)) }}</span>
-              · {{ resourceVisibility(resource) }}
-            </p>
-          </div>
-
-          <div class="admin-organization-detail__resource-actions">
-            <button
-              class="admin-organization-detail__secondary-action"
-              type="button"
-              (click)="openResourceDetail(resource)"
-            >
-              Ver detalle
-            </button>
-            <a
-              class="admin-organization-detail__resource-link"
-              *ngIf="resourceUrl(resource) as url"
-              [href]="url"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Abrir
-            </a>
-          </div>
-        </article>
+      <div class="admin-organization-detail__resources-table-wrap" *ngIf="hasResources()">
+        <table class="admin-organization-detail__resources-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Clave</th>
+              <th>Tipo</th>
+              <th>Estado</th>
+              <th>Visibilidad</th>
+              <th>ToolAccess</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let resource of resources(); trackBy: trackResource">
+              <td>{{ resourceTitle(resource) }}</td>
+              <td>{{ resourceKey(resource) }}</td>
+              <td>{{ resourceType(resource) }}</td>
+              <td>
+                <span [class]="statusClass(resourceStatus(resource))">
+                  {{ formatValue(resourceStatus(resource)) }}
+                </span>
+              </td>
+              <td>{{ resourceVisibility(resource) }}</td>
+              <td>{{ resourceToolAccessId(resource) }}</td>
+              <td>
+                <div class="admin-organization-detail__resource-actions">
+                  <button
+                    class="admin-organization-detail__secondary-action"
+                    type="button"
+                    (click)="openResourceDetail(resource)"
+                  >
+                    Ver detalle
+                  </button>
+                  <a
+                    class="admin-organization-detail__resource-link"
+                    *ngIf="resourceUrl(resource) as url"
+                    [href]="url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Abrir
+                  </a>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </section>
 
@@ -576,6 +594,7 @@
       </dl>
 
       <footer class="admin-organization-detail__modal-actions">
+        <p class="admin-organization-detail__modal-note">Edición pendiente de contrato backend.</p>
         <a
           class="admin-organization-detail__primary-link"
           *ngIf="resourceUrl(resource) as url"
