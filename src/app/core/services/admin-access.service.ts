@@ -5,6 +5,7 @@ import { API, apiUrl } from '../http/api.endpoints';
 import {
   AdminResourceDto,
   AdminToolAccessDto,
+  AdminUserLookupDto,
   CreateOrganizationRequest,
   CreateToolAccessPayload,
   OrganizationDto,
@@ -24,6 +25,14 @@ export class AdminAccessService {
 
   createToolAccess(payload: CreateToolAccessPayload): Observable<AdminToolAccessDto> {
     return this.http.post<AdminToolAccessDto>(apiUrl(API.adminAccess.toolAccess), payload);
+  }
+
+  disableToolAccess(id: number): Observable<void> {
+    return this.http.delete<void>(apiUrl(API.adminAccess.toolAccessById(id)));
+  }
+
+  findUserByEmail(email: string): Observable<AdminUserLookupDto> {
+    return this.http.get<AdminUserLookupDto>(apiUrl(API.adminUsers.byEmail(email)));
   }
 
   getOrganizationById(id: number): Observable<OrganizationDto> {

@@ -23,11 +23,15 @@ export const API = {
   adminAccess: {
     organizations: '/admin/access/organizations',
     toolAccess: '/admin/access/tool-access',
+    toolAccessById: (id: number) => `/admin/access/tool-access/${encodeURIComponent(String(id))}`,
     organizationById: (id: number) => `/admin/access/organizations/${encodeURIComponent(String(id))}`,
     organizationToolAccess: (id: number) =>
       `/admin/access/organizations/${encodeURIComponent(String(id))}/tool-access`,
     organizationResources: (id: number) =>
       `/admin/access/organizations/${encodeURIComponent(String(id))}/resources`,
+  },
+  adminUsers: {
+    byEmail: (email: string) => `/admin/users/by-email?email=${encodeURIComponent(email)}`,
   },
   adminCommerce: {
     activations: '/admin/commerce/activations',
