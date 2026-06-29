@@ -454,7 +454,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return [
       { label: 'ID', value: this.valueFromKeys(resource, ['id']) },
       { label: 'Nombre', value: this.valueFromKeys(resource, ['name', 'resourceName']) },
-      { label: 'Clave', value: this.valueFromKeys(resource, ['resourceKey', 'key']) },
+      { label: 'Clave', value: this.valueFromKeys(resource, ['key']) },
+      { label: 'Resource key', value: this.valueFromKeys(resource, ['resourceKey']) },
       { label: 'Tipo', value: this.valueFromKeys(resource, ['type', 'resourceType']) },
       { label: 'Tool access ID', value: this.valueFromKeys(resource, ['toolAccessId', 'accessId']) },
       { label: 'Organization ID', value: this.valueFromKeys(resource, ['organizationId']) },
@@ -505,6 +506,10 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   resourceVisibility(resource: AdminResourceDto): string {
     return this.formatValue(this.valueFromKeys(resource, ['visibility']));
+  }
+
+  resourceToolAccessId(resource: AdminResourceDto): string {
+    return this.formatValue(this.valueFromKeys(resource, ['toolAccessId', 'accessId']));
   }
 
   resourceUrl(resource: AdminResourceDto | null): string | null {
