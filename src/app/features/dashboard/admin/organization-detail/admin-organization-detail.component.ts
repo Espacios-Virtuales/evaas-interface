@@ -92,13 +92,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
   };
 
   readonly suggestedToolKeys = [
-    'EVAAS_ADMIN',
-    'FARQBIM_DASHBOARD',
-    'CRYPTO_ANALYTICS_API',
-    'ESCUELA_MISTICA_PORTAL',
-    'WORDPRESS_SITE',
-    'POWER_BI_DASHBOARD',
-    'REPOSITORY_ACCESS',
+    'EVAAS_ADMIN_OPERATIONS',
+    'EVAAS_WORKFLOW',
+    'EVAAS_LANDING_LAT',
   ];
 
   readonly suggestedResourceTypes = [
@@ -127,26 +123,32 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'Tax ID', value: organization.taxId },
       { label: 'Owner email', value: organization.ownerEmail },
       { label: 'Owner user ID', value: organization.ownerUserId },
-      { label: 'Estado', value: organization.status, kind: 'status' as const },
+      { label: 'Enabled', value: organization.enabled, kind: 'status' as const },
       { label: 'Creada', value: organization.createdAt, kind: 'date' as const },
-      { label: 'Actualizada', value: organization.updatedAt, kind: 'date' as const },
-    ].filter(field => this.hasValue(field.value));
+    ];
   });
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
-  readonly showToolAccessToolName = computed(() => this.hasToolAccessValue('toolName'));
-  readonly showToolAccessGrantedAt = computed(() => this.hasToolAccessValue('grantedAt'));
-  readonly showToolAccessRevokedAt = computed(() => this.hasToolAccessValue('revokedAt'));
+  readonly operationalStatements = computed(() => {
+    const organization = this.organization();
+    const enabledStatement = organization?.enabled === true
+      ? 'Organizacion habilitada.'
+      : organization?.enabled === false
+        ? 'Organizacion deshabilitada.'
+        : 'Estado enabled no informado por backend.';
 
-  readonly operationalStatements = computed(() => [
-    this.hasToolAccess()
-      ? 'Organizacion con accesos registrados.'
-      : 'Organizacion sin accesos registrados.',
-    this.hasResources()
-      ? 'Organizacion con recursos asociados.'
-      : 'Organizacion sin recursos asociados.',
-  ]);
+    return [
+      enabledStatement,
+      this.hasToolAccess()
+        ? `Esta organizacion posee ${this.toolAccess().length} accesos registrados.`
+        : 'Esta organizacion aun no posee accesos registrados.',
+      this.hasResources()
+        ? `Esta organizacion posee ${this.resources().length} recursos asociados.`
+        : 'Esta organizacion aun no posee recursos asociados.',
+      'Activaciones activas pendientes de contrato backend filtrado por organizacion.',
+    ];
+  });
 
   ngOnInit(): void {
     this.route.paramMap
@@ -311,6 +313,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'Nombre', value: this.valueFromKeys(resource, ['name', 'resourceName']) },
       { label: 'Clave', value: this.valueFromKeys(resource, ['resourceKey', 'key']) },
       { label: 'Tipo', value: this.valueFromKeys(resource, ['type', 'resourceType']) },
+      { label: 'Tool access ID', value: this.valueFromKeys(resource, ['toolAccessId', 'accessId']) },
       { label: 'Estado', value: this.valueFromKeys(resource, ['status']), kind: 'status' as const },
       { label: 'Visibilidad', value: this.valueFromKeys(resource, ['visibility']) },
       {
@@ -337,11 +340,11 @@ export class AdminOrganizationDetailComponent implements OnInit {
   statusClass(value: unknown): string {
     const normalized = this.formatValue(value).toLowerCase();
 
-    if (['active', 'enabled', 'available', 'ready', 'ok'].includes(normalized)) {
+    if (['true', 'active', 'enabled', 'available', 'ready', 'ok'].includes(normalized)) {
       return 'status-pill status-pill--success';
     }
 
-    if (['disabled', 'revoked', 'inactive', 'suspended', 'cancelled', 'failed'].includes(normalized)) {
+    if (['false', 'disabled', 'revoked', 'inactive', 'suspended', 'cancelled', 'failed'].includes(normalized)) {
       return 'status-pill status-pill--muted';
     }
 
@@ -437,6 +440,11 @@ export class AdminOrganizationDetailComponent implements OnInit {
     }
 
     if (toolAccessId === null) return null;
+
+    if (toolAccessId !== undefined && !this.toolAccess().some(access => access.id === toolAccessId)) {
+      this.resourceCreateValidation.set('toolAccessId debe seleccionarse desde los accesos cargados de esta organizacion.');
+      return null;
+    }
 
     if (url && !this.isValidUrl(url)) {
       this.resourceCreateValidation.set('url debe tener formato URL valido.');
@@ -582,16 +590,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
   }
 
   private containsSecretLikeContent(value: string): boolean {
-    return /\b(password|passwd|secret|token|accessToken|apiKey|privateKey|credential|authorization|bearer)\b/i.test(value);
-  }
-
-  private hasToolAccessValue(
-    key: keyof Pick<
-      AdminToolAccessDto,
-      'toolName' | 'grantedAt' | 'revokedAt'
-    >,
-  ): boolean {
-    return this.toolAccess().some(access => this.hasValue(access[key]));
+    return /\b(password|passwd|secret|token|access[_-]?token|api[_-]?key|private[_-]?key|credential|authorization|bearer)\b/i.test(value);
   }
 
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {

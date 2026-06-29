@@ -5,7 +5,7 @@
       <h1 id="admin-organization-detail-title">
         {{ organization()?.name || 'Detalle de organizacion' }}
       </h1>
-      <p>Observacion operacional de la organizacion registrada en EVAAS.</p>
+      <p>Consola interna basada en contratos reales del backend.</p>
     </div>
 
     <a class="admin-organization-detail__back" routerLink="/dashboard/admin/organizations">
@@ -34,7 +34,7 @@
         </div>
       </div>
 
-      <dl class="admin-organization-detail__facts" *ngIf="organizationFields().length > 0">
+      <dl class="admin-organization-detail__facts">
         <div *ngFor="let field of organizationFields()">
           <dt>{{ field.label }}</dt>
           <dd *ngIf="field.kind === 'status'">
@@ -98,7 +98,7 @@
               [(ngModel)]="assignmentForm.toolKey"
               required
               autocomplete="off"
-              placeholder="FARQBIM_DASHBOARD"
+              placeholder="EVAAS_WORKFLOW"
               [disabled]="assignmentSubmitting()"
             />
           </label>
@@ -131,7 +131,7 @@
         </div>
 
         <div class="admin-organization-detail__suggestions" aria-label="Ejemplos sugeridos de toolKey">
-          <span>Ejemplos sugeridos:</span>
+          <span>Ejemplos sugeridos de toolKey:</span>
           <button
             type="button"
             *ngFor="let toolKey of suggestedToolKeys"
@@ -177,22 +177,30 @@
         <table class="table align-middle">
           <thead>
             <tr>
+              <th>ID</th>
               <th>Tool key</th>
-              <th *ngIf="showToolAccessToolName()">Tool name</th>
+              <th>Tool name</th>
               <th>Estado</th>
-              <th *ngIf="showToolAccessGrantedAt()">Otorgado</th>
-              <th *ngIf="showToolAccessRevokedAt()">Revocado</th>
+              <th>Otorgado</th>
+              <th>Revocado</th>
+              <th>User ID</th>
+              <th>User email</th>
+              <th>Activation ID</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let access of toolAccess(); trackBy: trackToolAccess">
+              <td>{{ formatValue(access.id) }}</td>
               <td>{{ formatValue(access.toolKey) }}</td>
-              <td *ngIf="showToolAccessToolName()">{{ formatValue(access.toolName) }}</td>
+              <td>{{ formatValue(access.toolName) }}</td>
               <td>
                 <span [class]="statusClass(access.status)">{{ formatValue(access.status) }}</span>
               </td>
-              <td *ngIf="showToolAccessGrantedAt()">{{ formatDate(access.grantedAt) }}</td>
-              <td *ngIf="showToolAccessRevokedAt()">{{ formatDate(access.revokedAt) }}</td>
+              <td>{{ formatDate(access.grantedAt) }}</td>
+              <td>{{ formatDate(access.revokedAt) }}</td>
+              <td>{{ formatValue(access.userId) }}</td>
+              <td>{{ formatValue(access.userEmail) }}</td>
+              <td>{{ formatValue(access.externalCommerceActivationId) }}</td>
             </tr>
           </tbody>
         </table>
@@ -230,6 +238,7 @@
           <div>
             <h3>Crear recurso</h3>
             <p>El organizationId se toma desde esta organizacion. Resource describe operacion; no guarda secretos.</p>
+            <p *ngIf="!hasToolAccess()">No hay ToolAccess cargados para asociar; se enviara sin toolAccessId si el contrato backend lo permite.</p>
           </div>
 
           <button
@@ -251,7 +260,7 @@
               [(ngModel)]="resourceForm.name"
               required
               autocomplete="off"
-              placeholder="FarqBIM dashboard"
+              placeholder="EVAAS Workflow"
               [disabled]="resourceCreateSubmitting()"
             />
           </label>
@@ -275,7 +284,7 @@
               name="resourceKey"
               [(ngModel)]="resourceForm.key"
               autocomplete="off"
-              placeholder="farqbim-dashboard"
+              placeholder="EV_LAT_LANDING"
               [disabled]="resourceCreateSubmitting()"
             />
           </label>
