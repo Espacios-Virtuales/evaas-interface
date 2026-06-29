@@ -66,6 +66,12 @@
       <div class="state state-success admin-organization-detail__section-state" *ngIf="assignmentSuccess() && !assignmentOpen()">
         <strong>{{ assignmentSuccess() }}</strong>
       </div>
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="disableToolAccessSuccess()">
+        <strong>{{ disableToolAccessSuccess() }}</strong>
+      </div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="disableToolAccessError()">
+        <strong>{{ disableToolAccessError() }}</strong>
+      </div>
 
       <form
         class="admin-organization-detail__assignment"
@@ -103,19 +109,48 @@
             />
           </label>
 
-          <label>
-            <span>userId</span>
+          <label class="admin-organization-detail__assignment-field--wide">
+            <span>Correo del usuario</span>
             <input
-              type="number"
-              name="userId"
-              [(ngModel)]="assignmentForm.userId"
-              min="1"
-              inputmode="numeric"
-              placeholder="123"
-              [disabled]="assignmentSubmitting()"
+              type="email"
+              name="userEmail"
+              [(ngModel)]="assignmentForm.userEmail"
+              autocomplete="email"
+              placeholder="info@espaciosvirtuales.lat"
+              [disabled]="assignmentSubmitting() || userLookupLoading() || !!selectedUser()"
             />
           </label>
+        </div>
 
+        <div class="admin-organization-detail__assignment-actions admin-organization-detail__assignment-actions--left">
+          <button
+            class="admin-organization-detail__secondary-action"
+            type="button"
+            (click)="searchUserByEmail()"
+            [disabled]="assignmentSubmitting() || userLookupLoading() || !!selectedUser()"
+          >
+            {{ userLookupLoading() ? 'Buscando...' : 'Buscar usuario' }}
+          </button>
+          <button
+            class="admin-organization-detail__link-button"
+            type="button"
+            *ngIf="selectedUser()"
+            (click)="clearSelectedUser()"
+            [disabled]="assignmentSubmitting()"
+          >
+            Limpiar seleccion
+          </button>
+        </div>
+
+        <div class="state state-success admin-organization-detail__section-state" *ngIf="selectedUser()">
+          <strong>{{ selectedUser()?.email }} · ID {{ selectedUser()?.id }}</strong>
+          <p *ngIf="selectedUser()?.name">{{ selectedUser()?.name }}</p>
+        </div>
+        <p class="admin-organization-detail__form-error" *ngIf="userLookupError()">
+          {{ userLookupError() }}
+        </p>
+
+        <div class="admin-organization-detail__assignment-grid">
           <label>
             <span>externalCommerceActivationId</span>
             <input
@@ -128,6 +163,30 @@
               [disabled]="assignmentSubmitting()"
             />
           </label>
+
+          <label>
+            <span>Activacion candidata</span>
+            <select
+              name="selectedActivationId"
+              [(ngModel)]="assignmentForm.selectedActivationId"
+              [disabled]="assignmentSubmitting() || activationsLoading() || activationCandidates().length === 0"
+            >
+              <option value="">Sin activacion seleccionada</option>
+              <option *ngFor="let activation of activationCandidates(); trackBy: trackActivation" [value]="activation.id">
+                {{ activationLabel(activation) }}
+              </option>
+            </select>
+          </label>
+        </div>
+
+        <div class="state state-empty admin-organization-detail__section-state">
+          <strong>Filtro de activaciones por organizacion pendiente de contrato backend.</strong>
+          <p>Vista transitoria filtrada en frontend hasta contar con filtro backend.</p>
+          <p *ngIf="activationsLoading()">Cargando activaciones globales...</p>
+          <p *ngIf="activationsError()">{{ activationsError() }}</p>
+          <p *ngIf="!activationsLoading() && !activationsError() && activationCandidates().length === 0">
+            No hay activaciones activas candidatas para la organizacion o el usuario seleccionado.
+          </p>
         </div>
 
         <div class="admin-organization-detail__suggestions" aria-label="Ejemplos sugeridos de toolKey">
@@ -186,6 +245,7 @@
               <th>User ID</th>
               <th>User email</th>
               <th>Activation ID</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -201,6 +261,16 @@
               <td>{{ formatValue(access.userId) }}</td>
               <td>{{ formatValue(access.userEmail) }}</td>
               <td>{{ formatValue(access.externalCommerceActivationId) }}</td>
+              <td>
+                <button
+                  class="admin-organization-detail__danger-action"
+                  type="button"
+                  (click)="disableToolAccess(access)"
+                  [disabled]="disablingToolAccessId() === access.id || assignmentSubmitting()"
+                >
+                  {{ disablingToolAccessId() === access.id ? 'Deshabilitando...' : 'Deshabilitar acceso' }}
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>

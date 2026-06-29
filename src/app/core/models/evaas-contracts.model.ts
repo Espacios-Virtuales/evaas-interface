@@ -48,8 +48,16 @@ export interface AdminToolAccessDto {
 export interface CreateToolAccessPayload {
   organizationId: number;
   toolKey: string;
-  userId?: number;
+  userId: number;
   externalCommerceActivationId?: number;
+}
+
+export interface AdminUserLookupDto {
+  id: number;
+  email: string;
+  name?: string;
+  enabled?: boolean;
+  activated?: boolean;
 }
 
 export interface AdminResourceDto {

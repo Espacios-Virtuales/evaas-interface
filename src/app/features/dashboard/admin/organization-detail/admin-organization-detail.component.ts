@@ -8,11 +8,14 @@ import { Observable, distinctUntilChanged, forkJoin, map, switchMap, throwError 
 import {
   AdminResourceDto,
   AdminToolAccessDto,
+  AdminUserLookupDto,
   CreateAdminResourcePayload,
   CreateToolAccessPayload,
+  ExternalCommerceActivationDto,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { AdminCommerceService } from '../../../../core/services/admin-commerce.service';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 
 interface DetailField {
@@ -23,8 +26,9 @@ interface DetailField {
 
 interface AssignmentForm {
   toolKey: string;
-  userId: string;
+  userEmail: string;
   externalCommerceActivationId: string;
+  selectedActivationId: string;
 }
 
 interface ResourceForm {
@@ -54,6 +58,7 @@ interface OrganizationDetailResult {
 export class AdminOrganizationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly adminAccess = inject(AdminAccessService);
+  private readonly adminCommerce = inject(AdminCommerceService);
   private readonly adminResources = inject(AdminResourceService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -67,6 +72,15 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly assignmentSuccess = signal<string | null>(null);
   readonly assignmentError = signal<string | null>(null);
   readonly assignmentValidation = signal<string | null>(null);
+  readonly userLookupLoading = signal(false);
+  readonly userLookupError = signal<string | null>(null);
+  readonly selectedUser = signal<AdminUserLookupDto | null>(null);
+  readonly activationsLoading = signal(false);
+  readonly activationsError = signal<string | null>(null);
+  readonly activations = signal<ExternalCommerceActivationDto[]>([]);
+  readonly disablingToolAccessId = signal<number | null>(null);
+  readonly disableToolAccessSuccess = signal<string | null>(null);
+  readonly disableToolAccessError = signal<string | null>(null);
   readonly resourceCreateOpen = signal(false);
   readonly resourceCreateSubmitting = signal(false);
   readonly resourceCreateSuccess = signal<string | null>(null);
@@ -76,8 +90,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   assignmentForm: AssignmentForm = {
     toolKey: '',
-    userId: '',
+    userEmail: '',
     externalCommerceActivationId: '',
+    selectedActivationId: '',
   };
 
   resourceForm: ResourceForm = {
@@ -130,6 +145,22 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
+  readonly activationCandidates = computed(() => {
+    const organizationName = this.organization()?.name.trim().toLowerCase();
+    const selectedUserEmail = this.selectedUser()?.email.trim().toLowerCase();
+
+    return this.activations().filter(activation => {
+      const isActive = activation.status === 'ACTIVE';
+      const matchesOrganization = organizationName
+        ? activation.organizationName?.trim().toLowerCase() === organizationName
+        : false;
+      const matchesUser = selectedUserEmail
+        ? activation.buyerEmail?.trim().toLowerCase() === selectedUserEmail
+        : false;
+
+      return isActive && (matchesOrganization || matchesUser);
+    });
+  });
   readonly operationalStatements = computed(() => {
     const organization = this.organization();
     const enabledStatement = organization?.enabled === true
@@ -146,7 +177,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
       this.hasResources()
         ? `Esta organizacion posee ${this.resources().length} recursos asociados.`
         : 'Esta organizacion aun no posee recursos asociados.',
-      'Activaciones activas pendientes de contrato backend filtrado por organizacion.',
+      this.activationCandidates().length > 0
+        ? `Vista transitoria encontro ${this.activationCandidates().length} activaciones activas candidatas.`
+        : 'Activaciones activas pendientes de contrato backend filtrado por organizacion.',
     ];
   });
 
@@ -198,6 +231,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.assignmentSuccess.set(null);
     this.assignmentError.set(null);
     this.assignmentValidation.set(null);
+    this.disableToolAccessSuccess.set(null);
+    this.disableToolAccessError.set(null);
+    this.loadActivationsForAssignment();
   }
 
   closeAssignmentForm(): void {
@@ -205,6 +241,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.assignmentSubmitting.set(false);
     this.assignmentError.set(null);
     this.assignmentValidation.set(null);
+    this.userLookupLoading.set(false);
+    this.userLookupError.set(null);
+    this.selectedUser.set(null);
     this.resetAssignmentForm();
   }
 
@@ -287,19 +326,98 @@ export class AdminOrganizationDetailComponent implements OnInit {
     });
   }
 
+  searchUserByEmail(): void {
+    const email = this.assignmentForm.userEmail.trim();
+    this.userLookupError.set(null);
+    this.assignmentValidation.set(null);
+    this.selectedUser.set(null);
+
+    if (!this.isValidEmail(email)) {
+      this.userLookupError.set('Ingresa un correo valido antes de buscar.');
+      return;
+    }
+
+    this.userLookupLoading.set(true);
+    this.adminAccess.findUserByEmail(email).pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: user => {
+        this.userLookupLoading.set(false);
+        if (!user?.id) {
+          this.userLookupError.set('No encontramos un usuario con ese correo.');
+          return;
+        }
+
+        this.selectedUser.set(user);
+      },
+      error: err => {
+        this.userLookupLoading.set(false);
+        this.userLookupError.set(this.userLookupErrorMessage(err));
+      },
+    });
+  }
+
+  clearSelectedUser(): void {
+    this.selectedUser.set(null);
+    this.userLookupError.set(null);
+    this.assignmentForm.selectedActivationId = '';
+  }
+
+  disableToolAccess(access: AdminToolAccessDto): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId || !access.id) return;
+
+    const confirmed = window.confirm(
+      '¿Deshabilitar este acceso?\nEsta accion no borra el historial. Solo deshabilita el acceso operativo.',
+    );
+    if (!confirmed) return;
+
+    this.disablingToolAccessId.set(access.id);
+    this.disableToolAccessError.set(null);
+    this.disableToolAccessSuccess.set(null);
+
+    this.adminAccess.disableToolAccess(access.id).pipe(
+      switchMap(() => this.adminAccess.getOrganizationToolAccess(organizationId)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: toolAccess => {
+        this.toolAccess.set(Array.isArray(toolAccess) ? toolAccess : []);
+        this.disablingToolAccessId.set(null);
+        this.disableToolAccessSuccess.set('Acceso deshabilitado correctamente.');
+      },
+      error: err => {
+        this.disablingToolAccessId.set(null);
+        this.disableToolAccessError.set(this.disableToolAccessErrorMessage(err));
+      },
+    });
+  }
+
   useSuggestedToolKey(toolKey: string): void {
     this.assignmentForm.toolKey = toolKey;
     this.assignmentValidation.set(null);
   }
 
   toolAccessLabel(access: AdminToolAccessDto): string {
-    const toolName = this.hasValue(access.toolName) ? ` - ${access.toolName}` : '';
-    const user = this.hasValue(access.userEmail) ? ` (${access.userEmail})` : '';
-    return `${access.id} - ${access.toolKey}${toolName}${user}`;
+    const status = this.hasValue(access.status) ? ` - ${access.status}` : '';
+    return `${access.toolKey}${status} - ID ${access.id}`;
+  }
+
+  activationLabel(activation: ExternalCommerceActivationDto): string {
+    return [
+      `ID ${activation.id}`,
+      activation.productCode,
+      activation.buyerEmail,
+      activation.organizationName,
+      activation.status,
+    ].filter(value => this.hasValue(value)).join(' - ');
   }
 
   trackToolAccess(index: number, access: AdminToolAccessDto): string {
     return this.hasValue(access.id) ? String(access.id) : `${access.toolKey}-${index}`;
+  }
+
+  trackActivation(index: number, activation: ExternalCommerceActivationDto): string {
+    return this.hasValue(activation.id) ? String(activation.id) : `${activation.productCode}-${index}`;
   }
 
   trackResource(index: number, resource: AdminResourceDto): string {
@@ -396,11 +514,32 @@ export class AdminOrganizationDetailComponent implements OnInit {
     });
   }
 
+  private loadActivationsForAssignment(): void {
+    if (this.activations().length > 0 || this.activationsLoading()) return;
+
+    this.activationsLoading.set(true);
+    this.activationsError.set(null);
+
+    this.adminCommerce.getActivations().pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: activations => {
+        this.activations.set(Array.isArray(activations) ? activations : []);
+        this.activationsLoading.set(false);
+      },
+      error: err => {
+        this.activations.set([]);
+        this.activationsLoading.set(false);
+        this.activationsError.set(this.activationsErrorMessage(err));
+      },
+    });
+  }
+
   private buildAssignmentPayload(organizationId: number): CreateToolAccessPayload | null {
     const toolKey = this.assignmentForm.toolKey.trim();
-    const userId = this.parseOptionalPositiveInteger(this.assignmentForm.userId, 'userId');
+    const selectedUser = this.selectedUser();
     const externalCommerceActivationId = this.parseOptionalPositiveInteger(
-      this.assignmentForm.externalCommerceActivationId,
+      this.assignmentForm.selectedActivationId || this.assignmentForm.externalCommerceActivationId,
       'externalCommerceActivationId',
     );
 
@@ -409,12 +548,17 @@ export class AdminOrganizationDetailComponent implements OnInit {
       return null;
     }
 
-    if (userId === null || externalCommerceActivationId === null) return null;
+    if (!selectedUser?.id) {
+      this.assignmentValidation.set('Busca y selecciona un usuario antes de asignar acceso.');
+      return null;
+    }
+
+    if (externalCommerceActivationId === null) return null;
 
     return {
       organizationId,
       toolKey,
-      ...(userId !== undefined ? { userId } : {}),
+      userId: selectedUser.id,
       ...(externalCommerceActivationId !== undefined ? { externalCommerceActivationId } : {}),
     };
   }
@@ -505,8 +649,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
   private resetAssignmentForm(): void {
     this.assignmentForm = {
       toolKey: '',
-      userId: '',
+      userEmail: '',
       externalCommerceActivationId: '',
+      selectedActivationId: '',
     };
   }
 
@@ -547,6 +692,54 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return 'No fue posible asignar el acceso. Intenta nuevamente.';
   }
 
+  private userLookupErrorMessage(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'No fue posible buscar el usuario. Intenta nuevamente.';
+    }
+
+    if (err.status === 404) {
+      return 'No encontramos un usuario con ese correo.';
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return 'No tienes permisos suficientes para buscar usuarios.';
+    }
+
+    return 'No fue posible buscar el usuario. Intenta nuevamente.';
+  }
+
+  private activationsErrorMessage(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'No fue posible cargar activaciones globales.';
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return 'No tienes permisos suficientes para cargar activaciones globales.';
+    }
+
+    return 'No fue posible cargar activaciones globales.';
+  }
+
+  private disableToolAccessErrorMessage(err: unknown): string {
+    if (!(err instanceof HttpErrorResponse)) {
+      return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
+    }
+
+    if (err.status === 401 || err.status === 403) {
+      return 'No tienes permisos suficientes para deshabilitar este acceso.';
+    }
+
+    if (err.status === 404) {
+      return 'No se encontro el acceso indicado.';
+    }
+
+    if (err.status === 409) {
+      return 'El acceso no puede deshabilitarse en su estado actual.';
+    }
+
+    return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
+  }
+
   private resourceCreateErrorMessage(err: unknown): string {
     if (!(err instanceof HttpErrorResponse)) {
       return 'No fue posible crear el recurso. Intenta nuevamente.';
@@ -578,6 +771,10 @@ export class AdminOrganizationDetailComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  private isValidEmail(value: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   }
 
   private isValidJson(value: string): boolean {
