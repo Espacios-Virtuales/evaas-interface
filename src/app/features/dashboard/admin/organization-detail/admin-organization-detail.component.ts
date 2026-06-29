@@ -75,6 +75,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly userLookupLoading = signal(false);
   readonly userLookupError = signal<string | null>(null);
   readonly selectedUser = signal<AdminUserLookupDto | null>(null);
+  readonly selectedUserId = signal<number | null>(null);
   readonly activationsLoading = signal(false);
   readonly activationsError = signal<string | null>(null);
   readonly activations = signal<ExternalCommerceActivationDto[]>([]);
@@ -150,7 +151,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
     const selectedUserEmail = this.selectedUser()?.email.trim().toLowerCase();
 
     return this.activations().filter(activation => {
-      const isActive = activation.status === 'ACTIVE';
+      const isActive = String(activation.status).toUpperCase() === 'ACTIVE';
       const matchesOrganization = organizationName
         ? activation.organizationName?.trim().toLowerCase() === organizationName
         : false;
@@ -160,6 +161,12 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
       return isActive && (matchesOrganization || matchesUser);
     });
+  });
+  readonly activationOptions = computed(() => {
+    const candidates = this.activationCandidates();
+    if (candidates.length > 0) return candidates;
+
+    return this.activations().filter(activation => String(activation.status).toUpperCase() === 'ACTIVE');
   });
   readonly operationalStatements = computed(() => {
     const organization = this.organization();
@@ -244,6 +251,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.userLookupLoading.set(false);
     this.userLookupError.set(null);
     this.selectedUser.set(null);
+    this.selectedUserId.set(null);
     this.resetAssignmentForm();
   }
 
@@ -331,6 +339,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.userLookupError.set(null);
     this.assignmentValidation.set(null);
     this.selectedUser.set(null);
+    this.selectedUserId.set(null);
 
     if (!this.isValidEmail(email)) {
       this.userLookupError.set('Ingresa un correo valido antes de buscar.');
@@ -349,6 +358,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
         }
 
         this.selectedUser.set(user);
+        this.selectedUserId.set(user.id);
       },
       error: err => {
         this.userLookupLoading.set(false);
@@ -359,6 +369,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   clearSelectedUser(): void {
     this.selectedUser.set(null);
+    this.selectedUserId.set(null);
     this.userLookupError.set(null);
     this.assignmentForm.selectedActivationId = '';
   }
@@ -404,26 +415,37 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   activationLabel(activation: ExternalCommerceActivationDto): string {
     return [
-      `ID ${activation.id}`,
+      activation.provider,
       activation.productCode,
+      activation.status,
+      `ID ${activation.id}`,
       activation.buyerEmail,
       activation.organizationName,
-      activation.status,
     ].filter(value => this.hasValue(value)).join(' - ');
   }
 
-  trackToolAccess(index: number, access: AdminToolAccessDto): string {
-    return this.hasValue(access.id) ? String(access.id) : `${access.toolKey}-${index}`;
-  }
+  readonly trackToolAccess = (
+    index: number,
+    access: AdminToolAccessDto | null | undefined,
+  ): string | number => access?.id ?? access?.toolKey ?? index;
 
-  trackActivation(index: number, activation: ExternalCommerceActivationDto): string {
-    return this.hasValue(activation.id) ? String(activation.id) : `${activation.productCode}-${index}`;
-  }
+  readonly trackActivation = (
+    index: number,
+    activation: ExternalCommerceActivationDto | null | undefined,
+  ): string | number => activation?.id ?? activation?.productCode ?? index;
 
-  trackResource(index: number, resource: AdminResourceDto): string {
-    const id = this.valueFromKeys(resource, ['id']);
-    return this.hasValue(id) ? String(id) : String(index);
-  }
+  readonly trackResource = (
+    index: number,
+    resource: AdminResourceDto | null | undefined,
+  ): string | number => {
+    const id = resource?.['id'];
+    const key = resource?.['key'] ?? resource?.['resourceKey'];
+    return typeof id === 'string' || typeof id === 'number'
+      ? id
+      : typeof key === 'string' || typeof key === 'number'
+        ? key
+        : index;
+  };
 
   resourceFields(resource: AdminResourceDto): DetailField[] {
     return [
@@ -537,7 +559,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   private buildAssignmentPayload(organizationId: number): CreateToolAccessPayload | null {
     const toolKey = this.assignmentForm.toolKey.trim();
-    const selectedUser = this.selectedUser();
+    const selectedUserId = this.selectedUserId();
     const externalCommerceActivationId = this.parseOptionalPositiveInteger(
       this.assignmentForm.selectedActivationId || this.assignmentForm.externalCommerceActivationId,
       'externalCommerceActivationId',
@@ -548,7 +570,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
       return null;
     }
 
-    if (!selectedUser?.id) {
+    if (!selectedUserId) {
       this.assignmentValidation.set('Busca y selecciona un usuario antes de asignar acceso.');
       return null;
     }
@@ -558,7 +580,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return {
       organizationId,
       toolKey,
-      userId: selectedUser.id,
+      userId: selectedUserId,
       ...(externalCommerceActivationId !== undefined ? { externalCommerceActivationId } : {}),
     };
   }
@@ -694,6 +716,10 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   private userLookupErrorMessage(err: unknown): string {
     if (!(err instanceof HttpErrorResponse)) {
+      if (err instanceof Error && err.message === 'Invalid user lookup response') {
+        return 'No pudimos interpretar la respuesta del usuario.';
+      }
+
       return 'No fue posible buscar el usuario. Intenta nuevamente.';
     }
 
