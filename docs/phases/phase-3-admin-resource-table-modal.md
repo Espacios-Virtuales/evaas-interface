@@ -30,7 +30,9 @@ La tabla muestra:
 - `ToolAccess`
 - `Acciones`
 
-La accion principal por fila es `Ver detalle`. Si existe `url` u `operationalUrl`, tambien se muestra `Abrir` con enlace externo seguro.
+La accion principal por fila es `Ver detalle`.
+
+La accion de abrir recurso se mueve al modal para mantener la tabla compacta y evitar saturacion visual.
 
 ## Modal de detalle
 
