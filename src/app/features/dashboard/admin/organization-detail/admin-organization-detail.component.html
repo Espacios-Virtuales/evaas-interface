@@ -457,35 +457,35 @@
         <p>Cuando existan recursos reales para esta organizacion, apareceran aqui.</p>
       </div>
 
-      <div class="admin-organization-detail__resources" *ngIf="hasResources()">
-        <article class="admin-organization-detail__resource" *ngFor="let resource of resources(); trackBy: trackResource">
-          <h3>{{ resourceTitle(resource) }}</h3>
+      <div class="admin-organization-detail__resources-list" *ngIf="hasResources()">
+        <article class="admin-organization-detail__resource-row" *ngFor="let resource of resources(); trackBy: trackResource">
+          <div class="admin-organization-detail__resource-main">
+            <h3>{{ resourceTitle(resource) }}</h3>
+            <p>
+              {{ resourceKey(resource) }} · {{ resourceType(resource) }}
+              · <span [class]="statusClass(resourceStatus(resource))">{{ formatValue(resourceStatus(resource)) }}</span>
+              · {{ resourceVisibility(resource) }}
+            </p>
+          </div>
 
-          <dl>
-            <div *ngFor="let field of resourceFields(resource)">
-              <dt>{{ field.label }}</dt>
-              <dd *ngIf="field.kind === 'status'">
-                <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
-              </dd>
-              <dd *ngIf="field.kind === 'date'">
-                {{ formatDate($any(field.value)) }}
-              </dd>
-              <dd *ngIf="field.kind === 'structured'">
-                <details class="admin-organization-detail__metadata">
-                  <summary>Ver metadata</summary>
-                  <pre>{{ formatStructuredValue(field.value) }}</pre>
-                </details>
-              </dd>
-              <dd *ngIf="field.kind === 'url'">
-                <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
-                  {{ formatValue(field.value) }}
-                </a>
-              </dd>
-              <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
-                {{ formatValue(field.value) }}
-              </dd>
-            </div>
-          </dl>
+          <div class="admin-organization-detail__resource-actions">
+            <button
+              class="admin-organization-detail__secondary-action"
+              type="button"
+              (click)="openResourceDetail(resource)"
+            >
+              Ver detalle
+            </button>
+            <a
+              class="admin-organization-detail__resource-link"
+              *ngIf="resourceUrl(resource) as url"
+              [href]="url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abrir
+            </a>
+          </div>
         </article>
       </div>
     </section>
@@ -528,4 +528,67 @@
       <p>Proximamente: programa, fases y avance del proyecto.</p>
     </section>
   </ng-container>
+
+  <div
+    class="admin-organization-detail__modal-backdrop"
+    *ngIf="isResourceDetailOpen() && selectedResource() as resource"
+    role="presentation"
+  >
+    <section
+      class="admin-organization-detail__modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="resource-detail-modal-title"
+    >
+      <header class="admin-organization-detail__modal-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Detalle de recurso</p>
+          <h2 id="resource-detail-modal-title">{{ resourceTitle(resource) }}</h2>
+        </div>
+
+        <button class="admin-organization-detail__link-button" type="button" (click)="closeResourceDetail()">
+          Cerrar
+        </button>
+      </header>
+
+      <dl class="admin-organization-detail__modal-facts">
+        <div *ngFor="let field of resourceFields(resource)">
+          <dt>{{ field.label }}</dt>
+          <dd *ngIf="field.kind === 'status'">
+            <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
+          </dd>
+          <dd *ngIf="field.kind === 'date'">{{ formatDate($any(field.value)) }}</dd>
+          <dd *ngIf="field.kind === 'structured'">
+            <details class="admin-organization-detail__metadata" open>
+              <summary>Ver metadata</summary>
+              <pre>{{ formatStructuredValue(field.value) }}</pre>
+            </details>
+          </dd>
+          <dd *ngIf="field.kind === 'url'">
+            <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
+              {{ formatValue(field.value) }}
+            </a>
+          </dd>
+          <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
+            {{ formatValue(field.value) }}
+          </dd>
+        </div>
+      </dl>
+
+      <footer class="admin-organization-detail__modal-actions">
+        <a
+          class="admin-organization-detail__primary-link"
+          *ngIf="resourceUrl(resource) as url"
+          [href]="url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir recurso
+        </a>
+        <button class="admin-organization-detail__secondary-action" type="button" (click)="closeResourceDetail()">
+          Cerrar
+        </button>
+      </footer>
+    </section>
+  </div>
 </section>

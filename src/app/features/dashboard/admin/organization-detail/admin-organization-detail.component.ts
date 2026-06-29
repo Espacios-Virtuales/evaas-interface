@@ -87,6 +87,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly resourceCreateSuccess = signal<string | null>(null);
   readonly resourceCreateError = signal<string | null>(null);
   readonly resourceCreateValidation = signal<string | null>(null);
+  readonly selectedResource = signal<AdminResourceDto | null>(null);
+  readonly isResourceDetailOpen = signal(false);
   readonly currentOrganizationId = signal<number | null>(null);
 
   assignmentForm: AssignmentForm = {
@@ -210,6 +212,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.resourceCreateSuccess.set(null);
           this.closeAssignmentForm();
           this.closeResourceCreateForm();
+          this.closeResourceDetail();
 
           return this.loadOrganizationDetail(id);
         }),
@@ -454,11 +457,18 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'Clave', value: this.valueFromKeys(resource, ['resourceKey', 'key']) },
       { label: 'Tipo', value: this.valueFromKeys(resource, ['type', 'resourceType']) },
       { label: 'Tool access ID', value: this.valueFromKeys(resource, ['toolAccessId', 'accessId']) },
+      { label: 'Organization ID', value: this.valueFromKeys(resource, ['organizationId']) },
+      { label: 'Organization name', value: this.valueFromKeys(resource, ['organizationName']) },
       { label: 'Estado', value: this.valueFromKeys(resource, ['status']), kind: 'status' as const },
       { label: 'Visibilidad', value: this.valueFromKeys(resource, ['visibility']) },
       {
         label: 'URL',
-        value: this.valueFromKeys(resource, ['url', 'operationalUrl', 'link']),
+        value: this.valueFromKeys(resource, ['url']),
+        kind: 'url' as const,
+      },
+      {
+        label: 'Operational URL',
+        value: this.valueFromKeys(resource, ['operationalUrl']),
         kind: 'url' as const,
       },
       { label: 'Creado', value: this.valueFromKeys(resource, ['createdAt']), kind: 'date' as const },
@@ -469,6 +479,39 @@ export class AdminOrganizationDetailComponent implements OnInit {
         kind: 'structured' as const,
       },
     ].filter(field => this.hasValue(field.value));
+  }
+
+  openResourceDetail(resource: AdminResourceDto): void {
+    this.selectedResource.set(resource);
+    this.isResourceDetailOpen.set(true);
+  }
+
+  closeResourceDetail(): void {
+    this.isResourceDetailOpen.set(false);
+    this.selectedResource.set(null);
+  }
+
+  resourceKey(resource: AdminResourceDto): string {
+    return this.formatValue(this.valueFromKeys(resource, ['key', 'resourceKey']));
+  }
+
+  resourceType(resource: AdminResourceDto): string {
+    return this.formatValue(this.valueFromKeys(resource, ['type', 'resourceType']));
+  }
+
+  resourceStatus(resource: AdminResourceDto): unknown {
+    return this.valueFromKeys(resource, ['status']);
+  }
+
+  resourceVisibility(resource: AdminResourceDto): string {
+    return this.formatValue(this.valueFromKeys(resource, ['visibility']));
+  }
+
+  resourceUrl(resource: AdminResourceDto | null): string | null {
+    if (!resource) return null;
+
+    const value = this.valueFromKeys(resource, ['url', 'operationalUrl', 'link']);
+    return typeof value === 'string' && value ? value : null;
   }
 
   resourceTitle(resource: AdminResourceDto): string {
