@@ -1,16 +1,16 @@
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/auth/auth.service';
-import { HasRoleDirective } from '../../../core/auth/directives/has-role';
 import { AuthFacade } from '../../../core/auth/auth.facade'; 
 import { UserSession } from '../../../core/models/auth.model';
 import { PATHS } from '../../../utils/paths';
+import { DASHBOARD_NAV_ITEMS } from './dashboard-nav';
 
 @Component({
   selector: 'app-dashboard-shell',
   standalone: true,
-  imports: [RouterLink, RouterOutlet, CommonModule, HasRoleDirective],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, CommonModule],
   templateUrl: './dashboard-shell.component.html',
   styleUrls: ['./dashboard-shell.component.scss'],
 })
@@ -20,8 +20,6 @@ export class DashboardShellComponent {
   private readonly mobileMediaQuery = '(max-width: 768px)';
 
   readonly dashboardLink = ['/', PATHS.dashboard];
-  readonly resourcesLink = ['/', PATHS.dashboard, 'resources'];
-  readonly projectsLink = ['/', PATHS.dashboard, 'projects'];
   
   readonly isMobileViewport = signal(this.matchesMobileViewport());
   readonly isSidebarOpen = signal(!this.matchesMobileViewport());
@@ -62,6 +60,12 @@ export class DashboardShellComponent {
   session = computed<UserSession | null>(() => this.auth.getSession());
   email = computed(() => this.session()?.email ?? null);
   primaryRole = computed(() => this.session()?.roles?.[0] ?? null);
+  navItems = computed(() => {
+    const roles = this.session()?.roles ?? [];
+    return DASHBOARD_NAV_ITEMS.filter(item =>
+      item.enabled !== false && item.roles.some(role => roles.includes(role)),
+    );
+  });
 
 
   connectedAt = computed<Date | null>(() => {
