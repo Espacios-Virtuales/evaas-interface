@@ -22,30 +22,15 @@
 
     <nav class="menu">
       <a
-        [routerLink]="dashboardLink"
+        *ngFor="let item of navItems()"
+        [routerLink]="item.route"
         class="menu-item"
         routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: item.exact === true }"
         (click)="closeSidebarAfterNavigation()"
       >
-        <i class="bi bi-speedometer2"></i> <span>Resumen</span>
-      </a>
-      <a
-        [routerLink]="resourcesLink"
-        class="menu-item"
-        routerLinkActive="active"
-        *hasRole="'ROLE_USER'"
-        (click)="closeSidebarAfterNavigation()"
-      >
-        <i class="bi bi-boxes"></i> <span>Recursos</span>
-      </a>
-
-      <a
-        [routerLink]="projectsLink"
-        class="menu-item"
-        routerLinkActive="active"
-        (click)="closeSidebarAfterNavigation()"
-      >
-        <i class="bi bi-box2-heart"></i> <span>Proyectos</span> 
+        <i class="bi" [ngClass]="item.iconClass || 'bi-circle'"></i>
+        <span>{{ item.label }}</span>
       </a>
     </nav>
   </aside>

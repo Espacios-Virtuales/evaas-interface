@@ -10,6 +10,7 @@ Documentos:
 - `client-ui-decisions-v0.md`
 - `dashboard-access-matrix.md`
 - `dashboard-mobile-shell-fix.md`
+- `dashboard-sidebar-role-navigation.md`
 - `dashboard-shared-ui-audit.md`
 - `dashboard-shared-ui-candidates.md`
 - `dashboard-state-model.md`
