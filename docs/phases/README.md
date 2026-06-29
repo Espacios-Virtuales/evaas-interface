@@ -21,6 +21,7 @@ Documentos:
 - `phase-3-admin-organization-detail-consolidation.md`
 - `phase-3-admin-organization-detail.md`
 - `phase-3-admin-organization-detail-relations.md`
+- `phase-3-admin-resource-detail-modal.md`
 - `phase-3-admin-resource-create.md`
 - `phase-3-admin-tool-access-assignment.md`
 - `phase-3-admin-organizations-list.md`
