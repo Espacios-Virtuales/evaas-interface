@@ -64,6 +64,26 @@ describe('AdminAccessService', () => {
     req.flush(response);
   });
 
+  it('disables tool access', () => {
+    service.disableToolAccess(30).subscribe();
+
+    const req = http.expectOne(
+      r => r.method === 'DELETE' && r.url === apiUrl(API.adminAccess.toolAccessById(30))
+    );
+    req.flush(null);
+  });
+
+  it('finds a user by email and normalizes wrapped responses', () => {
+    service.findUserByEmail('info@example.com').subscribe(result => {
+      expect(result).toEqual({ id: 12, email: 'info@example.com' });
+    });
+
+    const req = http.expectOne(
+      r => r.method === 'GET' && r.url === apiUrl(API.adminUsers.byEmail('info@example.com'))
+    );
+    req.flush({ user: { id: 12, email: 'info@example.com' } });
+  });
+
   it('gets an organization by id', () => {
     service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
 

@@ -28,6 +28,25 @@ describe('AdminCommerceService', () => {
     req.flush([]);
   });
 
+  it('normalizes wrapped activation lists', () => {
+    const activation = {
+      id: 1,
+      provider: 'INTERNAL',
+      productCode: 'EVAAS_ADMIN',
+      buyerEmail: 'buyer@example.com',
+      organizationName: 'EV',
+      status: 'ACTIVE',
+      idempotencyKey: 'activation-1',
+      payloadHash: 'hash-1',
+    };
+    service.getActivations().subscribe(result => expect(result).toEqual([activation]));
+
+    const req = http.expectOne(
+      r => r.method === 'GET' && r.url === apiUrl(API.adminCommerce.activations)
+    );
+    req.flush({ content: [activation] });
+  });
+
   it('gets an activation by id', () => {
     service.getActivationById(3).subscribe();
 

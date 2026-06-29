@@ -32,11 +32,27 @@ GET /admin/users/by-email?email={email}
 Reglas:
 
 - se valida formato basico de email antes de buscar;
-- se muestra loading, error y resultado;
-- si backend retorna usuario, se guarda `selectedUser.id`;
+- se muestra loading, error y resultado visible como `Usuario encontrado: email · ID`;
+- si backend retorna usuario, se guarda `selectedUser` y `selectedUserId`;
 - el payload de ToolAccess usa ese `selectedUser.id`;
 - se puede limpiar la seleccion;
 - no se permite asignar ToolAccess sin usuario resuelto.
+
+La respuesta se normaliza de forma minima para aceptar:
+
+```json
+{ "id": 123, "email": "info@example.com" }
+```
+
+```json
+{ "data": { "id": 123, "email": "info@example.com" } }
+```
+
+```json
+{ "user": { "id": 123, "email": "info@example.com" } }
+```
+
+Si no se puede interpretar, la UI muestra `No pudimos interpretar la respuesta del usuario`.
 
 DTO esperado:
 
@@ -130,7 +146,20 @@ Deuda tecnica:
 - la pantalla puede cargar activaciones globales para ayudar al formulario;
 - el selector se rotula como vista transitoria filtrada en frontend;
 - se filtra client-side por `organizationName`, `buyerEmail` del usuario seleccionado y `status === ACTIVE`;
+- si no hay coincidencias por organizacion o usuario, se pueden mostrar activaciones activas globales como seleccion transitoria;
+- `AdminCommerceService.getActivations()` normaliza respuestas `[]`, `{ content: [] }`, `{ data: [] }` o `{ items: [] }`;
+- la pantalla global de activaciones refresca `GET /admin/commerce/activations` despues de crear una activacion;
 - no se inventan activaciones ni se afirma vinculo backend si no existe.
+
+## Correccion de estabilidad
+
+Se corrigio el error runtime:
+
+```txt
+TypeError: this.hasValue is not a function
+```
+
+Los `trackBy` del detalle de organizacion ahora son arrow functions que no dependen de helpers de instancia ni de binding de `this`, y toleran items nulos o incompletos.
 
 ## Validacion manual
 
@@ -147,6 +176,7 @@ Validar Organizacion ID 1 - Espacios Virtuales:
 - sin input editable de `organizationId`;
 - ToolAccess reales;
 - busqueda de usuario por email;
+- usuario encontrado visible con email, ID, `name`, `enabled` y `activated` cuando existan;
 - creacion de ToolAccess con `userId` resuelto;
 - soft disable de ToolAccess con refresh posterior;
 - Resources reales;
