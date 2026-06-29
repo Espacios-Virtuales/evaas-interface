@@ -18,9 +18,10 @@ h1,h2,h3,p{margin:0}h1,h2{color:#10243c;font-weight:750}h1{font-size:1.75rem}h2{
 .admin-organization-detail__section{overflow:hidden;padding:20px}
 .admin-organization-detail__section--muted{background:#fbfcfe}
 .admin-organization-detail__section-header{border-bottom:1px solid #edf1f6;margin:-2px 0 18px;padding-bottom:14px}
-.admin-organization-detail__action,.admin-organization-detail__primary-action,.admin-organization-detail__secondary-action{border:1px solid #17456f;border-radius:6px;cursor:pointer;font-weight:750;min-height:40px;padding:8px 14px}
+.admin-organization-detail__action,.admin-organization-detail__primary-action,.admin-organization-detail__secondary-action,.admin-organization-detail__danger-action{border:1px solid #17456f;border-radius:6px;cursor:pointer;font-weight:750;min-height:40px;padding:8px 14px}
 .admin-organization-detail__action,.admin-organization-detail__primary-action{background:#17456f;color:#fff}
 .admin-organization-detail__secondary-action{background:#fff;color:#17456f}
+.admin-organization-detail__danger-action{background:#fff;border-color:#b94752;color:#8e1f2d}
 button:disabled{cursor:not-allowed;opacity:.62}
 .admin-organization-detail__section-state{box-shadow:none;display:block;margin:0 0 16px;max-width:none}
 .admin-organization-detail__assignment{border:1px solid #dfe7ef;border-radius:8px;display:grid;gap:16px;margin-bottom:18px;padding:16px}
@@ -35,6 +36,7 @@ button:disabled{cursor:not-allowed;opacity:.62}
 .admin-organization-detail__suggestions,.admin-organization-detail__assignment-actions{display:flex;flex-wrap:wrap;gap:8px}
 .admin-organization-detail__suggestions button{background:#f6f8fb;border:1px solid #d8e0ea;border-radius:999px;color:#33465d;cursor:pointer;font-size:.74rem;font-weight:750;padding:6px 10px}
 .admin-organization-detail__assignment-actions{justify-content:flex-end}
+.admin-organization-detail__assignment-actions--left{justify-content:flex-start}
 .admin-organization-detail__facts{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
 .admin-organization-detail__facts div,.admin-organization-detail__resource dl div{min-width:0}
 dd{color:#243246;margin:4px 0 0;overflow-wrap:anywhere}
