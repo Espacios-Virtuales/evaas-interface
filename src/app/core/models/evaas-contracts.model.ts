@@ -17,6 +17,7 @@ export interface OrganizationDto {
   id: number;
   name: string;
   taxId?: string;
+  enabled?: boolean;
   status?: string;
   ownerUserId?: number;
   ownerEmail?: string;
