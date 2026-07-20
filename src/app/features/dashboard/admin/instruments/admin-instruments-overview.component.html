@@ -1,0 +1,48 @@
+<section class="admin-instruments" aria-labelledby="admin-instruments-title">
+  <header class="admin-instruments__header">
+    <div>
+      <p class="admin-instruments__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-instruments-title">Instrumentos</h1>
+      <p>Mapa operacional de capacidades e integraciones disponibles para EVAAS.</p>
+    </div>
+
+    <a class="admin-instruments__back" routerLink="/dashboard/admin">Volver al overview</a>
+  </header>
+
+  <section class="admin-instruments__notice" aria-label="Modelo de accesos e instrumentos">
+    <p>Los accesos siguen gestionándose desde el detalle de cada organización.</p>
+    <p>Los instrumentos representan capacidades operables e integraciones disponibles.</p>
+  </section>
+
+  <section class="admin-instruments__table" aria-label="Instrumentos EVAAS">
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Instrumento</th>
+            <th>Función</th>
+            <th>Estado</th>
+            <th>Alcance actual</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let instrument of instruments; trackBy: trackInstrument">
+            <td>
+              <strong>{{ instrument.name }}</strong>
+              <span>{{ instrument.description }}</span>
+            </td>
+            <td>{{ instrument.function }}</td>
+            <td>
+              <span class="admin-instruments__status">{{ instrument.status }}</span>
+            </td>
+            <td>{{ instrument.scope }}</td>
+            <td>
+              <a class="admin-instruments__detail" [routerLink]="instrument.route">Ver detalle</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

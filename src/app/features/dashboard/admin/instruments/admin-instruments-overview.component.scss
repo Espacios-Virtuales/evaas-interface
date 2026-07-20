@@ -1,0 +1,133 @@
+.admin-instruments {
+  background: #f6f8fb;
+  color: #142033;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.admin-instruments__header,
+.admin-instruments__notice,
+.admin-instruments__table {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1180px;
+}
+
+.admin-instruments__header {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.admin-instruments__eyebrow {
+  color: #526173;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  color: #10243c;
+  font-size: 1.75rem;
+  font-weight: 750;
+}
+
+.admin-instruments__header p:not(.admin-instruments__eyebrow) {
+  color: #526173;
+  margin-top: 8px;
+}
+
+.admin-instruments__back,
+.admin-instruments__detail {
+  color: #17456f;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.admin-instruments__back:hover,
+.admin-instruments__back:focus-visible,
+.admin-instruments__detail:hover,
+.admin-instruments__detail:focus-visible {
+  color: #10243c;
+  text-decoration: underline;
+}
+
+.admin-instruments__notice,
+.admin-instruments__table {
+  background: #ffffff;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(27, 39, 51, 0.05);
+}
+
+.admin-instruments__notice {
+  color: #526173;
+  display: grid;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+}
+
+.admin-instruments__table {
+  overflow: hidden;
+}
+
+.table {
+  margin: 0;
+}
+
+.table th {
+  color: #526173;
+  font-size: 0.78rem;
+  font-weight: 750;
+  padding: 12px 18px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.table td {
+  color: #243246;
+  padding: 14px 18px;
+  vertical-align: middle;
+}
+
+.table td strong,
+.table td span {
+  display: block;
+}
+
+.table td span {
+  color: #526173;
+  margin-top: 4px;
+}
+
+.admin-instruments__status {
+  background: #eef5fb;
+  border: 1px solid #cddceb;
+  border-radius: 999px;
+  color: #17456f;
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin: 0;
+  padding: 4px 10px;
+}
+
+@media (max-width: 720px) {
+  .admin-instruments {
+    padding: 20px 14px;
+  }
+
+  .admin-instruments__header {
+    display: grid;
+  }
+}

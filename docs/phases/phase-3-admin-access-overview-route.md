@@ -1,5 +1,7 @@
 # EVAAS Interface · Phase 3 admin access overview route
 
+> Superseded: desde 2026-07-20, `Accesos` deja de ser seccion principal visible y `/dashboard/admin/access` queda como ruta legacy que redirige a `/dashboard/admin/instruments`.
+
 ## Razon de la ruta
 
 El sidebar admin tenia preparada la entrada `Accesos`, pero permanecia deshabilitada porque `/dashboard/admin/access` no existia como ruta real dentro del Dashboard Shell.

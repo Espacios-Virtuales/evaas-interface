@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AdminResourceDto } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
@@ -8,6 +9,14 @@ type ResourceLink = {
   label: string;
   url: string;
 };
+
+type DetailFieldKind = 'date' | 'status' | 'url' | 'structured';
+
+interface DetailField {
+  label: string;
+  value: unknown;
+  kind?: DetailFieldKind;
+}
 
 @Component({
   standalone: true,
@@ -18,10 +27,14 @@ type ResourceLink = {
 })
 export class AdminResourcesListComponent implements OnInit {
   private readonly adminResources = inject(AdminResourceService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly resources = signal<AdminResourceDto[]>([]);
+  readonly selectedResource = signal<AdminResourceDto | null>(null);
+  readonly resourceDetailLoading = signal(false);
+  readonly resourceDetailError = signal<string | null>(null);
 
   readonly isEmpty = computed(
     () => !this.loading() && !this.error() && this.resources().length === 0,
@@ -82,18 +95,116 @@ export class AdminResourcesListComponent implements OnInit {
     return this.formatValue(this.valueFromKeys(resource, ['organizationName', 'organizationId']));
   }
 
-  resourceDetailLink(resource: AdminResourceDto): string[] | null {
-    const id = this.valueFromKeys(resource, ['id']);
-    if (id === undefined || id === null || id === '') return null;
-
-    return ['/dashboard/admin/resources', String(id)];
+  resourceToolAccessId(resource: AdminResourceDto): string {
+    return this.formatValue(this.valueFromKeys(resource, ['toolAccessId', 'accessId']));
   }
 
-  resourceLinks(resource: AdminResourceDto): ResourceLink[] {
+  resourceInstrument(resource: AdminResourceDto): string {
+    return this.isCommunicatorResource(resource) ? 'Comunicador' : 'Sin clasificar';
+  }
+
+  resourceFields(resource: AdminResourceDto): DetailField[] {
+    return [
+      { label: 'ID', value: this.valueFromKeys(resource, ['id']) },
+      { label: 'Nombre', value: this.valueFromKeys(resource, ['name', 'resourceName']) },
+      { label: 'Key', value: this.valueFromKeys(resource, ['key', 'resourceKey']) },
+      { label: 'Tipo', value: this.valueFromKeys(resource, ['type', 'resourceType']) },
+      { label: 'Estado', value: this.valueFromKeys(resource, ['status']), kind: 'status' as const },
+      { label: 'Visibilidad', value: this.valueFromKeys(resource, ['visibility']) },
+      { label: 'Organización', value: this.valueFromKeys(resource, ['organizationName', 'organizationId']) },
+      { label: 'ToolAccess', value: this.valueFromKeys(resource, ['toolAccessId', 'accessId']) },
+      { label: 'URL', value: this.valueFromKeys(resource, ['url', 'operationalUrl', 'link']), kind: 'url' as const },
+      { label: 'Creado', value: this.valueFromKeys(resource, ['createdAt']), kind: 'date' as const },
+      { label: 'Actualizado', value: this.valueFromKeys(resource, ['updatedAt']), kind: 'date' as const },
+      {
+        label: 'metadataJson',
+        value: this.valueFromKeys(resource, ['metadataJson', 'metadata']),
+        kind: 'structured' as const,
+      },
+    ].filter(field => this.hasValue(field.value));
+  }
+
+  openResourceDetail(resource: AdminResourceDto): void {
+    this.selectedResource.set(resource);
+    this.resourceDetailError.set(null);
+
+    const id = this.resourceNumericId(resource);
+    if (id === null) return;
+
+    this.resourceDetailLoading.set(true);
+    this.adminResources
+      .getResourceById(id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: detail => {
+          this.selectedResource.set(detail ?? resource);
+          this.resourceDetailLoading.set(false);
+        },
+        error: err => {
+          console.error('[AdminResourcesList] resource detail load error', err);
+          this.resourceDetailError.set('No fue posible cargar el detalle remoto; se muestra la fila disponible.');
+          this.resourceDetailLoading.set(false);
+        },
+      });
+  }
+
+  closeResourceDetail(): void {
+    this.selectedResource.set(null);
+    this.resourceDetailLoading.set(false);
+    this.resourceDetailError.set(null);
+  }
+
+  resourceLinks(resource: AdminResourceDto | null): ResourceLink[] {
     const links: ResourceLink[] = [];
+    if (!resource) return links;
+
     this.addLink(links, 'URL', this.valueFromKeys(resource, ['url']));
     this.addLink(links, 'URL operacional', this.valueFromKeys(resource, ['operationalUrl']));
+    this.addLink(links, 'Link', this.valueFromKeys(resource, ['link']));
     return links;
+  }
+
+  statusClass(value: unknown): string {
+    const normalized = this.formatValue(value).toLowerCase();
+
+    if (['true', 'active', 'enabled', 'available', 'ready', 'ok'].includes(normalized)) {
+      return 'admin-resources__status admin-resources__status--success';
+    }
+
+    if (['false', 'disabled', 'revoked', 'inactive', 'suspended', 'cancelled', 'failed'].includes(normalized)) {
+      return 'admin-resources__status admin-resources__status--pending';
+    }
+
+    return 'admin-resources__status';
+  }
+
+  formatDate(value: unknown): string {
+    if (typeof value !== 'string' || !value) return '-';
+
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  }
+
+  formatStructuredValue(value: unknown): string {
+    if (!this.hasValue(value)) return '-';
+
+    if (typeof value === 'string') {
+      try {
+        return JSON.stringify(this.redactStructuredValue(JSON.parse(value)), null, 2);
+      } catch {
+        return this.containsSecretLikeContent(value)
+          ? 'Metadata no mostrada porque contiene claves sensibles.'
+          : value;
+      }
+    }
+
+    if (typeof value !== 'object') return String(value);
+
+    try {
+      return JSON.stringify(this.redactStructuredValue(value), null, 2);
+    } catch {
+      return String(value);
+    }
   }
 
   private addLink(links: ResourceLink[], label: string, value: unknown): void {
@@ -105,8 +216,8 @@ export class AdminResourcesListComponent implements OnInit {
     links.push({ label, url });
   }
 
-  private formatValue(value: unknown): string {
-    if (value === undefined || value === null || value === '') return '-';
+  formatValue(value: unknown): string {
+    if (!this.hasValue(value)) return '-';
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
       return String(value);
     }
@@ -114,15 +225,69 @@ export class AdminResourcesListComponent implements OnInit {
     return '-';
   }
 
+  private resourceNumericId(resource: AdminResourceDto): number | null {
+    const value = this.valueFromKeys(resource, ['id']);
+    const id = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
+
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
+  private isCommunicatorResource(resource: AdminResourceDto): boolean {
+    const evidence = [
+      this.valueFromKeys(resource, ['key', 'resourceKey']),
+      this.valueFromKeys(resource, ['type', 'resourceType']),
+      this.valueFromKeys(resource, ['metadataJson', 'metadata']),
+    ]
+      .map(value => this.evidenceText(value))
+      .filter(Boolean)
+      .join(' ');
+
+    return /\b(comunicador|communicator|communication|communication_action|liora)\b/i.test(evidence);
+  }
+
+  private evidenceText(value: unknown): string {
+    if (!this.hasValue(value)) return '';
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return '';
+    }
+  }
+
+  private redactStructuredValue(value: unknown): unknown {
+    if (Array.isArray(value)) return value.map(item => this.redactStructuredValue(item));
+
+    if (value && typeof value === 'object') {
+      return Object.fromEntries(
+        Object.entries(value as Record<string, unknown>).map(([key, entry]) => [
+          key,
+          this.containsSecretLikeContent(key) ? '[redacted]' : this.redactStructuredValue(entry),
+        ]),
+      );
+    }
+
+    return value;
+  }
+
+  private containsSecretLikeContent(value: string): boolean {
+    return /\b(password|passwd|secret|token|access[_-]?token|api[_-]?key|private[_-]?key|credential|authorization|bearer)\b/i.test(value);
+  }
+
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {
     for (const key of keys) {
       const value = source[key];
 
-      if (value !== undefined && value !== null && value !== '') {
-        return value;
-      }
+      if (this.hasValue(value)) return value;
     }
 
     return undefined;
+  }
+
+  private hasValue(value: unknown): boolean {
+    return value !== undefined && value !== null && value !== '';
   }
 }

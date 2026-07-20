@@ -8,6 +8,7 @@ Documentos:
 
 - `client-dashboard-v0.md`
 - `client-ui-decisions-v0.md`
+- `admin-instruments-model.md`
 - `dashboard-access-matrix.md`
 - `dashboard-mobile-shell-fix.md`
 - `dashboard-sidebar-role-navigation.md`

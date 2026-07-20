@@ -55,14 +55,29 @@ export const DASHBOARD_ROUTES: Routes = [
           ),
       },
       {
-        path: `${DASHBOARD_CHILD_PATHS.admin}/access`,
-        title: 'Accesos Admin',
+        path: `${DASHBOARD_CHILD_PATHS.admin}/instruments/comunicador`,
+        title: 'Comunicador Admin',
         data: { roles: ['ROLE_ADMIN'] },
         loadComponent: () =>
           lazy(
-            import('./admin/access/admin-access-overview.component'),
-            'AdminAccessOverviewComponent',
+            import('./admin/instruments/admin-communicator-instrument-detail.component'),
+            'AdminCommunicatorInstrumentDetailComponent',
           ),
+      },
+      {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/instruments`,
+        title: 'Instrumentos Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/instruments/admin-instruments-overview.component'),
+            'AdminInstrumentsOverviewComponent',
+          ),
+      },
+      {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/access`,
+        pathMatch: 'full',
+        redirectTo: '/dashboard/admin/instruments',
       },
       {
         path: `${DASHBOARD_CHILD_PATHS.admin}/activations/:id`,

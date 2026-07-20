@@ -48,9 +48,13 @@ h1 {
 
 .admin-resources__back,
 .admin-resources__detail,
-.admin-resources__external {
+.admin-resources__link-button,
+.admin-resources__primary-link {
+  background: transparent;
+  border: 0;
   color: #17456f;
   font-weight: 700;
+  padding: 0;
   text-decoration: none;
 }
 
@@ -58,29 +62,17 @@ h1 {
 .admin-resources__back:focus-visible,
 .admin-resources__detail:hover,
 .admin-resources__detail:focus-visible,
-.admin-resources__external:hover,
-.admin-resources__external:focus-visible {
+.admin-resources__link-button:hover,
+.admin-resources__link-button:focus-visible,
+.admin-resources__primary-link:hover,
+.admin-resources__primary-link:focus-visible {
   color: #10243c;
   text-decoration: underline;
 }
 
-.admin-resources__detail--disabled {
-  color: #7b8794;
-  cursor: default;
-}
-
-.admin-resources__detail--disabled:hover,
-.admin-resources__detail--disabled:focus-visible {
-  color: #7b8794;
-  text-decoration: none;
-}
-
-.admin-resources__external {
-  display: block;
-}
-
-.admin-resources__external + .admin-resources__external {
-  margin-top: 4px;
+.admin-resources__detail,
+.admin-resources__link-button {
+  cursor: pointer;
 }
 
 .state,
@@ -146,6 +138,114 @@ h1 {
   vertical-align: middle;
 }
 
+.admin-resources__modal-backdrop {
+  align-items: flex-start;
+  background: rgba(16, 36, 60, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow: auto;
+  padding: 40px 18px;
+  position: fixed;
+  z-index: 1000;
+}
+
+.admin-resources__modal {
+  background: #ffffff;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  box-shadow: 0 18px 48px rgba(16, 36, 60, 0.2);
+  color: #142033;
+  max-width: 760px;
+  padding: 20px;
+  width: min(760px, 100%);
+}
+
+.admin-resources__modal-header,
+.admin-resources__modal-actions {
+  align-items: flex-start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.admin-resources__modal-header {
+  border-bottom: 1px solid #dfe7ef;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+}
+
+.admin-resources__modal-header h2 {
+  color: #10243c;
+  font-size: 1.2rem;
+  font-weight: 750;
+  margin: 0;
+}
+
+.admin-resources__modal-state {
+  box-shadow: none;
+  margin-bottom: 14px;
+}
+
+.admin-resources__modal-facts {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.admin-resources__modal-facts > div {
+  border-bottom: 1px solid #e9eef4;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(120px, 190px) minmax(0, 1fr);
+  padding: 12px 0;
+}
+
+.admin-resources__modal-facts dt {
+  color: #526173;
+  font-weight: 750;
+}
+
+.admin-resources__modal-facts dd {
+  color: #243246;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-resources__metadata summary {
+  color: #17456f;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-resources__metadata pre {
+  background: #f6f8fb;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  color: #243246;
+  margin: 10px 0 0;
+  max-height: 260px;
+  overflow: auto;
+  padding: 12px;
+  white-space: pre-wrap;
+}
+
+.admin-resources__modal-actions {
+  border-top: 1px solid #dfe7ef;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+
+.admin-resources__secondary-action {
+  background: #ffffff;
+  border: 1px solid #cddceb;
+  border-radius: 8px;
+  color: #17456f;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
 @media (max-width: 720px) {
   .admin-resources {
     padding: 20px 14px;
@@ -153,5 +253,12 @@ h1 {
 
   .admin-resources__header {
     display: grid;
+  }
+
+  .admin-resources__modal-facts > div,
+  .admin-resources__modal-header,
+  .admin-resources__modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
   }
 }
