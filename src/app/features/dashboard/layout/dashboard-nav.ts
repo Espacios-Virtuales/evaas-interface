@@ -23,16 +23,15 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     iconClass: 'bi-boxes',
   },
   {
-    label: 'Activaciones',
-    route: '/dashboard/admin/activations',
-    roles: [Role.ADMIN],
-    iconClass: 'bi-lightning-charge',
-  },
-  {
     label: 'Accesos',
     route: '/dashboard/admin/access',
     roles: [Role.ADMIN],
     iconClass: 'bi-key',
-    enabled: false,
+  },
+  {
+    label: 'Activaciones',
+    route: '/dashboard/admin/activations',
+    roles: [Role.ADMIN],
+    iconClass: 'bi-lightning-charge',
   },
 ];

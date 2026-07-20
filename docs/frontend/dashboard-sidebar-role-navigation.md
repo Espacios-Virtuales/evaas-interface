@@ -17,6 +17,7 @@ Rutas admin reales visibles hoy:
 ```txt
 /dashboard/admin/organizations
 /dashboard/admin/resources
+/dashboard/admin/access
 /dashboard/admin/activations
 ```
 
@@ -25,16 +26,11 @@ Etiquetas visibles:
 ```txt
 Organizaciones
 Recursos
+Accesos
 Activaciones
 ```
 
-La entrada futura:
-
-```txt
-/dashboard/admin/access
-```
-
-queda preparada en configuracion, pero no visible porque la ruta no esta registrada todavia en `dashboard.routes.ts`.
+La entrada `Accesos` ya esta visible porque `/dashboard/admin/access` existe como pantalla orientadora dentro del Dashboard Shell. La gestion operacional sigue ocurriendo desde el detalle de organizacion.
 
 ## Rutas legacy ocultas
 

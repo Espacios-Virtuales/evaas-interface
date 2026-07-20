@@ -1,0 +1,53 @@
+<section class="admin-activation-detail" aria-labelledby="admin-activation-detail-title">
+  <header class="admin-activation-detail__header">
+    <div>
+      <p class="admin-activation-detail__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-activation-detail-title">Detalle de activacion</h1>
+      <p>Consulta read-only de una activacion comercial o interna.</p>
+    </div>
+
+    <div class="admin-activation-detail__actions">
+      <a class="admin-activation-detail__back" routerLink="/dashboard/admin/activations">
+        Volver a activaciones
+      </a>
+      <a
+        *ngIf="organizationId() as id"
+        class="admin-activation-detail__back"
+        [routerLink]="['/dashboard/admin/organizations', id]"
+      >
+        Ver organizacion
+      </a>
+    </div>
+  </header>
+
+  <div class="state state-loading" *ngIf="loading()">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando detalle de activacion...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="!loading() && error()">
+    <div>
+      <strong>No se pudo cargar la activacion.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="retry()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="!loading() && !error() && notFound()">
+    <strong>Activacion no encontrada.</strong>
+  </div>
+
+  <section class="admin-activation-detail__panel" *ngIf="!loading() && !error() && activation()">
+    <dl class="admin-activation-detail__grid">
+      <div *ngFor="let field of detailFields()">
+        <dt>{{ field.label }}</dt>
+        <dd>{{ formatValue(field.value, field.type) }}</dd>
+      </div>
+    </dl>
+
+    <section class="admin-activation-detail__metadata" *ngIf="metadataText() as metadata">
+      <h2>Metadata</h2>
+      <pre>{{ metadata }}</pre>
+    </section>
+  </section>
+</section>
