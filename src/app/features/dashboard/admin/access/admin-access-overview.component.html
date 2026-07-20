@@ -1,0 +1,35 @@
+<section class="admin-access-overview" aria-labelledby="admin-access-overview-title">
+  <header class="admin-access-overview__header">
+    <div>
+      <p class="admin-access-overview__eyebrow">Dashboard Admin</p>
+      <h1 id="admin-access-overview-title">Accesos</h1>
+      <p>Gestión operacional de accesos EVAAS.</p>
+    </div>
+
+    <a class="admin-access-overview__back" routerLink="/dashboard/admin">Volver al overview</a>
+  </header>
+
+  <section class="admin-access-overview__panel" aria-labelledby="admin-access-guidance-title">
+    <div class="admin-access-overview__intro">
+      <h2 id="admin-access-guidance-title">Cómo se gestionan los accesos</h2>
+      <p>
+        Los accesos no se gestionan como entidad aislada. Se asignan desde el detalle de cada organización,
+        vinculando usuario, herramienta, activación y recursos reales.
+      </p>
+    </div>
+
+    <ol class="admin-access-overview__steps">
+      <li>Ir a Organizaciones</li>
+      <li>Abrir el detalle de una organización</li>
+      <li>Buscar usuario por email</li>
+      <li>Asignar ToolAccess</li>
+      <li>Crear recursos asociados si corresponde</li>
+    </ol>
+
+    <footer class="admin-access-overview__actions">
+      <a class="admin-access-overview__primary" routerLink="/dashboard/admin/organizations">
+        Ir a Organizaciones
+      </a>
+    </footer>
+  </section>
+</section>
