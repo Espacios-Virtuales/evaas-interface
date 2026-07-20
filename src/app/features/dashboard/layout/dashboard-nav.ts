@@ -23,10 +23,10 @@ export const DASHBOARD_NAV_ITEMS: DashboardNavItem[] = [
     iconClass: 'bi-boxes',
   },
   {
-    label: 'Accesos',
-    route: '/dashboard/admin/access',
+    label: 'Instrumentos',
+    route: '/dashboard/admin/instruments',
     roles: [Role.ADMIN],
-    iconClass: 'bi-key',
+    iconClass: 'bi-sliders2',
   },
   {
     label: 'Activaciones',

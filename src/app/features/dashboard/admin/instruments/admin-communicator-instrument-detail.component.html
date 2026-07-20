@@ -1,0 +1,41 @@
+<section class="admin-communicator" aria-labelledby="admin-communicator-title">
+  <header class="admin-communicator__header">
+    <div>
+      <p class="admin-communicator__eyebrow">Instrumento</p>
+      <h1 id="admin-communicator-title">Comunicador</h1>
+      <p>Instrumento de comunicación operacional EVAAS.</p>
+    </div>
+
+    <a class="admin-communicator__back" routerLink="/dashboard/admin/instruments">Volver a Instrumentos</a>
+  </header>
+
+  <section class="admin-communicator__summary">
+    <p>
+      Permite preparar comunicaciones autorizadas y consultar su estado técnico desde el ecosistema EVAAS.
+    </p>
+  </section>
+
+  <div class="admin-communicator__grid">
+    <section class="admin-communicator__panel" aria-labelledby="communicator-pilot-title">
+      <h2 id="communicator-pilot-title">Alcance piloto</h2>
+      <p>Disponible para etapa piloto:</p>
+      <ul>
+        <li *ngFor="let item of pilotScope">{{ item }}</li>
+      </ul>
+    </section>
+
+    <section class="admin-communicator__panel" aria-labelledby="communicator-unavailable-title">
+      <h2 id="communicator-unavailable-title">No disponible todavía</h2>
+      <p>Fuera del alcance actual:</p>
+      <ul>
+        <li *ngFor="let item of unavailableScope">{{ item }}</li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="admin-communicator__panel admin-communicator__panel--wide" aria-labelledby="communicator-boundary-title">
+    <h2 id="communicator-boundary-title">Frontera técnica</h2>
+    <p>La interfaz no se comunica directamente con el proveedor.</p>
+    <p>Toda operación pasa por EVAAS Core.</p>
+  </section>
+</section>
