@@ -13,6 +13,7 @@ Documentos:
 - `phase-2c-admin-placeholder.md`
 - `phase-2c-dashboard-shell-refactor-plan.md`
 - `phase-3-admin-overview.md`
+- `phase-3-admin-access-overview-route.md`
 - `phase-3-admin-organization-create.md`
 - `phase-3-admin-organization-detail-consolidation.md`
 - `phase-3-admin-organization-detail.md`
