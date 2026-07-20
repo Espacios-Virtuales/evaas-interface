@@ -24,4 +24,5 @@ Documentos:
 - `phase-3-admin-organizations-list.md`
 - `phase-3-admin-activations-list.md`
 - `phase-3-admin-activation-create.md`
+- `phase-3-admin-activation-detail-routing.md`
 - `phase-3-admin-resources-list.md`

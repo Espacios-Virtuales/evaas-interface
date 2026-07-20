@@ -55,6 +55,16 @@ export const DASHBOARD_ROUTES: Routes = [
           ),
       },
       {
+        path: `${DASHBOARD_CHILD_PATHS.admin}/activations/:id`,
+        title: 'Detalle Activacion Admin',
+        data: { roles: ['ROLE_ADMIN'] },
+        loadComponent: () =>
+          lazy(
+            import('./admin/activations/admin-activation-detail.component'),
+            'AdminActivationDetailComponent',
+          ),
+      },
+      {
         path: `${DASHBOARD_CHILD_PATHS.admin}/activations`,
         title: 'Activaciones Admin',
         data: { roles: ['ROLE_ADMIN'] },
