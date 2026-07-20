@@ -17,7 +17,7 @@ Rutas admin reales visibles hoy:
 ```txt
 /dashboard/admin/organizations
 /dashboard/admin/resources
-/dashboard/admin/access
+/dashboard/admin/instruments
 /dashboard/admin/activations
 ```
 
@@ -26,11 +26,13 @@ Etiquetas visibles:
 ```txt
 Organizaciones
 Recursos
-Accesos
+Instrumentos
 Activaciones
 ```
 
-La entrada `Accesos` ya esta visible porque `/dashboard/admin/access` existe como pantalla orientadora dentro del Dashboard Shell. La gestion operacional sigue ocurriendo desde el detalle de organizacion.
+La entrada `Instrumentos` apunta a `/dashboard/admin/instruments` y representa capacidades operables e integraciones disponibles. La ruta legacy `/dashboard/admin/access` queda como compatibilidad transitoria y redirige a Instrumentos.
+
+Los accesos siguen gestionandose desde el detalle de cada organizacion. ToolAccess no vuelve a ser menu principal para usuarios humanos.
 
 ## Rutas legacy ocultas
 
@@ -61,12 +63,12 @@ No se muestran placeholders visuales ni rutas inexistentes para esos roles.
 
 ## Fuera de alcance
 
-- nuevas rutas;
+- nuevas rutas fuera de Instrumentos;
 - dashboard cliente;
 - dashboard colaborador;
 - portal usuario;
 - permisos backend;
 - guards complejos nuevos;
-- eliminacion de rutas legacy;
+- eliminacion inmediata de rutas legacy;
 - refactor visual grande del shell;
 - mobile drawer completo.

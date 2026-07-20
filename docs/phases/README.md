@@ -31,3 +31,14 @@ Documentos:
 - `phase-3-admin-activation-create.md`
 - `phase-3-admin-activation-detail-routing.md`
 - `phase-3-admin-resources-list.md`
+
+## Cierre piloto admin
+
+Estado actualizado:
+
+- Accesos deja de ser seccion principal visible.
+- Instrumentos queda como seccion admin para capacidades operables.
+- Comunicador queda definido como primer instrumento.
+- Recursos globales tienen detalle read-only.
+- Recursos pueden mostrar instrumento asociado solo si existe evidencia en campos backend existentes.
+- Activaciones siguen funcionales para test productivo controlado.

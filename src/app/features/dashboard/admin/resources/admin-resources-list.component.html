@@ -38,7 +38,8 @@
             <th>Estado</th>
             <th>Visibilidad</th>
             <th>Organización</th>
-            <th>URL</th>
+            <th>ToolAccess</th>
+            <th>Instrumento</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -51,35 +52,90 @@
             <td>{{ resourceStatus(resource) }}</td>
             <td>{{ resourceVisibility(resource) }}</td>
             <td>{{ resourceOrganization(resource) }}</td>
+            <td>{{ resourceToolAccessId(resource) }}</td>
             <td>
-              <ng-container *ngIf="resourceLinks(resource).length; else noUrl">
-                <a
-                  *ngFor="let link of resourceLinks(resource)"
-                  class="admin-resources__external"
-                  [href]="link.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {{ link.label }}
-                </a>
-              </ng-container>
-              <ng-template #noUrl>-</ng-template>
+              <span class="admin-resources__instrument">{{ resourceInstrument(resource) }}</span>
             </td>
             <td>
-              <a
-                *ngIf="resourceDetailLink(resource) as detailLink; else noDetailLink"
+              <button
                 class="admin-resources__detail"
-                [routerLink]="detailLink"
+                type="button"
+                (click)="openResourceDetail(resource)"
               >
                 Ver detalle
-              </a>
-              <ng-template #noDetailLink>
-                <span class="admin-resources__detail admin-resources__detail--disabled">Ver detalle</span>
-              </ng-template>
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
+
+  <div class="admin-resources__modal-backdrop" *ngIf="selectedResource() as resource" role="presentation">
+    <section
+      class="admin-resources__modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-resource-detail-title"
+    >
+      <header class="admin-resources__modal-header">
+        <div>
+          <p class="admin-resources__eyebrow">Detalle de recurso</p>
+          <h2 id="admin-resource-detail-title">{{ resourceName(resource) }}</h2>
+        </div>
+
+        <button class="admin-resources__link-button" type="button" (click)="closeResourceDetail()">
+          Cerrar
+        </button>
+      </header>
+
+      <div class="state state-loading admin-resources__modal-state" *ngIf="resourceDetailLoading()">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span>Cargando detalle...</span>
+      </div>
+
+      <div class="state state-error admin-resources__modal-state" *ngIf="resourceDetailError()">
+        <strong>{{ resourceDetailError() }}</strong>
+      </div>
+
+      <dl class="admin-resources__modal-facts">
+        <div *ngFor="let field of resourceFields(resource)">
+          <dt>{{ field.label }}</dt>
+          <dd *ngIf="field.kind === 'status'">
+            <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
+          </dd>
+          <dd *ngIf="field.kind === 'date'">{{ formatDate(field.value) }}</dd>
+          <dd *ngIf="field.kind === 'structured'">
+            <details class="admin-resources__metadata" open>
+              <summary>Ver metadata</summary>
+              <pre>{{ formatStructuredValue(field.value) }}</pre>
+            </details>
+          </dd>
+          <dd *ngIf="field.kind === 'url'">
+            <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
+              {{ formatValue(field.value) }}
+            </a>
+          </dd>
+          <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
+            {{ formatValue(field.value) }}
+          </dd>
+        </div>
+      </dl>
+
+      <footer class="admin-resources__modal-actions">
+        <a
+          class="admin-resources__primary-link"
+          *ngFor="let link of resourceLinks(resource)"
+          [href]="link.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Abrir recurso
+        </a>
+        <button class="admin-resources__secondary-action" type="button" (click)="closeResourceDetail()">
+          Cerrar
+        </button>
+      </footer>
+    </section>
+  </div>
 </section>
