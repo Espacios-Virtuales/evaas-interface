@@ -35,7 +35,7 @@ queda como compatibilidad transitoria y redirige a Instrumentos.
 | Instrumento | Capacidad operable del ecosistema EVAAS. | Comunicador |
 | InstrumentAccess | Autorización canónica de un instrumento por organización. | Acceso a Comunicador por `organizationRef` UUID |
 | ToolAccess | Autorizacion o habilitacion funcional para usar una herramienta/capacidad. | Acceso de una organizacion a una capacidad |
-| Resource | Recurso concreto asociado a una organizacion, herramienta o instrumento. | URL, dashboard, worker, repositorio |
+| Resource | Activo operacional asociado a una organización; una asociación con Instrument solo puede mostrarse con evidencia contractual explícita. | URL, VPS, dashboard, worker, repositorio |
 | Activation | Origen comercial o manual que justifica acceso o continuidad. | Activacion externa recibida |
 
 ## Relacion conceptual
