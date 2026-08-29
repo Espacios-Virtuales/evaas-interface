@@ -100,7 +100,10 @@ export class AdminResourcesListComponent implements OnInit {
   }
 
   resourceInstrument(resource: AdminResourceDto): string {
-    return this.isCommunicatorResource(resource) ? 'Comunicador' : 'Sin clasificar';
+    const association = this.explicitInstrumentAssociation(resource);
+    if (!association) return 'Sin clasificar';
+
+    return association.toUpperCase() === 'LIORA' ? 'Comunicador' : association;
   }
 
   resourceFields(resource: AdminResourceDto): DetailField[] {
@@ -232,29 +235,32 @@ export class AdminResourcesListComponent implements OnInit {
     return Number.isInteger(id) && id > 0 ? id : null;
   }
 
-  private isCommunicatorResource(resource: AdminResourceDto): boolean {
-    const evidence = [
-      this.valueFromKeys(resource, ['key', 'resourceKey']),
-      this.valueFromKeys(resource, ['type', 'resourceType']),
-      this.valueFromKeys(resource, ['metadataJson', 'metadata']),
-    ]
-      .map(value => this.evidenceText(value))
-      .filter(Boolean)
-      .join(' ');
+  private explicitInstrumentAssociation(resource: AdminResourceDto): string | null {
+    const directAssociation = this.valueFromKeys(resource, ['instrumentName', 'instrumentKey']);
+    if (typeof directAssociation === 'string' && directAssociation.trim()) return directAssociation.trim();
 
-    return /\b(comunicador|communicator|communication|communication_action|liora)\b/i.test(evidence);
+    const metadata = this.parseMetadata(this.valueFromKeys(resource, ['metadataJson', 'metadata']));
+    const metadataAssociation = metadata?.['instrumentName'] ?? metadata?.['instrumentKey'];
+
+    return typeof metadataAssociation === 'string' && metadataAssociation.trim()
+      ? metadataAssociation.trim()
+      : null;
   }
 
-  private evidenceText(value: unknown): string {
-    if (!this.hasValue(value)) return '';
-    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
-      return String(value);
+  private parseMetadata(value: unknown): Record<string, unknown> | null {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return value as Record<string, unknown>;
     }
 
+    if (typeof value !== 'string') return null;
+
     try {
-      return JSON.stringify(value);
+      const parsed: unknown = JSON.parse(value);
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : null;
     } catch {
-      return '';
+      return null;
     }
   }
 
