@@ -78,7 +78,7 @@ Mostrar Comunicador.
 No usar Liora como marca principal visible.
 ```
 
-## Recursos e instrumentos
+## Asociación de Resource a Instrument
 
 La tabla global de recursos puede mostrar una columna `Instrumento asociado` solo cuando exista relación contractual o metadata explícita del backend:
 
