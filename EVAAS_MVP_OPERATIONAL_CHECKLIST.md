@@ -10,7 +10,9 @@ Fecha: 2026-08-29
 - [x] Resource se trata como activo operativo, no como Instrument.
 - [x] `/dashboard/admin/access` se conserva como compatibilidad temporal hacia Instrumentos.
 - [x] Comunicador se mantiene como máscara UI de LIORA.
-- [ ] Consumir `GET /admin/instruments` como fuente canónica del catálogo de instrumentos.
+- [x] Instrumentos consume `GET /admin/instruments` como fuente canónica del catálogo.
+- [x] `[]` en catálogo de instrumentos se representa como estado vacío válido.
+- [x] InstrumentAccess queda preparado documentalmente y no usa `Organization.id` Long como `organizationRef` UUID.
 
 ## Cierre piloto Admin
 
