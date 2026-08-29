@@ -7,6 +7,7 @@
 
 .admin-organizations__header,
 .state,
+.admin-organizations__filters,
 .admin-organizations__table {
   margin-left: auto;
   margin-right: auto;
@@ -62,7 +63,8 @@ h2 {
 }
 
 .admin-organizations__back,
-.admin-organizations__detail {
+.admin-organizations__detail,
+.admin-organizations__status-action {
   color: #17456f;
   font-weight: 700;
   text-decoration: none;
@@ -74,6 +76,40 @@ h2 {
 .admin-organizations__detail:focus-visible {
   color: #10243c;
   text-decoration: underline;
+}
+
+.admin-organizations__status-action {
+  border: 0;
+  cursor: pointer;
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+}
+
+.admin-organizations__status-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.admin-organizations__filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.admin-organizations__filters button {
+  background: #ffffff;
+  border: 1px solid #dfe7ef;
+  border-radius: 999px;
+  color: #526173;
+  font-weight: 700;
+  padding: 7px 12px;
+}
+
+.admin-organizations__filters button.is-active {
+  background: #17456f;
+  border-color: #17456f;
+  color: #ffffff;
 }
 
 .admin-organizations__primary {

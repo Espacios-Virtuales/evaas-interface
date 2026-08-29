@@ -28,6 +28,15 @@ describe('AdminAccessService', () => {
     req.flush([]);
   });
 
+  it('filters organizations by enabled status', () => {
+    service.getOrganizations(true).subscribe(result => expect(result).toEqual([]));
+
+    const req = http.expectOne(
+      r => r.method === 'GET' && r.url === apiUrl(API.adminAccess.organizations) && r.params.get('enabled') === 'true',
+    );
+    req.flush([]);
+  });
+
   it('creates an organization', () => {
     const payload = { name: 'EV', taxId: '76.000.000-0' };
     service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
@@ -37,6 +46,18 @@ describe('AdminAccessService', () => {
     );
     expect(req.request.body).toEqual(payload);
     req.flush({ id: 7, name: 'EV' });
+  });
+
+  it('updates organization status', () => {
+    service.updateOrganizationStatus(7, false).subscribe(result => {
+      expect(result).toEqual({ id: 7, name: 'EV', enabled: false });
+    });
+
+    const req = http.expectOne(
+      r => r.method === 'PATCH' && r.url === apiUrl(API.adminAccess.organizationStatus(7)),
+    );
+    expect(req.request.body).toEqual({ enabled: false });
+    req.flush({ id: 7, name: 'EV', enabled: false });
   });
 
   it('creates tool access', () => {

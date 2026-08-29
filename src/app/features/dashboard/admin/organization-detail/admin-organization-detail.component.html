@@ -457,12 +457,21 @@
         </div>
       </form>
 
-      <div class="state state-empty" *ngIf="!hasResources()">
+      <div class="state state-loading" *ngIf="resourcesState() === 'LOADING'">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span>Cargando recursos asociados...</span>
+      </div>
+
+      <div class="state state-error" *ngIf="resourcesAreUnavailable()">
+        <strong>{{ resourcesError() }}</strong>
+      </div>
+
+      <div class="state state-empty" *ngIf="resourcesState() === 'EMPTY'">
         <strong>Esta organizacion no tiene recursos asociados.</strong>
         <p>Cuando existan recursos reales para esta organizacion, apareceran aqui.</p>
       </div>
 
-      <div class="admin-organization-detail__resources-table-wrap" *ngIf="hasResources()">
+      <div class="admin-organization-detail__resources-table-wrap" *ngIf="resourcesState() === 'POPULATED' && hasResources()">
         <table class="admin-organization-detail__resources-table">
           <thead>
             <tr>

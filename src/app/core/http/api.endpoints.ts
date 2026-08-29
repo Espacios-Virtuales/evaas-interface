@@ -40,6 +40,8 @@ export const API = {
     toolAccess: '/admin/access/tool-access',
     toolAccessById: (id: number) => `/admin/access/tool-access/${encodeURIComponent(String(id))}`,
     organizationById: (id: number) => `/admin/access/organizations/${encodeURIComponent(String(id))}`,
+    organizationStatus: (id: number) =>
+      `/admin/access/organizations/${encodeURIComponent(String(id))}/status`,
     organizationToolAccess: (id: number) =>
       `/admin/access/organizations/${encodeURIComponent(String(id))}/tool-access`,
     organizationResources: (id: number) =>
