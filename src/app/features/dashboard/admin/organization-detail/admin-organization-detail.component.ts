@@ -4,7 +4,7 @@ import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Observable, distinctUntilChanged, forkJoin, map, switchMap, throwError } from 'rxjs';
+import { Observable, catchError, distinctUntilChanged, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   AdminResourceDto,
   AdminToolAccessDto,
@@ -46,7 +46,18 @@ interface OrganizationDetailResult {
   organization: OrganizationDto;
   toolAccess: AdminToolAccessDto[];
   resources: AdminResourceDto[];
+  resourceError: unknown | null;
 }
+
+type ResourceCollectionState =
+  | 'LOADING'
+  | 'EMPTY'
+  | 'POPULATED'
+  | 'UNAUTHORIZED'
+  | 'FORBIDDEN'
+  | 'NOT_FOUND'
+  | 'CONFLICT'
+  | 'ERROR';
 
 @Component({
   standalone: true,
@@ -67,6 +78,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly organization = signal<OrganizationDto | null>(null);
   readonly toolAccess = signal<AdminToolAccessDto[]>([]);
   readonly resources = signal<AdminResourceDto[]>([]);
+  readonly resourcesState = signal<ResourceCollectionState>('LOADING');
+  readonly resourcesError = signal<string | null>(null);
   readonly assignmentOpen = signal(false);
   readonly assignmentSubmitting = signal(false);
   readonly assignmentSuccess = signal<string | null>(null);
@@ -148,6 +161,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
+  readonly resourcesAreUnavailable = computed(() =>
+    ['UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'ERROR'].includes(this.resourcesState()),
+  );
   readonly activationCandidates = computed(() => {
     const organizationName = this.organization()?.name.trim().toLowerCase();
     const selectedUserEmail = this.selectedUser()?.email.trim().toLowerCase();
@@ -207,6 +223,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.organization.set(null);
           this.toolAccess.set([]);
           this.resources.set([]);
+          this.resourcesState.set('LOADING');
+          this.resourcesError.set(null);
           this.currentOrganizationId.set(id);
           this.assignmentSuccess.set(null);
           this.resourceCreateSuccess.set(null);
@@ -223,6 +241,12 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.organization.set(result.organization);
           this.toolAccess.set(Array.isArray(result.toolAccess) ? result.toolAccess : []);
           this.resources.set(Array.isArray(result.resources) ? result.resources : []);
+          if (result.resourceError) {
+            this.resourcesError.set(this.resourceCollectionErrorMessage(result.resourceError));
+            this.resourcesState.set(this.resourceCollectionErrorState(result.resourceError));
+          } else {
+            this.resourcesState.set(result.resources.length === 0 ? 'EMPTY' : 'POPULATED');
+          }
           this.loading.set(false);
         },
         error: err => {
@@ -230,6 +254,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.organization.set(null);
           this.toolAccess.set([]);
           this.resources.set([]);
+          this.resourcesState.set('ERROR');
           this.error.set('No fue posible cargar el detalle de la organizacion.');
           this.loading.set(false);
         },
@@ -293,7 +318,10 @@ export class AdminOrganizationDetailComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: resources => {
-        this.resources.set(Array.isArray(resources) ? resources : []);
+        const result = Array.isArray(resources) ? resources : [];
+        this.resources.set(result);
+        this.resourcesState.set(result.length === 0 ? 'EMPTY' : 'POPULATED');
+        this.resourcesError.set(null);
         this.resourceCreateSubmitting.set(false);
         this.resourceCreateSuccess.set('Recurso creado correctamente.');
         this.closeResourceCreateForm();
@@ -580,8 +608,35 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return forkJoin({
       organization: this.adminAccess.getOrganizationById(id),
       toolAccess: this.adminAccess.getOrganizationToolAccess(id),
-      resources: this.adminAccess.getOrganizationResources(id),
-    });
+      resourceResult: this.adminAccess.getOrganizationResources(id).pipe(
+        map(resources => ({ resources: Array.isArray(resources) ? resources : [], resourceError: null })),
+        catchError(resourceError => of({ resources: [], resourceError })),
+      ),
+    }).pipe(
+      map(({ organization, toolAccess, resourceResult }) => ({
+        organization,
+        toolAccess,
+        ...resourceResult,
+      })),
+    );
+  }
+
+  private resourceCollectionErrorState(error: unknown): ResourceCollectionState {
+    const status = error instanceof HttpErrorResponse ? error.status : 0;
+    if (status === 401) return 'UNAUTHORIZED';
+    if (status === 403) return 'FORBIDDEN';
+    if (status === 404) return 'NOT_FOUND';
+    if (status === 409) return 'CONFLICT';
+    return 'ERROR';
+  }
+
+  private resourceCollectionErrorMessage(error: unknown): string {
+    const status = error instanceof HttpErrorResponse ? error.status : 0;
+    if (status === 401) return 'Tu sesión no está autorizada para consultar recursos.';
+    if (status === 403) return 'No tienes permisos para consultar recursos de esta organización.';
+    if (status === 404) return 'La colección de recursos no está disponible para esta organización.';
+    if (status === 409) return 'La colección de recursos está en conflicto. Intenta nuevamente.';
+    return 'No fue posible cargar los recursos de esta organización.';
   }
 
   private loadActivationsForAssignment(): void {
