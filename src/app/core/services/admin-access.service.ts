@@ -16,12 +16,20 @@ import {
 export class AdminAccessService {
   private http = inject(HttpClient);
 
-  getOrganizations(): Observable<OrganizationDto[]> {
-    return this.http.get<OrganizationDto[]>(apiUrl(API.adminAccess.organizations));
+  getOrganizations(enabled?: boolean): Observable<OrganizationDto[]> {
+    const params = enabled === undefined ? undefined : { enabled: String(enabled) };
+    return this.http.get<OrganizationDto[]>(apiUrl(API.adminAccess.organizations), { params });
   }
 
   createOrganization(payload: CreateOrganizationRequest): Observable<OrganizationDto> {
     return this.http.post<OrganizationDto>(apiUrl(API.adminAccess.organizations), payload);
+  }
+
+  updateOrganizationStatus(id: number, enabled: boolean): Observable<OrganizationDto> {
+    return this.http.patch<OrganizationDto>(
+      apiUrl(API.adminAccess.organizationStatus(id)),
+      { enabled },
+    );
   }
 
   createToolAccess(payload: CreateToolAccessPayload): Observable<AdminToolAccessDto> {

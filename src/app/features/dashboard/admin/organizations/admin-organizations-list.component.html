@@ -18,12 +18,26 @@
     <strong>{{ createSuccess() }}</strong>
   </div>
 
+  <nav class="admin-organizations__filters" aria-label="Filtrar organizaciones por estado">
+    <button type="button" [class.is-active]="activeFilter() === 'ALL'" (click)="load('ALL')">Todas</button>
+    <button type="button" [class.is-active]="activeFilter() === 'ENABLED'" (click)="load('ENABLED')">Habilitadas</button>
+    <button type="button" [class.is-active]="activeFilter() === 'DISABLED'" (click)="load('DISABLED')">Deshabilitadas</button>
+  </nav>
+
+  <div class="state state-success" *ngIf="statusSuccess()">
+    <strong>{{ statusSuccess() }}</strong>
+  </div>
+
+  <div class="state state-error" *ngIf="statusError()">
+    <div><strong>No se pudo cambiar el estado.</strong><p>{{ statusError() }}</p></div>
+  </div>
+
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
     <span>Cargando organizaciones...</span>
   </div>
 
-  <div class="state state-error" *ngIf="!loading() && error()">
+  <div class="state state-error" *ngIf="isError()">
     <div>
       <strong>No se pudo cargar organizaciones.</strong>
       <p>{{ error() }}</p>
@@ -36,7 +50,7 @@
     <p>Cuando el backend entregue organizaciones, aparecerán en esta pantalla.</p>
   </div>
 
-  <section class="admin-organizations__table" *ngIf="!loading() && !error() && !isEmpty()">
+  <section class="admin-organizations__table" *ngIf="collectionState() === 'POPULATED'">
     <div class="table-responsive">
       <table class="table align-middle">
         <thead>
@@ -60,6 +74,14 @@
               <a class="admin-organizations__detail" [routerLink]="['/dashboard/admin/organizations', organization.id]">
                 Ver detalle
               </a>
+              <button
+                type="button"
+                class="admin-organizations__status-action"
+                [disabled]="updatingOrganizationId() === organization.id"
+                (click)="updateOrganizationStatus(organization, !isEnabled(organization))"
+              >
+                {{ updatingOrganizationId() === organization.id ? 'Actualizando...' : isEnabled(organization) ? 'Deshabilitar' : 'Habilitar' }}
+              </button>
             </td>
           </tr>
         </tbody>
