@@ -30,7 +30,11 @@ Instrumentos
 Activaciones
 ```
 
-La entrada `Instrumentos` apunta a `/dashboard/admin/instruments` y representa capacidades operables e integraciones disponibles. La ruta legacy `/dashboard/admin/access` queda como compatibilidad transitoria y redirige a Instrumentos.
+## Alineación canónica EVW-UI-H01
+
+La entrada `Instrumentos` apunta a `/dashboard/admin/instruments` y representa el catálogo canónico de capacidades operables. `InstrumentAccess` será la autorización canónica por organización cuando exista `organizationRef` UUID; los accesos actuales del detalle de organización siguen siendo `ToolAccess` legacy. `Resource` es un activo operativo, no un Instrumento.
+
+La ruta `/dashboard/admin/access` se conserva temporalmente por compatibilidad y redirige a Instrumentos, que pasa a ser la sección principal canónica. Comunicador es la máscara UI de LIORA; la Interface solo opera mediante `ev-ecosystem-api`.
 
 Los accesos siguen gestionandose desde el detalle de cada organizacion. ToolAccess no vuelve a ser menu principal para usuarios humanos.
 

@@ -3,7 +3,7 @@
     <div>
       <p class="admin-communicator__eyebrow">Instrumento</p>
       <h1 id="admin-communicator-title">Comunicador</h1>
-      <p>Instrumento de comunicación operacional EVAAS.</p>
+      <p>Clave técnica asociada: LIORA</p>
     </div>
 
     <a class="admin-communicator__back" routerLink="/dashboard/admin/instruments">Volver a Instrumentos</a>
@@ -11,7 +11,8 @@
 
   <section class="admin-communicator__summary">
     <p>
-      Permite preparar comunicaciones autorizadas y consultar su estado técnico desde el ecosistema EVAAS.
+      Instrumento comunicacional orientado a preparar borradores y consultar estados técnicos de
+      comunicación mediante EVAAS Core.
     </p>
   </section>
 
@@ -35,7 +36,6 @@
 
   <section class="admin-communicator__panel admin-communicator__panel--wide" aria-labelledby="communicator-boundary-title">
     <h2 id="communicator-boundary-title">Frontera técnica</h2>
-    <p>La interfaz no se comunica directamente con el proveedor.</p>
-    <p>Toda operación pasa por EVAAS Core.</p>
+    <p>La Interface no llama directamente a Liora. Toda operación debe pasar por ev-ecosystem-api.</p>
   </section>
 </section>

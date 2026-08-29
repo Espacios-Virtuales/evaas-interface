@@ -26,7 +26,7 @@ export class AdminInstrumentsOverviewComponent {
       status: 'Piloto / Preparando integración',
       scope: 'Borradores y consulta técnica',
       description:
-        'Instrumento comunicacional para preparar borradores, consultar estado técnico y sostener comunicaciones autorizadas desde EVAAS.',
+        'Instrumento comunicacional orientado a preparar borradores y consultar estados técnicos de comunicación mediante EVAAS Core.',
       route: '/dashboard/admin/instruments/comunicador',
     },
   ];
