@@ -7,6 +7,7 @@
 
 .admin-instruments__header,
 .admin-instruments__notice,
+.state,
 .admin-instruments__table {
   margin-left: auto;
   margin-right: auto;
@@ -62,6 +63,7 @@ h1 {
 }
 
 .admin-instruments__notice,
+.state,
 .admin-instruments__table {
   background: #ffffff;
   border: 1px solid #dfe7ef;
@@ -75,6 +77,38 @@ h1 {
   gap: 6px;
   margin-bottom: 20px;
   padding: 16px 18px;
+}
+
+.state {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+}
+
+.state p {
+  color: #526173;
+  margin-top: 4px;
+}
+
+.state-loading {
+  justify-content: flex-start;
+}
+
+.state-error {
+  border-color: #f1b9bd;
+  color: #8e1f2d;
+}
+
+.state-empty {
+  color: #526173;
+  display: block;
+}
+
+.state-empty strong {
+  color: #243246;
 }
 
 .admin-instruments__table {

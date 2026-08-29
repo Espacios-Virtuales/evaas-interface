@@ -4,7 +4,7 @@ Fecha: 2026-08-29
 
 ## Alineación canónica EVW-UI-H01
 
-`Instrument` es el catálogo canónico de capacidades y se debe consumir desde `GET /admin/instruments` cuando el contrato se integre en Interface. `InstrumentAccess` es la autorización canónica por organización y corresponde a `GET /admin/organizations/{organizationRef}/instrument-access`.
+`Instrument` es el catálogo canónico de capacidades y Interface lo consume desde `GET /admin/instruments`. `InstrumentAccess` es la autorización canónica por organización y corresponde a `GET /admin/organizations/{organizationRef}/instrument-access`.
 
 `ToolAccess` es el contrato legacy aún disponible en el detalle de organización; no debe renombrarse internamente como `InstrumentAccess` ni usar `Organization.id` (`Long`) como `organizationRef` UUID. `Resource` es un activo operativo y no un Instrumento. Solo puede mostrarse asociado a un instrumento si el backend expone una relación o metadata explícita; de otro modo queda como `Sin clasificar`.
 
@@ -53,7 +53,7 @@ CommunicationAction
 ## Reglas
 
 - Instrumentos no reemplaza ToolAccess.
-- Pendiente: consumir `GET /admin/instruments` como fuente canónica del catálogo de instrumentos.
+- `GET /admin/instruments` es la fuente canónica del catálogo de instrumentos; `[]` se representa como estado vacío válido.
 - Recursos no son instrumentos.
 - ToolAccess no es menu principal para usuarios humanos.
 - La UI puede enmascarar nombres internos.

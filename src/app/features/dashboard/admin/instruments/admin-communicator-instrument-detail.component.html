@@ -9,6 +9,24 @@
     <a class="admin-communicator__back" routerLink="/dashboard/admin/instruments">Volver a Instrumentos</a>
   </header>
 
+  <div class="state state-loading" *ngIf="state() === 'LOADING'">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Confirmando disponibilidad en el catálogo canónico...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="state() === 'ERROR'">
+    <div>
+      <strong>No se pudo confirmar Comunicador.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="loadAvailability()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="state() === 'UNAVAILABLE'">
+    <strong>Comunicador no está disponible en el catálogo canónico actual.</strong>
+  </div>
+
+  <ng-container *ngIf="state() === 'AVAILABLE'">
   <section class="admin-communicator__summary">
     <p>
       Instrumento comunicacional orientado a preparar borradores y consultar estados técnicos de
@@ -38,4 +56,5 @@
     <h2 id="communicator-boundary-title">Frontera técnica</h2>
     <p>La Interface no llama directamente a Liora. Toda operación debe pasar por ev-ecosystem-api.</p>
   </section>
+  </ng-container>
 </section>

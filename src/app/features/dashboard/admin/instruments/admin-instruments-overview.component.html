@@ -18,31 +18,44 @@
     <p>Los accesos actuales siguen gestionándose desde el detalle de cada organización.</p>
   </section>
 
-  <section class="admin-instruments__table" aria-label="Instrumentos EVAAS">
+  <div class="state state-loading" *ngIf="state() === 'LOADING'">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    <span>Cargando catálogo de instrumentos...</span>
+  </div>
+
+  <div class="state state-error" *ngIf="isError()">
+    <div>
+      <strong>No se pudo cargar Instrumentos.</strong>
+      <p>{{ error() }}</p>
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm" (click)="load()">Reintentar</button>
+  </div>
+
+  <div class="state state-empty" *ngIf="isEmpty()">
+    <strong>No hay instrumentos disponibles en el catálogo canónico.</strong>
+  </div>
+
+  <section class="admin-instruments__table" *ngIf="state() === 'POPULATED'" aria-label="Instrumentos EVAAS">
     <div class="table-responsive">
       <table class="table align-middle">
         <thead>
           <tr>
             <th>Instrumento</th>
-            <th>Función</th>
-            <th>Estado</th>
-            <th>Alcance actual</th>
+            <th>Clave técnica</th>
+            <th>Descripción</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let instrument of instruments; trackBy: trackInstrument">
+          <tr *ngFor="let instrument of instruments(); trackBy: trackInstrument">
             <td>
-              <strong>{{ instrument.name }}</strong>
-              <span>{{ instrument.description }}</span>
+              <strong>{{ instrumentLabel(instrument) }}</strong>
             </td>
-            <td>{{ instrument.function }}</td>
+            <td>{{ instrumentKey(instrument) }}</td>
+            <td>{{ instrumentDescription(instrument) }}</td>
             <td>
-              <span class="admin-instruments__status">{{ instrument.status }}</span>
-            </td>
-            <td>{{ instrument.scope }}</td>
-            <td>
-              <a class="admin-instruments__detail" [routerLink]="instrument.route">Ver detalle</a>
+              <a *ngIf="hasDetail(instrument)" class="admin-instruments__detail" routerLink="/dashboard/admin/instruments/comunicador">Ver detalle</a>
+              <span *ngIf="!hasDetail(instrument)">Sin detalle disponible</span>
             </td>
           </tr>
         </tbody>

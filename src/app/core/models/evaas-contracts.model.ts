@@ -64,6 +64,12 @@ export interface AdminResourceDto {
   [key: string]: unknown;
 }
 
+/** Canonical catalogue item returned by GET /admin/instruments. */
+export interface AdminInstrumentDto {
+  key: string;
+  [key: string]: unknown;
+}
+
 export interface CreateAdminResourcePayload {
   organizationId: number;
   toolAccessId?: number;

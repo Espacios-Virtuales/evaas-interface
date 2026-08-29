@@ -59,6 +59,9 @@ export const API = {
     resources: '/admin/resources',
     resourceById: (id: number) => `/admin/resources/${encodeURIComponent(String(id))}`,
   },
+  adminInstruments: {
+    instruments: '/admin/instruments',
+  },
   legacy: {
     integrations: {
       software: '/integrations/software',

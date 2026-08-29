@@ -236,11 +236,11 @@ export class AdminResourcesListComponent implements OnInit {
   }
 
   private explicitInstrumentAssociation(resource: AdminResourceDto): string | null {
-    const directAssociation = this.valueFromKeys(resource, ['instrumentName', 'instrumentKey']);
+    const directAssociation = this.valueFromKeys(resource, ['instrumentName', 'instrumentKey', 'instrument']);
     if (typeof directAssociation === 'string' && directAssociation.trim()) return directAssociation.trim();
 
     const metadata = this.parseMetadata(this.valueFromKeys(resource, ['metadataJson', 'metadata']));
-    const metadataAssociation = metadata?.['instrumentName'] ?? metadata?.['instrumentKey'];
+    const metadataAssociation = metadata?.['instrumentName'] ?? metadata?.['instrumentKey'] ?? metadata?.['instrument'];
 
     return typeof metadataAssociation === 'string' && metadataAssociation.trim()
       ? metadataAssociation.trim()
