@@ -75,10 +75,11 @@
                 Ver detalle
               </a>
               <button
+                *ngIf="organization.enabled === true || organization.enabled === false"
                 type="button"
                 class="admin-organizations__status-action"
                 [disabled]="updatingOrganizationId() === organization.id"
-                (click)="updateOrganizationStatus(organization, !isEnabled(organization))"
+                (click)="updateOrganizationStatus(organization, organization.enabled === false)"
               >
                 {{ updatingOrganizationId() === organization.id ? 'Actualizando...' : isEnabled(organization) ? 'Deshabilitar' : 'Habilitar' }}
               </button>
