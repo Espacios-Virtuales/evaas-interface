@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { Subject, of, throwError } from 'rxjs';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
 
@@ -32,12 +32,14 @@ describe('AdminToolAccessCreateModalComponent', () => {
     component.externalCommerceActivationId = '24';
     component.selectedUser.set({ id: 12, email: 'ops@example.com' });
 
+    expect(component.requestState()).toBe('IDLE');
     component.submit();
 
     expect(service.createToolAccess).toHaveBeenCalledWith({
       organizationId: 7, toolKey: 'EVAAS_WORKFLOW', userId: 12, externalCommerceActivationId: 24,
     });
     expect(created).toHaveBeenCalled();
+    expect(component.requestState()).toBe('SUCCESS');
   });
 
   it('does not emit success when the legacy request fails', () => {
@@ -51,5 +53,18 @@ describe('AdminToolAccessCreateModalComponent', () => {
     expect(created).not.toHaveBeenCalled();
     expect(component.error()).toContain('permisos');
     expect(component.submitting()).toBeFalse();
+  });
+
+  it('uses SUBMITTING to prevent a duplicate ToolAccess request', () => {
+    const response = new Subject<never>();
+    service.createToolAccess.and.returnValue(response);
+    component.toolKey = 'EVAAS_WORKFLOW';
+    component.selectedUser.set({ id: 12, email: 'ops@example.com' });
+
+    component.submit();
+    component.submit();
+
+    expect(component.requestState()).toBe('SUBMITTING');
+    expect(service.createToolAccess).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdminUserLookupDto, CreateToolAccessPayload } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 
 @Component({
   standalone: true,
@@ -20,7 +21,8 @@ export class AdminToolAccessCreateModalComponent {
   @Output() readonly cancelled = new EventEmitter<void>();
   @Output() readonly created = new EventEmitter<void>();
 
-  readonly submitting = signal(false);
+  readonly requestState = signal<OperationRequestState>('IDLE');
+  readonly submitting = computed(() => this.requestState() === 'SUBMITTING');
   readonly validation = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   readonly userLookupLoading = signal(false);
@@ -65,14 +67,26 @@ export class AdminToolAccessCreateModalComponent {
   }
 
   submit(): void {
+    if (this.requestState() === 'SUBMITTING') return;
     const payload = this.buildPayload();
     if (!payload) return;
-    this.submitting.set(true);
+    this.requestState.set('SUBMITTING');
     this.error.set(null);
     this.validation.set(null);
     this.adminAccess.createToolAccess(payload).subscribe({
-      next: () => { this.submitting.set(false); this.created.emit(); },
-      error: err => { this.submitting.set(false); this.error.set(this.errorMessage(err)); },
+      next: () => { this.requestState.set('SUCCESS'); this.created.emit(); },
+      error: err => {
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible asignar el acceso. Intenta nuevamente.',
+          badRequest: 'El backend rechazo el payload. Revisa toolKey, userId y activationId.',
+          unauthorized: 'Tu sesión no está autorizada para asignar este acceso.',
+          forbidden: 'No tienes permisos suficientes para asignar este acceso.',
+          notFound: 'No se encontro la organizacion, el usuario o la activacion indicada.',
+          conflict: 'El acceso ya existe o entra en conflicto con el estado actual.',
+        });
+        this.requestState.set(presentation.state);
+        this.error.set(presentation.message);
+      },
     });
   }
 
@@ -86,23 +100,14 @@ export class AdminToolAccessCreateModalComponent {
     return { organizationId: this.organizationId, toolKey, userId, ...(activationId !== undefined ? { externalCommerceActivationId: activationId } : {}) };
   }
 
-  private invalid(message: string): null { this.validation.set(message); return null; }
+  private invalid(message: string): null { this.requestState.set('VALIDATION_ERROR'); this.validation.set(message); return null; }
 
   private parseOptionalPositiveInteger(value: string): number | undefined | null {
     const trimmed = value.trim();
     if (!trimmed) return undefined;
     const parsed = Number(trimmed);
-    if (!Number.isInteger(parsed) || parsed <= 0) { this.validation.set('externalCommerceActivationId debe ser numerico.'); return null; }
+    if (!Number.isInteger(parsed) || parsed <= 0) { this.requestState.set('VALIDATION_ERROR'); this.validation.set('externalCommerceActivationId debe ser numerico.'); return null; }
     return parsed;
-  }
-
-  private errorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) return 'No fue posible asignar el acceso. Intenta nuevamente.';
-    if (err.status === 400) return 'El backend rechazo el payload. Revisa toolKey, userId y activationId.';
-    if (err.status === 401 || err.status === 403) return 'No tienes permisos suficientes para asignar este acceso.';
-    if (err.status === 404) return 'No se encontro la organizacion, el usuario o la activacion indicada.';
-    if (err.status === 409) return 'El acceso ya existe o entra en conflicto con el estado actual.';
-    return 'No fue posible asignar el acceso. Intenta nuevamente.';
   }
 
   private userLookupErrorMessage(err: unknown): string {

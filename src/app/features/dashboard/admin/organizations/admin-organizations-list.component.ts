@@ -8,8 +8,8 @@ import {
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 
-type CreateState = 'idle' | 'loading' | 'success' | 'error' | 'validation';
 type OrganizationFilter = 'ALL' | 'ENABLED' | 'DISABLED';
 type OrganizationCollectionState =
   | 'LOADING'
@@ -41,7 +41,7 @@ export class AdminOrganizationsListComponent implements OnInit {
   readonly statusError = signal<string | null>(null);
   readonly statusSuccess = signal<string | null>(null);
   readonly createModalOpen = signal(false);
-  readonly createState = signal<CreateState>('idle');
+  readonly createState = signal<OperationRequestState>('IDLE');
   readonly createError = signal<string | null>(null);
   readonly createSuccess = signal<string | null>(null);
 
@@ -114,38 +114,39 @@ export class AdminOrganizationsListComponent implements OnInit {
 
   openCreateModal(): void {
     this.createForm.reset({ name: '', taxId: '', ownerUserId: null });
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
     this.createSuccess.set(null);
     this.createModalOpen.set(true);
   }
 
   closeCreateModal(): void {
-    if (this.createState() === 'loading') return;
+    if (this.createState() === 'SUBMITTING') return;
     this.createModalOpen.set(false);
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
   }
 
   createOrganization(): void {
+    if (this.createState() === 'SUBMITTING') return;
     if (!this.createForm.controls.name.value.trim()) {
       this.createForm.controls.name.setErrors({ required: true });
     }
 
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
-      this.createState.set('validation');
+      this.createState.set('VALIDATION_ERROR');
       this.createError.set(null);
       return;
     }
 
-    this.createState.set('loading');
+    this.createState.set('SUBMITTING');
     this.createError.set(null);
     this.createSuccess.set(null);
 
     this.adminAccess.createOrganization(this.createPayload()).subscribe({
       next: organization => {
-        this.createState.set('success');
+        this.createState.set('SUCCESS');
         this.createModalOpen.set(false);
         this.createSuccess.set('Organizacion creada correctamente.');
         this.load();
@@ -156,10 +157,15 @@ export class AdminOrganizationsListComponent implements OnInit {
       },
       error: err => {
         console.error('[AdminOrganizationsList] organization create error', err);
-        this.createState.set('error');
-        this.createError.set(
-          err?.error?.message ?? err?.message ?? 'No fue posible crear la organizacion.',
-        );
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible crear la organizacion.',
+          unauthorized: 'Tu sesión no está autorizada para crear organizaciones.',
+          forbidden: 'No tienes permisos para crear organizaciones.',
+          notFound: 'El contexto requerido para crear la organización ya no está disponible.',
+          conflict: 'La organización entra en conflicto con el estado actual.',
+        });
+        this.createState.set(presentation.state);
+        this.createError.set(presentation.message);
       },
     });
   }

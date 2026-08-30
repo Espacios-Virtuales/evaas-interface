@@ -95,7 +95,7 @@
           type="button"
           class="admin-activations__icon-button"
           aria-label="Cerrar"
-          [disabled]="createState() === 'loading'"
+          [disabled]="createState() === 'SUBMITTING'"
           (click)="closeCreateModal()"
         >
           &times;
@@ -191,11 +191,11 @@
           <input type="text" class="form-control" formControlName="idempotencyKey" autocomplete="off" />
         </label>
 
-        <div class="admin-activations__form-error" *ngIf="createState() === 'error' && createError()">
+        <div class="admin-activations__form-error" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
           {{ createError() }}
         </div>
 
-        <div class="admin-activations__form-error" *ngIf="createState() === 'validation'">
+        <div class="admin-activations__form-error" *ngIf="createState() === 'VALIDATION_ERROR'">
           Revisa los campos requeridos.
         </div>
 
@@ -203,13 +203,13 @@
           <button
             type="button"
             class="btn btn-outline-secondary"
-            [disabled]="createState() === 'loading'"
+            [disabled]="createState() === 'SUBMITTING'"
             (click)="closeCreateModal()"
           >
             Cancelar
           </button>
-          <button type="submit" class="admin-activations__primary" [disabled]="createState() === 'loading'">
-            {{ createState() === 'loading' ? 'Creando...' : 'Crear activación' }}
+          <button type="submit" class="admin-activations__primary" [disabled]="createState() === 'SUBMITTING'">
+            {{ createState() === 'SUBMITTING' ? 'Creando...' : 'Crear activación' }}
           </button>
         </footer>
       </form>

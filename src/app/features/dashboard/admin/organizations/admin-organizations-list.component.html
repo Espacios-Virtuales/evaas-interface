@@ -113,7 +113,7 @@
           type="button"
           class="admin-organizations__icon-button"
           aria-label="Cerrar"
-          [disabled]="createState() === 'loading'"
+          [disabled]="createState() === 'SUBMITTING'"
           (click)="closeCreateModal()"
         >
           &times;
@@ -146,11 +146,11 @@
           <small>Referencia de ownership opcional; no crea una membresía.</small>
         </label>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() === 'error' && createError()">
+        <div class="admin-organizations__form-error" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
           {{ createError() }}
         </div>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() === 'validation'">
+        <div class="admin-organizations__form-error" *ngIf="createState() === 'VALIDATION_ERROR'">
           Revisa los campos requeridos.
         </div>
 
@@ -158,13 +158,13 @@
           <button
             type="button"
             class="btn btn-outline-secondary"
-            [disabled]="createState() === 'loading'"
+            [disabled]="createState() === 'SUBMITTING'"
             (click)="closeCreateModal()"
           >
             Cancelar
           </button>
-          <button type="submit" class="admin-organizations__primary" [disabled]="createState() === 'loading'">
-            {{ createState() === 'loading' ? 'Creando...' : 'Crear organización' }}
+          <button type="submit" class="admin-organizations__primary" [disabled]="createState() === 'SUBMITTING'">
+            {{ createState() === 'SUBMITTING' ? 'Creando...' : 'Crear organización' }}
           </button>
         </footer>
       </form>

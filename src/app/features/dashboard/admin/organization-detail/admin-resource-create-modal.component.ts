@@ -1,12 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   AdminToolAccessDto,
   CreateAdminResourcePayload,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 
 @Component({
   standalone: true,
@@ -24,7 +24,8 @@ export class AdminResourceCreateModalComponent {
   @Output() readonly cancelled = new EventEmitter<void>();
   @Output() readonly created = new EventEmitter<void>();
 
-  readonly submitting = signal(false);
+  readonly requestState = signal<OperationRequestState>('IDLE');
+  readonly submitting = computed(() => this.requestState() === 'SUBMITTING');
   readonly validation = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
@@ -41,21 +42,30 @@ export class AdminResourceCreateModalComponent {
   }
 
   submit(): void {
+    if (this.requestState() === 'SUBMITTING') return;
     const payload = this.buildPayload();
     if (!payload) return;
 
-    this.submitting.set(true);
+    this.requestState.set('SUBMITTING');
     this.error.set(null);
     this.validation.set(null);
 
     this.adminResources.createResource(payload).subscribe({
       next: () => {
-        this.submitting.set(false);
+        this.requestState.set('SUCCESS');
         this.created.emit();
       },
       error: err => {
-        this.submitting.set(false);
-        this.error.set(this.errorMessage(err));
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible crear el recurso. Intenta nuevamente.',
+          badRequest: 'El backend rechazo el payload. Revisa name, type, toolAccessId, url y metadataJson.',
+          unauthorized: 'Tu sesión no está autorizada para crear recursos.',
+          forbidden: 'No tienes permisos suficientes para crear recursos en esta organizacion.',
+          notFound: 'No se encontro la organizacion o el acceso asociado indicado.',
+          conflict: 'El recurso ya existe o entra en conflicto con el estado actual.',
+        });
+        this.requestState.set(presentation.state);
+        this.error.set(presentation.message);
       },
     });
   }
@@ -101,6 +111,7 @@ export class AdminResourceCreateModalComponent {
   }
 
   private invalid(message: string): null {
+    this.requestState.set('VALIDATION_ERROR');
     this.validation.set(message);
     return null;
   }
@@ -110,19 +121,11 @@ export class AdminResourceCreateModalComponent {
     if (!trimmed) return undefined;
     const parsed = Number(trimmed);
     if (!Number.isInteger(parsed) || parsed <= 0) {
+      this.requestState.set('VALIDATION_ERROR');
       this.validation.set(`${label} debe ser numerico.`);
       return null;
     }
     return parsed;
-  }
-
-  private errorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) return 'No fue posible crear el recurso. Intenta nuevamente.';
-    if (err.status === 400) return 'El backend rechazo el payload. Revisa name, type, toolAccessId, url y metadataJson.';
-    if (err.status === 401 || err.status === 403) return 'No tienes permisos suficientes para crear recursos en esta organizacion.';
-    if (err.status === 404) return 'No se encontro la organizacion o el acceso asociado indicado.';
-    if (err.status === 409) return 'El recurso ya existe o entra en conflicto con el estado actual.';
-    return 'No fue posible crear el recurso. Intenta nuevamente.';
   }
 
   private isValidUrl(value: string): boolean {
