@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ModalInteractionDirective } from '../../directives/modal-interaction.directive';
 
 @Component({
   standalone: true,
   selector: 'evaas-confirmation-modal',
-  imports: [CommonModule],
+  imports: [CommonModule, ModalInteractionDirective],
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
 })

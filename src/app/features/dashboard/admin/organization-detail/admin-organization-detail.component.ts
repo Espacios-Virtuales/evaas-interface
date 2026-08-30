@@ -14,6 +14,7 @@ import { AdminResourceCreateModalComponent } from './admin-resource-create-modal
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 interface DetailField {
   label: string;
@@ -47,6 +48,7 @@ type ResourceCollectionState =
     AdminResourceCreateModalComponent,
     AdminToolAccessCreateModalComponent,
     ConfirmationModalComponent,
+    ModalInteractionDirective,
   ],
   templateUrl: './admin-organization-detail.component.html',
   styleUrls: ['./admin-organization-detail.component.scss'],

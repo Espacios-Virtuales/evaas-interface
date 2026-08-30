@@ -98,9 +98,15 @@
   >
     <section
       class="admin-organizations__modal"
+      tabindex="-1"
+      evaasModalInteraction
+      [modalCloseDisabled]="createState() === 'SUBMITTING'"
+      (modalEscape)="closeCreateModal()"
       role="dialog"
       aria-modal="true"
       aria-labelledby="admin-organization-create-title"
+      aria-describedby="admin-organization-create-description"
+      [attr.aria-busy]="createState() === 'SUBMITTING'"
       (click)="$event.stopPropagation()"
     >
       <header class="admin-organizations__modal-header">
@@ -121,6 +127,7 @@
       </header>
 
       <form [formGroup]="createForm" (ngSubmit)="createOrganization()" class="admin-organizations__form">
+        <p id="admin-organization-create-description" class="visually-hidden">Completa los datos para crear una organización.</p>
         <label>
           <span>Nombre</span>
           <input
@@ -128,6 +135,7 @@
             class="form-control"
             formControlName="name"
             autocomplete="organization"
+            data-modal-initial-focus
             [class.is-invalid]="createForm.controls.name.touched && createForm.controls.name.invalid"
           />
           <small *ngIf="createForm.controls.name.touched && createForm.controls.name.hasError('required')">
@@ -146,11 +154,11 @@
           <small>Referencia de ownership opcional; no crea una membresía.</small>
         </label>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
+        <div class="admin-organizations__form-error" role="alert" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
           {{ createError() }}
         </div>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() === 'VALIDATION_ERROR'">
+        <div class="admin-organizations__form-error" role="alert" *ngIf="createState() === 'VALIDATION_ERROR'">
           Revisa los campos requeridos.
         </div>
 

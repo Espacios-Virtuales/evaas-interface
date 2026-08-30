@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { AdminResourceDto } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 type ResourceLink = {
   label: string;
@@ -21,7 +22,7 @@ interface DetailField {
 @Component({
   standalone: true,
   selector: 'evaas-admin-resources-list',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ModalInteractionDirective],
   templateUrl: './admin-resources-list.component.html',
   styleUrls: ['./admin-resources-list.component.scss'],
 })

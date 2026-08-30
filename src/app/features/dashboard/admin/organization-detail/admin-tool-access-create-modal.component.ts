@@ -5,11 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { AdminUserLookupDto, CreateToolAccessPayload } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-tool-access-create-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalInteractionDirective],
   templateUrl: './admin-tool-access-create-modal.component.html',
   styleUrls: ['./organization-request-modal.component.scss'],
 })

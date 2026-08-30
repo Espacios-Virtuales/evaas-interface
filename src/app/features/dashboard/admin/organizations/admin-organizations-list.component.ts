@@ -10,6 +10,7 @@ import {
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 type OrganizationFilter = 'ALL' | 'ENABLED' | 'DISABLED';
 type OrganizationCollectionState =
@@ -25,7 +26,7 @@ type OrganizationCollectionState =
 @Component({
   standalone: true,
   selector: 'evaas-admin-organizations-list',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ConfirmationModalComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ConfirmationModalComponent, ModalInteractionDirective],
   templateUrl: './admin-organizations-list.component.html',
   styleUrls: ['./admin-organizations-list.component.scss'],
 })

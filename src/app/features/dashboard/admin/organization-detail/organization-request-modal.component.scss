@@ -19,4 +19,5 @@
 .organization-request-modal__error { margin: .75rem 0 0; color: #b42318; }
 .organization-request-modal__success { margin-top: .75rem; color: #147a3f; font-weight: 600; }
 .organization-request-modal__suggestions { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin-top: 1rem; }
-@media (max-width: 640px) { .organization-request-modal__grid { grid-template-columns: 1fr; } .organization-request-modal__field--wide { grid-column: auto; } .organization-request-modal__header { align-items: flex-start; } }
+.organization-request-modal :is(button, input, select, textarea):focus-visible { outline: 3px solid #0d6efd; outline-offset: 2px; }
+@media (max-width: 640px) { .organization-request-modal__backdrop { align-items: flex-start; padding: .75rem; } .organization-request-modal__grid { grid-template-columns: 1fr; } .organization-request-modal__field--wide { grid-column: auto; } .organization-request-modal__header { align-items: flex-start; } .organization-request-modal__actions { align-items: stretch; flex-direction: column-reverse; } .organization-request-modal__actions button { width: 100%; } }

@@ -9,12 +9,13 @@ import {
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminCommerceService } from '../../../../core/services/admin-commerce.service';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-activations-list',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ModalInteractionDirective],
   templateUrl: './admin-activations-list.component.html',
   styleUrls: ['./admin-activations-list.component.scss'],
 })

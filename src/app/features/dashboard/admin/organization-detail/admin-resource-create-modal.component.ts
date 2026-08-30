@@ -7,11 +7,12 @@ import {
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-resource-create-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ModalInteractionDirective],
   templateUrl: './admin-resource-create-modal.component.html',
   styleUrls: ['./organization-request-modal.component.scss'],
 })

@@ -1,17 +1,17 @@
 <div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
-  <section class="organization-request-modal" role="dialog" aria-modal="true" aria-labelledby="tool-access-create-modal-title" (click)="$event.stopPropagation()">
+  <section class="organization-request-modal" tabindex="-1" evaasModalInteraction [modalCloseDisabled]="submitting()" (modalEscape)="cancel()" role="dialog" aria-modal="true" aria-labelledby="tool-access-create-modal-title" aria-describedby="tool-access-create-modal-description" [attr.aria-busy]="submitting()" (click)="$event.stopPropagation()">
     <header class="organization-request-modal__header">
       <div>
         <p class="organization-request-modal__eyebrow">Accesos legacy</p>
         <h2 id="tool-access-create-modal-title">Asignar acceso</h2>
-        <p>Organization: <strong>{{ organizationName || organizationId }}</strong></p>
+        <p id="tool-access-create-modal-description">Organization: <strong>{{ organizationName || organizationId }}</strong></p>
       </div>
       <button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button>
     </header>
 
     <form (ngSubmit)="submit()" novalidate>
       <div class="organization-request-modal__grid">
-        <label><span>toolKey</span><input type="text" name="toolKey" [(ngModel)]="toolKey" required [disabled]="submitting()" /></label>
+        <label><span>toolKey</span><input type="text" name="toolKey" [(ngModel)]="toolKey" required data-modal-initial-focus [disabled]="submitting()" /></label>
         <label class="organization-request-modal__field--wide"><span>Correo del usuario</span><input type="email" name="userEmail" [(ngModel)]="userEmail" autocomplete="email" [disabled]="submitting() || userLookupLoading() || !!selectedUser()" /></label>
       </div>
       <div class="organization-request-modal__inline-actions">
@@ -19,11 +19,11 @@
         <button type="button" class="organization-request-modal__link-button" *ngIf="selectedUser()" (click)="clearSelectedUser()" [disabled]="submitting()">Limpiar seleccion</button>
       </div>
       <div class="organization-request-modal__success" *ngIf="selectedUser() as user">Usuario encontrado: {{ user.email }} · ID {{ user.id }}</div>
-      <p class="organization-request-modal__error" *ngIf="userLookupError()">{{ userLookupError() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="userLookupError()">{{ userLookupError() }}</p>
       <label class="organization-request-modal__field--wide"><span>ID de activación comercial (opcional)</span><input type="number" name="externalCommerceActivationId" [(ngModel)]="externalCommerceActivationId" min="1" inputmode="numeric" [disabled]="submitting()" /><small>Referencia contractual opcional; no demuestra una activación asociada a esta Organization.</small></label>
       <div class="organization-request-modal__suggestions"><span>Ejemplos sugeridos de toolKey:</span><button type="button" *ngFor="let key of suggestedToolKeys" (click)="useSuggestedToolKey(key)" [disabled]="submitting()">{{ key }}</button></div>
-      <p class="organization-request-modal__error" *ngIf="validation()">{{ validation() }}</p>
-      <p class="organization-request-modal__error" *ngIf="error()">{{ error() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="validation()">{{ validation() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
       <footer class="organization-request-modal__actions">
         <button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button>
         <button type="submit" class="organization-request-modal__primary" [disabled]="submitting()">{{ submitting() ? 'Asignando...' : 'Asignar acceso' }}</button>

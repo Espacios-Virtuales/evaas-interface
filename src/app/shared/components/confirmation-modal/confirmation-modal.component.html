@@ -1,12 +1,12 @@
 <div class="confirmation-modal__backdrop" role="presentation">
-  <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title">
+  <section class="confirmation-modal" tabindex="-1" evaasModalInteraction (modalEscape)="cancelled.emit()" role="dialog" aria-modal="true" aria-labelledby="confirmation-modal-title" aria-describedby="confirmation-modal-description">
     <header>
       <h2 id="confirmation-modal-title">{{ title }}</h2>
     </header>
     <p *ngIf="contextLabel && contextValue"><strong>{{ contextLabel }}:</strong> {{ contextValue }}</p>
-    <p>{{ message }}</p>
+    <p id="confirmation-modal-description">{{ message }}</p>
     <footer>
-      <button type="button" class="confirmation-modal__cancel" (click)="cancelled.emit()">Cancelar</button>
+      <button type="button" class="confirmation-modal__cancel" data-modal-initial-focus (click)="cancelled.emit()">Cancelar</button>
       <button type="button" [class.confirmation-modal__confirm--danger]="destructive" class="confirmation-modal__confirm" (click)="confirmed.emit()">{{ confirmLabel }}</button>
     </footer>
   </section>
