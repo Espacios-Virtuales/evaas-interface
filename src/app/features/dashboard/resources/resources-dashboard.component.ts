@@ -88,7 +88,7 @@ export class ResourcesDashboardComponent implements OnDestroy {
         switchMap(([i, s, q]) =>
           this.service.list(i, s, q).pipe(
             catchError(err => {
-              this.error.set('No fue posible cargar los recursos.');
+              this.error.set('No fue posible cargar el catálogo de software.');
               console.error('[ResourcesDashboard] list() error', err);
               return of({ total: 0, content: [] });
             })

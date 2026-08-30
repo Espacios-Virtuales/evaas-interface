@@ -141,9 +141,9 @@
         </label>
 
         <label>
-          <span>Owner user ID</span>
+          <span>ID de usuario responsable (owner)</span>
           <input type="number" class="form-control" formControlName="ownerUserId" min="1" />
-          <small>ownerUserId pendiente de definición operativa.</small>
+          <small>Referencia de ownership opcional; no crea una membresía.</small>
         </label>
 
         <div class="admin-organizations__form-error" *ngIf="createState() === 'error' && createError()">
