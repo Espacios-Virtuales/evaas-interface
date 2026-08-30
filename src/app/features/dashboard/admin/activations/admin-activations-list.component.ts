@@ -8,13 +8,14 @@ import {
   ExternalCommerceActivationStatus,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminCommerceService } from '../../../../core/services/admin-commerce.service';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
-type CreateState = 'idle' | 'loading' | 'success' | 'error' | 'validation';
 
 @Component({
   standalone: true,
   selector: 'evaas-admin-activations-list',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ModalInteractionDirective],
   templateUrl: './admin-activations-list.component.html',
   styleUrls: ['./admin-activations-list.component.scss'],
 })
@@ -26,7 +27,7 @@ export class AdminActivationsListComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly activations = signal<ExternalCommerceActivationDto[]>([]);
   readonly createModalOpen = signal(false);
-  readonly createState = signal<CreateState>('idle');
+  readonly createState = signal<OperationRequestState>('IDLE');
   readonly createError = signal<string | null>(null);
   readonly createSuccess = signal<string | null>(null);
 
@@ -88,46 +89,52 @@ export class AdminActivationsListComponent implements OnInit {
       externalMembershipId: '',
       idempotencyKey: '',
     });
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
     this.createSuccess.set(null);
     this.createModalOpen.set(true);
   }
 
   closeCreateModal(): void {
-    if (this.createState() === 'loading') return;
+    if (this.createState() === 'SUBMITTING') return;
     this.createModalOpen.set(false);
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
   }
 
   createActivation(): void {
+    if (this.createState() === 'SUBMITTING') return;
     this.trimRequiredControls();
 
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
-      this.createState.set('validation');
+      this.createState.set('VALIDATION_ERROR');
       this.createError.set(null);
       return;
     }
 
-    this.createState.set('loading');
+    this.createState.set('SUBMITTING');
     this.createError.set(null);
     this.createSuccess.set(null);
 
     this.adminCommerce.createActivation(this.createPayload()).subscribe({
       next: () => {
-        this.createState.set('success');
+        this.createState.set('SUCCESS');
         this.createModalOpen.set(false);
         this.createSuccess.set('Activacion creada correctamente.');
         this.load();
       },
       error: err => {
         console.error('[AdminActivationsList] activation create error', err);
-        this.createState.set('error');
-        this.createError.set(
-          err?.error?.message ?? err?.message ?? 'No fue posible crear la activacion.',
-        );
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible crear la activacion.',
+          unauthorized: 'Tu sesión no está autorizada para crear activaciones.',
+          forbidden: 'No tienes permisos para crear activaciones.',
+          notFound: 'El contexto requerido para crear la activación ya no está disponible.',
+          conflict: 'La activación entra en conflicto con el estado actual.',
+        });
+        this.createState.set(presentation.state);
+        this.createError.set(presentation.message);
       },
     });
   }

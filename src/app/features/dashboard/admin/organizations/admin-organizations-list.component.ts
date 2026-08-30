@@ -8,8 +8,10 @@ import {
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
-type CreateState = 'idle' | 'loading' | 'success' | 'error' | 'validation';
 type OrganizationFilter = 'ALL' | 'ENABLED' | 'DISABLED';
 type OrganizationCollectionState =
   | 'LOADING'
@@ -24,7 +26,7 @@ type OrganizationCollectionState =
 @Component({
   standalone: true,
   selector: 'evaas-admin-organizations-list',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ConfirmationModalComponent, ModalInteractionDirective],
   templateUrl: './admin-organizations-list.component.html',
   styleUrls: ['./admin-organizations-list.component.scss'],
 })
@@ -40,8 +42,10 @@ export class AdminOrganizationsListComponent implements OnInit {
   readonly updatingOrganizationId = signal<number | null>(null);
   readonly statusError = signal<string | null>(null);
   readonly statusSuccess = signal<string | null>(null);
+  readonly statusRequestState = signal<OperationRequestState>('IDLE');
+  readonly statusConfirmation = signal<{ organization: OrganizationDto; enabled: boolean } | null>(null);
   readonly createModalOpen = signal(false);
-  readonly createState = signal<CreateState>('idle');
+  readonly createState = signal<OperationRequestState>('IDLE');
   readonly createError = signal<string | null>(null);
   readonly createSuccess = signal<string | null>(null);
 
@@ -88,7 +92,24 @@ export class AdminOrganizationsListComponent implements OnInit {
   }
 
   updateOrganizationStatus(organization: OrganizationDto, enabled: boolean): void {
+    if (this.statusRequestState() === 'SUBMITTING') return;
+    this.statusConfirmation.set({ organization, enabled });
+    this.statusError.set(null);
+    this.statusSuccess.set(null);
+  }
+
+  cancelOrganizationStatusChange(): void {
+    this.statusConfirmation.set(null);
+  }
+
+  confirmOrganizationStatusChange(): void {
+    const confirmation = this.statusConfirmation();
+    if (!confirmation || this.statusRequestState() === 'SUBMITTING') return;
+
+    const { organization, enabled } = confirmation;
+    this.statusConfirmation.set(null);
     this.updatingOrganizationId.set(organization.id);
+    this.statusRequestState.set('SUBMITTING');
     this.statusError.set(null);
     this.statusSuccess.set(null);
 
@@ -98,12 +119,22 @@ export class AdminOrganizationsListComponent implements OnInit {
           item.id === organization.id ? { ...item, ...updated, enabled } : item,
         ));
         this.updatingOrganizationId.set(null);
+        this.statusRequestState.set('SUCCESS');
         this.statusSuccess.set(enabled ? 'Organización habilitada correctamente.' : 'Organización deshabilitada correctamente.');
       },
       error: err => {
         console.error('[AdminOrganizationsList] organization status update error', err);
         this.updatingOrganizationId.set(null);
-        this.statusError.set(this.statusErrorMessage(err));
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible cambiar el estado de la organización.',
+          badRequest: 'La solicitud de cambio de estado es inválida.',
+          unauthorized: 'Tu sesión no está autorizada para cambiar el estado.',
+          forbidden: 'No tienes permisos para cambiar el estado de esta organización.',
+          notFound: 'La organización ya no existe o no está disponible.',
+          conflict: 'No se puede cambiar el estado mientras existan dependencias activas. Revisa la operación y reintenta.',
+        });
+        this.statusRequestState.set(presentation.state);
+        this.statusError.set(presentation.message);
       },
     });
   }
@@ -114,38 +145,39 @@ export class AdminOrganizationsListComponent implements OnInit {
 
   openCreateModal(): void {
     this.createForm.reset({ name: '', taxId: '', ownerUserId: null });
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
     this.createSuccess.set(null);
     this.createModalOpen.set(true);
   }
 
   closeCreateModal(): void {
-    if (this.createState() === 'loading') return;
+    if (this.createState() === 'SUBMITTING') return;
     this.createModalOpen.set(false);
-    this.createState.set('idle');
+    this.createState.set('IDLE');
     this.createError.set(null);
   }
 
   createOrganization(): void {
+    if (this.createState() === 'SUBMITTING') return;
     if (!this.createForm.controls.name.value.trim()) {
       this.createForm.controls.name.setErrors({ required: true });
     }
 
     if (this.createForm.invalid) {
       this.createForm.markAllAsTouched();
-      this.createState.set('validation');
+      this.createState.set('VALIDATION_ERROR');
       this.createError.set(null);
       return;
     }
 
-    this.createState.set('loading');
+    this.createState.set('SUBMITTING');
     this.createError.set(null);
     this.createSuccess.set(null);
 
     this.adminAccess.createOrganization(this.createPayload()).subscribe({
       next: organization => {
-        this.createState.set('success');
+        this.createState.set('SUCCESS');
         this.createModalOpen.set(false);
         this.createSuccess.set('Organizacion creada correctamente.');
         this.load();
@@ -156,10 +188,15 @@ export class AdminOrganizationsListComponent implements OnInit {
       },
       error: err => {
         console.error('[AdminOrganizationsList] organization create error', err);
-        this.createState.set('error');
-        this.createError.set(
-          err?.error?.message ?? err?.message ?? 'No fue posible crear la organizacion.',
-        );
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible crear la organizacion.',
+          unauthorized: 'Tu sesión no está autorizada para crear organizaciones.',
+          forbidden: 'No tienes permisos para crear organizaciones.',
+          notFound: 'El contexto requerido para crear la organización ya no está disponible.',
+          conflict: 'La organización entra en conflicto con el estado actual.',
+        });
+        this.createState.set(presentation.state);
+        this.createError.set(presentation.message);
       },
     });
   }
@@ -209,16 +246,6 @@ export class AdminOrganizationsListComponent implements OnInit {
     if (status === 404) return 'La colección de organizaciones no está disponible.';
     if (status === 409) return 'La colección de organizaciones está en conflicto. Intenta nuevamente.';
     return 'No fue posible cargar las organizaciones.';
-  }
-
-  private statusErrorMessage(error: unknown): string {
-    const status = error instanceof HttpErrorResponse ? error.status : 0;
-    if (status === 400) return 'La solicitud de cambio de estado es inválida.';
-    if (status === 401) return 'Tu sesión no está autorizada para cambiar el estado.';
-    if (status === 403) return 'No tienes permisos para cambiar el estado de esta organización.';
-    if (status === 404) return 'La organización ya no existe o no está disponible.';
-    if (status === 409) return 'No se puede cambiar el estado mientras existan dependencias activas. Revisa la operación y reintenta.';
-    return 'No fue posible cambiar el estado de la organización.';
   }
 
   private createPayload(): CreateOrganizationRequest {

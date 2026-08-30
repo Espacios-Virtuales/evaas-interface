@@ -2,41 +2,24 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, catchError, distinctUntilChanged, forkJoin, map, of, switchMap, throwError } from 'rxjs';
 import {
   AdminResourceDto,
   AdminToolAccessDto,
-  AdminUserLookupDto,
-  CreateAdminResourcePayload,
-  CreateToolAccessPayload,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
-import { AdminResourceService } from '../../../../core/services/admin-resource.service';
+import { AdminResourceCreateModalComponent } from './admin-resource-create-modal.component';
+import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
+import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 
 interface DetailField {
   label: string;
   value: unknown;
   kind?: 'date' | 'status' | 'url' | 'structured';
-}
-
-interface AssignmentForm {
-  toolKey: string;
-  userEmail: string;
-  externalCommerceActivationId: string;
-}
-
-interface ResourceForm {
-  name: string;
-  type: string;
-  key: string;
-  toolAccessId: string;
-  url: string;
-  status: string;
-  visibility: string;
-  metadataJson: string;
 }
 
 interface OrganizationDetailResult {
@@ -59,14 +42,20 @@ type ResourceCollectionState =
 @Component({
   standalone: true,
   selector: 'evaas-admin-organization-detail',
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    RouterLink,
+    AdminResourceCreateModalComponent,
+    AdminToolAccessCreateModalComponent,
+    ConfirmationModalComponent,
+    ModalInteractionDirective,
+  ],
   templateUrl: './admin-organization-detail.component.html',
   styleUrls: ['./admin-organization-detail.component.scss'],
 })
 export class AdminOrganizationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly adminAccess = inject(AdminAccessService);
-  private readonly adminResources = inject(AdminResourceService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
@@ -76,65 +65,19 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly resources = signal<AdminResourceDto[]>([]);
   readonly resourcesState = signal<ResourceCollectionState>('LOADING');
   readonly resourcesError = signal<string | null>(null);
-  readonly assignmentOpen = signal(false);
-  readonly assignmentSubmitting = signal(false);
+  readonly assignmentModalOpen = signal(false);
   readonly assignmentSuccess = signal<string | null>(null);
-  readonly assignmentError = signal<string | null>(null);
-  readonly assignmentValidation = signal<string | null>(null);
-  readonly userLookupLoading = signal(false);
-  readonly userLookupError = signal<string | null>(null);
-  readonly selectedUser = signal<AdminUserLookupDto | null>(null);
-  readonly selectedUserId = signal<number | null>(null);
+  readonly assignmentRefreshError = signal<string | null>(null);
   readonly disablingToolAccessId = signal<number | null>(null);
+  readonly disableRequestState = signal<OperationRequestState>('IDLE');
+  readonly toolAccessDisableConfirmation = signal<AdminToolAccessDto | null>(null);
   readonly disableToolAccessSuccess = signal<string | null>(null);
   readonly disableToolAccessError = signal<string | null>(null);
-  readonly resourceCreateOpen = signal(false);
-  readonly resourceCreateSubmitting = signal(false);
+  readonly resourceCreateModalOpen = signal(false);
   readonly resourceCreateSuccess = signal<string | null>(null);
-  readonly resourceCreateError = signal<string | null>(null);
-  readonly resourceCreateValidation = signal<string | null>(null);
   readonly selectedResource = signal<AdminResourceDto | null>(null);
   readonly isResourceDetailOpen = signal(false);
   readonly currentOrganizationId = signal<number | null>(null);
-
-  assignmentForm: AssignmentForm = {
-    toolKey: '',
-    userEmail: '',
-    externalCommerceActivationId: '',
-  };
-
-  resourceForm: ResourceForm = {
-    name: '',
-    type: 'API',
-    key: '',
-    toolAccessId: '',
-    url: '',
-    status: 'ACTIVE',
-    visibility: 'ADMIN_ONLY',
-    metadataJson: '',
-  };
-
-  readonly suggestedToolKeys = [
-    'EVAAS_ADMIN_OPERATIONS',
-    'EVAAS_WORKFLOW',
-    'EVAAS_LANDING_LAT',
-  ];
-
-  readonly suggestedResourceTypes = [
-    'API',
-    'WORDPRESS',
-    'VPS',
-    'POWER_BI',
-    'REPOSITORY',
-    'DASHBOARD',
-    'WORKER',
-    'DOCUMENTATION',
-    'OTHER',
-  ];
-
-  readonly suggestedResourceStatuses = ['PLANNED', 'ACTIVE', 'MAINTENANCE', 'DISABLED'];
-
-  readonly suggestedResourceVisibilities = ['ADMIN_ONLY', 'USER_VISIBLE'];
 
   readonly organizationIdentityFields = computed(() => {
     const organization = this.organization();
@@ -185,8 +128,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.currentOrganizationId.set(id);
           this.assignmentSuccess.set(null);
           this.resourceCreateSuccess.set(null);
-          this.closeAssignmentForm();
-          this.closeResourceCreateForm();
+          this.assignmentModalOpen.set(false);
+          this.resourceCreateModalOpen.set(false);
           this.closeResourceDetail();
 
           return this.loadOrganizationDetail(id);
@@ -218,158 +161,81 @@ export class AdminOrganizationDetailComponent implements OnInit {
       });
   }
 
-  openAssignmentForm(): void {
-    this.assignmentOpen.set(true);
+  openAssignmentModal(): void {
+    this.assignmentModalOpen.set(true);
     this.assignmentSuccess.set(null);
-    this.assignmentError.set(null);
-    this.assignmentValidation.set(null);
+    this.assignmentRefreshError.set(null);
     this.disableToolAccessSuccess.set(null);
     this.disableToolAccessError.set(null);
   }
 
-  closeAssignmentForm(): void {
-    this.assignmentOpen.set(false);
-    this.assignmentSubmitting.set(false);
-    this.assignmentError.set(null);
-    this.assignmentValidation.set(null);
-    this.userLookupLoading.set(false);
-    this.userLookupError.set(null);
-    this.selectedUser.set(null);
-    this.selectedUserId.set(null);
-    this.resetAssignmentForm();
+  closeAssignmentModal(): void {
+    this.assignmentModalOpen.set(false);
   }
 
-  openResourceCreateForm(): void {
-    this.resourceCreateOpen.set(true);
+  openResourceCreateModal(): void {
+    this.resourceCreateModalOpen.set(true);
     this.resourceCreateSuccess.set(null);
-    this.resourceCreateError.set(null);
-    this.resourceCreateValidation.set(null);
   }
 
-  closeResourceCreateForm(): void {
-    this.resourceCreateOpen.set(false);
-    this.resourceCreateSubmitting.set(false);
-    this.resourceCreateError.set(null);
-    this.resourceCreateValidation.set(null);
-    this.resetResourceForm();
+  closeResourceCreateModal(): void {
+    this.resourceCreateModalOpen.set(false);
   }
 
-  submitResourceCreate(): void {
+  onResourceCreated(): void {
     const organizationId = this.currentOrganizationId();
-    if (!organizationId) {
-      this.resourceCreateValidation.set('No se pudo determinar la organizacion desde la ruta actual.');
-      return;
-    }
-
-    const payload = this.buildResourceCreatePayload(organizationId);
-    if (!payload) return;
-
-    this.resourceCreateSubmitting.set(true);
-    this.resourceCreateError.set(null);
-    this.resourceCreateValidation.set(null);
-    this.resourceCreateSuccess.set(null);
-
-    this.adminResources.createResource(payload).pipe(
-      switchMap(() => this.adminAccess.getOrganizationResources(organizationId)),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe({
+    if (!organizationId) return;
+    this.closeResourceCreateModal();
+    this.adminAccess.getOrganizationResources(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: resources => {
         const result = Array.isArray(resources) ? resources : [];
         this.resources.set(result);
         this.resourcesState.set(result.length === 0 ? 'EMPTY' : 'POPULATED');
         this.resourcesError.set(null);
-        this.resourceCreateSubmitting.set(false);
         this.resourceCreateSuccess.set('Recurso creado correctamente.');
-        this.closeResourceCreateForm();
       },
       error: err => {
-        this.resourceCreateSubmitting.set(false);
-        this.resourceCreateError.set(this.resourceCreateErrorMessage(err));
+        this.resourcesError.set(this.resourceCollectionErrorMessage(err));
+        this.resourcesState.set(this.resourceCollectionErrorState(err));
       },
     });
   }
 
-  submitAssignment(): void {
+  onToolAccessCreated(): void {
     const organizationId = this.currentOrganizationId();
-    if (!organizationId) {
-      this.assignmentValidation.set('No se pudo determinar la organizacion desde la ruta actual.');
-      return;
-    }
-
-    const payload = this.buildAssignmentPayload(organizationId);
-    if (!payload) return;
-
-    this.assignmentSubmitting.set(true);
-    this.assignmentError.set(null);
-    this.assignmentValidation.set(null);
-    this.assignmentSuccess.set(null);
-
-    this.adminAccess.createToolAccess(payload).pipe(
-      switchMap(() => this.adminAccess.getOrganizationToolAccess(organizationId)),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe({
+    if (!organizationId) return;
+    this.closeAssignmentModal();
+    this.adminAccess.getOrganizationToolAccess(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: toolAccess => {
         this.toolAccess.set(Array.isArray(toolAccess) ? toolAccess : []);
-        this.assignmentSubmitting.set(false);
         this.assignmentSuccess.set('Acceso asignado correctamente.');
-        this.closeAssignmentForm();
       },
       error: err => {
-        this.assignmentSubmitting.set(false);
-        this.assignmentError.set(this.assignmentErrorMessage(err));
+        console.error('[AdminOrganizationDetail] tool access refresh error', err);
+        this.assignmentRefreshError.set('El acceso fue creado, pero no se pudo actualizar la colección. Recarga la vista para verificarlo.');
       },
     });
   }
 
-  searchUserByEmail(): void {
-    const email = this.assignmentForm.userEmail.trim();
-    this.userLookupError.set(null);
-    this.assignmentValidation.set(null);
-    this.selectedUser.set(null);
-    this.selectedUserId.set(null);
-
-    if (!this.isValidEmail(email)) {
-      this.userLookupError.set('Ingresa un correo valido antes de buscar.');
-      return;
-    }
-
-    this.userLookupLoading.set(true);
-    this.adminAccess.findUserByEmail(email).pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe({
-      next: user => {
-        this.userLookupLoading.set(false);
-        if (!user?.id) {
-          this.userLookupError.set('No encontramos un usuario con ese correo.');
-          return;
-        }
-
-        this.selectedUser.set(user);
-        this.selectedUserId.set(user.id);
-      },
-      error: err => {
-        this.userLookupLoading.set(false);
-        this.userLookupError.set(this.userLookupErrorMessage(err));
-      },
-    });
+  requestToolAccessDisable(access: AdminToolAccessDto): void {
+    if (this.disableRequestState() === 'SUBMITTING' || !access.id) return;
+    this.toolAccessDisableConfirmation.set(access);
+    this.disableToolAccessError.set(null);
+    this.disableToolAccessSuccess.set(null);
   }
 
-  clearSelectedUser(): void {
-    this.selectedUser.set(null);
-    this.selectedUserId.set(null);
-    this.userLookupError.set(null);
+  cancelToolAccessDisable(): void {
+    this.toolAccessDisableConfirmation.set(null);
   }
 
-  disableToolAccess(access: AdminToolAccessDto): void {
+  confirmToolAccessDisable(): void {
+    const access = this.toolAccessDisableConfirmation();
     const organizationId = this.currentOrganizationId();
-    if (!organizationId || !access.id) return;
+    if (!organizationId || !access?.id || this.disableRequestState() === 'SUBMITTING') return;
 
-    const confirmed = window.confirm(
-      '¿Deshabilitar este acceso?\nEsta accion no borra el historial. Solo deshabilita el acceso operativo.',
-    );
-    if (!confirmed) return;
-
+    this.toolAccessDisableConfirmation.set(null);
     this.disablingToolAccessId.set(access.id);
+    this.disableRequestState.set('SUBMITTING');
     this.disableToolAccessError.set(null);
     this.disableToolAccessSuccess.set(null);
 
@@ -380,23 +246,22 @@ export class AdminOrganizationDetailComponent implements OnInit {
       next: toolAccess => {
         this.toolAccess.set(Array.isArray(toolAccess) ? toolAccess : []);
         this.disablingToolAccessId.set(null);
+        this.disableRequestState.set('SUCCESS');
         this.disableToolAccessSuccess.set('Acceso deshabilitado correctamente.');
       },
       error: err => {
         this.disablingToolAccessId.set(null);
-        this.disableToolAccessError.set(this.disableToolAccessErrorMessage(err));
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible deshabilitar el acceso. Intenta nuevamente.',
+          unauthorized: 'Tu sesión no está autorizada para deshabilitar este acceso.',
+          forbidden: 'No tienes permisos suficientes para deshabilitar este acceso.',
+          notFound: 'No se encontro el acceso indicado.',
+          conflict: 'El acceso no puede deshabilitarse en su estado actual.',
+        });
+        this.disableRequestState.set(presentation.state);
+        this.disableToolAccessError.set(presentation.message);
       },
     });
-  }
-
-  useSuggestedToolKey(toolKey: string): void {
-    this.assignmentForm.toolKey = toolKey;
-    this.assignmentValidation.set(null);
-  }
-
-  toolAccessLabel(access: AdminToolAccessDto): string {
-    const status = this.hasValue(access.status) ? ` - ${access.status}` : '';
-    return `${access.toolKey}${status} - ID ${access.id}`;
   }
 
   readonly trackToolAccess = (
@@ -576,252 +441,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     if (status === 404) return 'La colección de recursos no está disponible para esta organización.';
     if (status === 409) return 'La colección de recursos está en conflicto. Intenta nuevamente.';
     return 'No fue posible cargar los recursos de esta organización.';
-  }
-
-  private buildAssignmentPayload(organizationId: number): CreateToolAccessPayload | null {
-    const toolKey = this.assignmentForm.toolKey.trim();
-    const selectedUserId = this.selectedUserId();
-    const externalCommerceActivationId = this.parseOptionalPositiveInteger(
-      this.assignmentForm.externalCommerceActivationId,
-      'externalCommerceActivationId',
-    );
-
-    if (!toolKey) {
-      this.assignmentValidation.set('toolKey es requerido.');
-      return null;
-    }
-
-    if (!selectedUserId) {
-      this.assignmentValidation.set('Busca y selecciona un usuario antes de asignar acceso.');
-      return null;
-    }
-
-    if (externalCommerceActivationId === null) return null;
-
-    return {
-      organizationId,
-      toolKey,
-      userId: selectedUserId,
-      ...(externalCommerceActivationId !== undefined ? { externalCommerceActivationId } : {}),
-    };
-  }
-
-  private buildResourceCreatePayload(organizationId: number): CreateAdminResourcePayload | null {
-    const name = this.resourceForm.name.trim();
-    const type = this.resourceForm.type.trim();
-    const key = this.resourceForm.key.trim();
-    const url = this.resourceForm.url.trim();
-    const status = this.resourceForm.status.trim();
-    const visibility = this.resourceForm.visibility.trim();
-    const metadataJson = this.resourceForm.metadataJson.trim();
-    const toolAccessId = this.parseResourceOptionalPositiveInteger(this.resourceForm.toolAccessId, 'toolAccessId');
-
-    if (!name) {
-      this.resourceCreateValidation.set('name es requerido.');
-      return null;
-    }
-
-    if (!type) {
-      this.resourceCreateValidation.set('type es requerido.');
-      return null;
-    }
-
-    if (toolAccessId === null) return null;
-
-    if (toolAccessId !== undefined && !this.toolAccess().some(access => access.id === toolAccessId)) {
-      this.resourceCreateValidation.set('toolAccessId debe seleccionarse desde los accesos cargados de esta organizacion.');
-      return null;
-    }
-
-    if (url && !this.isValidUrl(url)) {
-      this.resourceCreateValidation.set('url debe tener formato URL valido.');
-      return null;
-    }
-
-    if (metadataJson) {
-      if (!this.isValidJson(metadataJson)) {
-        this.resourceCreateValidation.set('metadataJson debe ser JSON valido.');
-        return null;
-      }
-
-      if (this.containsSecretLikeContent(metadataJson)) {
-        this.resourceCreateValidation.set('metadataJson no debe contener secretos, tokens ni credenciales.');
-        return null;
-      }
-    }
-
-    return {
-      organizationId,
-      name,
-      type,
-      ...(key ? { key } : {}),
-      ...(toolAccessId !== undefined ? { toolAccessId } : {}),
-      ...(url ? { url } : {}),
-      ...(status ? { status } : {}),
-      ...(visibility ? { visibility } : {}),
-      ...(metadataJson ? { metadataJson } : {}),
-    };
-  }
-
-  private parseOptionalPositiveInteger(value: string, label: string): number | undefined | null {
-    const trimmed = value.trim();
-    if (!trimmed) return undefined;
-
-    const parsed = Number(trimmed);
-    if (!Number.isInteger(parsed) || parsed <= 0) {
-      this.assignmentValidation.set(`${label} debe ser numerico.`);
-      return null;
-    }
-
-    return parsed;
-  }
-
-  private parseResourceOptionalPositiveInteger(value: string, label: string): number | undefined | null {
-    const trimmed = value.trim();
-    if (!trimmed) return undefined;
-
-    const parsed = Number(trimmed);
-    if (!Number.isInteger(parsed) || parsed <= 0) {
-      this.resourceCreateValidation.set(`${label} debe ser numerico.`);
-      return null;
-    }
-
-    return parsed;
-  }
-
-  private resetAssignmentForm(): void {
-    this.assignmentForm = {
-      toolKey: '',
-      userEmail: '',
-      externalCommerceActivationId: '',
-    };
-  }
-
-  private resetResourceForm(): void {
-    this.resourceForm = {
-      name: '',
-      type: 'API',
-      key: '',
-      toolAccessId: '',
-      url: '',
-      status: 'ACTIVE',
-      visibility: 'ADMIN_ONLY',
-      metadataJson: '',
-    };
-  }
-
-  private assignmentErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      return 'No fue posible asignar el acceso. Intenta nuevamente.';
-    }
-
-    if (err.status === 400) {
-      return 'El backend rechazo el payload. Revisa toolKey, userId y activationId.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para asignar este acceso.';
-    }
-
-    if (err.status === 404) {
-      return 'No se encontro la organizacion, el usuario o la activacion indicada.';
-    }
-
-    if (err.status === 409) {
-      return 'El acceso ya existe o entra en conflicto con el estado actual.';
-    }
-
-    return 'No fue posible asignar el acceso. Intenta nuevamente.';
-  }
-
-  private userLookupErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      if (err instanceof Error && err.message === 'Invalid user lookup response') {
-        return 'No pudimos interpretar la respuesta del usuario.';
-      }
-
-      return 'No fue posible buscar el usuario. Intenta nuevamente.';
-    }
-
-    if (err.status === 404) {
-      return 'No encontramos un usuario con ese correo.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para buscar usuarios.';
-    }
-
-    return 'No fue posible buscar el usuario. Intenta nuevamente.';
-  }
-
-  private disableToolAccessErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para deshabilitar este acceso.';
-    }
-
-    if (err.status === 404) {
-      return 'No se encontro el acceso indicado.';
-    }
-
-    if (err.status === 409) {
-      return 'El acceso no puede deshabilitarse en su estado actual.';
-    }
-
-    return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
-  }
-
-  private resourceCreateErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      return 'No fue posible crear el recurso. Intenta nuevamente.';
-    }
-
-    if (err.status === 400) {
-      return 'El backend rechazo el payload. Revisa name, type, toolAccessId, url y metadataJson.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para crear recursos en esta organizacion.';
-    }
-
-    if (err.status === 404) {
-      return 'No se encontro la organizacion o el acceso asociado indicado.';
-    }
-
-    if (err.status === 409) {
-      return 'El recurso ya existe o entra en conflicto con el estado actual.';
-    }
-
-    return 'No fue posible crear el recurso. Intenta nuevamente.';
-  }
-
-  private isValidUrl(value: string): boolean {
-    try {
-      const url = new URL(value);
-      return url.protocol === 'http:' || url.protocol === 'https:';
-    } catch {
-      return false;
-    }
-  }
-
-  private isValidEmail(value: string): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  }
-
-  private isValidJson(value: string): boolean {
-    try {
-      JSON.parse(value);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private containsSecretLikeContent(value: string): boolean {
-    return /\b(password|passwd|secret|token|access[_-]?token|api[_-]?key|private[_-]?key|credential|authorization|bearer)\b/i.test(value);
   }
 
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {

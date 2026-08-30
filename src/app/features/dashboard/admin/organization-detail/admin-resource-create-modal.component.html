@@ -1,0 +1,31 @@
+<div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
+  <section class="organization-request-modal" tabindex="-1" evaasModalInteraction [modalCloseDisabled]="submitting()" (modalEscape)="cancel()" role="dialog" aria-modal="true" aria-labelledby="resource-create-modal-title" aria-describedby="resource-create-modal-description" [attr.aria-busy]="submitting()" (click)="$event.stopPropagation()">
+    <header class="organization-request-modal__header">
+      <div>
+        <p class="organization-request-modal__eyebrow">Recursos</p>
+        <h2 id="resource-create-modal-title">Crear recurso</h2>
+        <p id="resource-create-modal-description">Organization: <strong>{{ organizationName || organizationId }}</strong></p>
+      </div>
+      <button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button>
+    </header>
+
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="organization-request-modal__grid">
+        <label><span>name</span><input type="text" name="resourceName" [(ngModel)]="form.name" required data-modal-initial-focus [disabled]="submitting()" /></label>
+        <label><span>type</span><select name="resourceType" [(ngModel)]="form.type" required [disabled]="submitting()"><option *ngFor="let type of suggestedResourceTypes" [value]="type">{{ type }}</option></select></label>
+        <label><span>key</span><input type="text" name="resourceKey" [(ngModel)]="form.key" [disabled]="submitting()" /></label>
+        <label><span>toolAccessId</span><select name="resourceToolAccessId" [(ngModel)]="form.toolAccessId" [disabled]="submitting()"><option value="">Sin acceso asociado</option><option *ngFor="let access of toolAccess" [value]="access.id">{{ toolAccessLabel(access) }}</option></select></label>
+        <label><span>url</span><input type="url" name="resourceUrl" [(ngModel)]="form.url" [disabled]="submitting()" /></label>
+        <label><span>status</span><select name="resourceStatus" [(ngModel)]="form.status" [disabled]="submitting()"><option *ngFor="let status of suggestedResourceStatuses" [value]="status">{{ status }}</option></select></label>
+        <label><span>visibility</span><select name="resourceVisibility" [(ngModel)]="form.visibility" [disabled]="submitting()"><option *ngFor="let visibility of suggestedResourceVisibilities" [value]="visibility">{{ visibility }}</option></select></label>
+        <label class="organization-request-modal__field--wide"><span>metadataJson</span><textarea name="resourceMetadataJson" [(ngModel)]="form.metadataJson" rows="5" [disabled]="submitting()"></textarea></label>
+      </div>
+      <p class="organization-request-modal__error" role="alert" *ngIf="validation()">{{ validation() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
+      <footer class="organization-request-modal__actions">
+        <button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button>
+        <button type="submit" class="organization-request-modal__primary" [disabled]="submitting()">{{ submitting() ? 'Creando...' : 'Crear recurso' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

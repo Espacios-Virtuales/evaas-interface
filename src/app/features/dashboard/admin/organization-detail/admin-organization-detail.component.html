@@ -82,15 +82,17 @@
         <button
           class="admin-organization-detail__action"
           type="button"
-          (click)="openAssignmentForm()"
-          [disabled]="assignmentSubmitting()"
+          (click)="openAssignmentModal()"
         >
           Asignar acceso
         </button>
       </div>
 
-      <div class="state state-success admin-organization-detail__section-state" *ngIf="assignmentSuccess() && !assignmentOpen()">
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="assignmentSuccess()">
         <strong>{{ assignmentSuccess() }}</strong>
+      </div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="assignmentRefreshError()">
+        <strong>{{ assignmentRefreshError() }}</strong>
       </div>
       <div class="state state-success admin-organization-detail__section-state" *ngIf="disableToolAccessSuccess()">
         <strong>{{ disableToolAccessSuccess() }}</strong>
@@ -98,141 +100,6 @@
       <div class="state state-error admin-organization-detail__section-state" *ngIf="disableToolAccessError()">
         <strong>{{ disableToolAccessError() }}</strong>
       </div>
-
-      <form
-        class="admin-organization-detail__assignment"
-        *ngIf="assignmentOpen()"
-        (ngSubmit)="submitAssignment()"
-        novalidate
-      >
-        <div class="admin-organization-detail__assignment-header">
-          <div>
-            <h3>Asignar acceso</h3>
-            <p>El organizationId se toma desde esta organizacion y no se edita manualmente.</p>
-          </div>
-
-          <button
-            class="admin-organization-detail__link-button"
-            type="button"
-            (click)="closeAssignmentForm()"
-            [disabled]="assignmentSubmitting()"
-          >
-            Cerrar
-          </button>
-        </div>
-
-        <div class="admin-organization-detail__assignment-grid">
-          <label>
-            <span>toolKey</span>
-            <input
-              type="text"
-              name="toolKey"
-              [(ngModel)]="assignmentForm.toolKey"
-              required
-              autocomplete="off"
-              placeholder="EVAAS_WORKFLOW"
-              [disabled]="assignmentSubmitting()"
-            />
-          </label>
-
-          <label class="admin-organization-detail__assignment-field--wide">
-            <span>Correo del usuario</span>
-            <input
-              type="email"
-              name="userEmail"
-              [(ngModel)]="assignmentForm.userEmail"
-              autocomplete="email"
-              placeholder="info@espaciosvirtuales.lat"
-              [disabled]="assignmentSubmitting() || userLookupLoading() || !!selectedUser()"
-            />
-          </label>
-        </div>
-
-        <div class="admin-organization-detail__assignment-actions admin-organization-detail__assignment-actions--left">
-          <button
-            class="admin-organization-detail__secondary-action"
-            type="button"
-            (click)="searchUserByEmail()"
-            [disabled]="assignmentSubmitting() || userLookupLoading() || !!selectedUser()"
-          >
-            {{ userLookupLoading() ? 'Buscando...' : 'Buscar usuario' }}
-          </button>
-          <button
-            class="admin-organization-detail__link-button"
-            type="button"
-            *ngIf="selectedUser()"
-            (click)="clearSelectedUser()"
-            [disabled]="assignmentSubmitting()"
-          >
-            Limpiar seleccion
-          </button>
-        </div>
-
-        <div class="state state-success admin-organization-detail__section-state" *ngIf="selectedUser()">
-          <strong>Usuario encontrado: {{ selectedUser()?.email }} · ID {{ selectedUserId() }}</strong>
-          <p *ngIf="selectedUser()?.name">{{ selectedUser()?.name }}</p>
-          <p>
-            enabled: {{ formatValue(selectedUser()?.enabled) }}
-            · activated: {{ formatValue(selectedUser()?.activated) }}
-          </p>
-        </div>
-        <p class="admin-organization-detail__form-error" *ngIf="userLookupError()">
-          {{ userLookupError() }}
-        </p>
-
-        <div class="admin-organization-detail__assignment-grid">
-          <label>
-            <span>ID de activación comercial (opcional)</span>
-            <input
-              type="number"
-              name="externalCommerceActivationId"
-              [(ngModel)]="assignmentForm.externalCommerceActivationId"
-              min="1"
-              inputmode="numeric"
-              placeholder="789"
-              [disabled]="assignmentSubmitting()"
-            />
-            <small>Referencia contractual opcional; no demuestra una activación asociada a esta Organization.</small>
-          </label>
-        </div>
-
-        <div class="admin-organization-detail__suggestions" aria-label="Ejemplos sugeridos de toolKey">
-          <span>Ejemplos sugeridos de toolKey:</span>
-          <button
-            type="button"
-            *ngFor="let toolKey of suggestedToolKeys"
-            (click)="useSuggestedToolKey(toolKey)"
-            [disabled]="assignmentSubmitting()"
-          >
-            {{ toolKey }}
-          </button>
-        </div>
-
-        <p class="admin-organization-detail__form-error" *ngIf="assignmentValidation()">
-          {{ assignmentValidation() }}
-        </p>
-        <p class="admin-organization-detail__form-error" *ngIf="assignmentError()">
-          {{ assignmentError() }}
-        </p>
-
-        <div class="admin-organization-detail__assignment-actions">
-          <button
-            class="admin-organization-detail__secondary-action"
-            type="button"
-            (click)="closeAssignmentForm()"
-            [disabled]="assignmentSubmitting()"
-          >
-            Cancelar
-          </button>
-          <button
-            class="admin-organization-detail__primary-action"
-            type="submit"
-            [disabled]="assignmentSubmitting()"
-          >
-            {{ assignmentSubmitting() ? 'Asignando...' : 'Asignar acceso' }}
-          </button>
-        </div>
-      </form>
 
       <div class="state state-empty" *ngIf="!hasToolAccess()">
         <strong>No hay accesos registrados.</strong>
@@ -272,8 +139,8 @@
                 <button
                   class="admin-organization-detail__danger-action"
                   type="button"
-                  (click)="disableToolAccess(access)"
-                  [disabled]="disablingToolAccessId() === access.id || assignmentSubmitting()"
+                  (click)="requestToolAccessDisable(access)"
+                  [disabled]="disablingToolAccessId() === access.id"
                 >
                   {{ disablingToolAccessId() === access.id ? 'Deshabilitando...' : 'Deshabilitar acceso' }}
                 </button>
@@ -295,163 +162,15 @@
         <button
           class="admin-organization-detail__action"
           type="button"
-          (click)="openResourceCreateForm()"
-          [disabled]="resourceCreateSubmitting()"
+          (click)="openResourceCreateModal()"
         >
           Crear recurso
         </button>
       </div>
 
-      <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceCreateSuccess() && !resourceCreateOpen()">
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceCreateSuccess()">
         <strong>{{ resourceCreateSuccess() }}</strong>
       </div>
-
-      <form
-        class="admin-organization-detail__assignment"
-        *ngIf="resourceCreateOpen()"
-        (ngSubmit)="submitResourceCreate()"
-        novalidate
-      >
-        <div class="admin-organization-detail__assignment-header">
-          <div>
-            <h3>Crear recurso</h3>
-            <p>El organizationId se toma desde esta organización. Resource representa un activo o capacidad operacional; no es un Service, Artifact ni Instrument y no guarda secretos.</p>
-            <p *ngIf="!hasToolAccess()">No hay ToolAccess cargados para asociar; se enviara sin toolAccessId si el contrato backend lo permite.</p>
-          </div>
-
-          <button
-            class="admin-organization-detail__link-button"
-            type="button"
-            (click)="closeResourceCreateForm()"
-            [disabled]="resourceCreateSubmitting()"
-          >
-            Cerrar
-          </button>
-        </div>
-
-        <div class="admin-organization-detail__assignment-grid">
-          <label>
-            <span>name</span>
-            <input
-              type="text"
-              name="resourceName"
-              [(ngModel)]="resourceForm.name"
-              required
-              autocomplete="off"
-              placeholder="EVAAS Workflow"
-              [disabled]="resourceCreateSubmitting()"
-            />
-          </label>
-
-          <label>
-            <span>type</span>
-            <select
-              name="resourceType"
-              [(ngModel)]="resourceForm.type"
-              required
-              [disabled]="resourceCreateSubmitting()"
-            >
-              <option *ngFor="let type of suggestedResourceTypes" [value]="type">{{ type }}</option>
-            </select>
-          </label>
-
-          <label>
-            <span>key</span>
-            <input
-              type="text"
-              name="resourceKey"
-              [(ngModel)]="resourceForm.key"
-              autocomplete="off"
-              placeholder="EV_LAT_LANDING"
-              [disabled]="resourceCreateSubmitting()"
-            />
-          </label>
-
-          <label>
-            <span>toolAccessId</span>
-            <select
-              name="resourceToolAccessId"
-              [(ngModel)]="resourceForm.toolAccessId"
-              [disabled]="resourceCreateSubmitting()"
-            >
-              <option value="">Sin acceso asociado</option>
-              <option *ngFor="let access of toolAccess(); trackBy: trackToolAccess" [value]="access.id">
-                {{ toolAccessLabel(access) }}
-              </option>
-            </select>
-          </label>
-
-          <label>
-            <span>url</span>
-            <input
-              type="url"
-              name="resourceUrl"
-              [(ngModel)]="resourceForm.url"
-              autocomplete="off"
-              placeholder="https://example.com"
-              [disabled]="resourceCreateSubmitting()"
-            />
-          </label>
-
-          <label>
-            <span>status</span>
-            <select
-              name="resourceStatus"
-              [(ngModel)]="resourceForm.status"
-              [disabled]="resourceCreateSubmitting()"
-            >
-              <option *ngFor="let status of suggestedResourceStatuses" [value]="status">{{ status }}</option>
-            </select>
-          </label>
-
-          <label>
-            <span>visibility</span>
-            <select
-              name="resourceVisibility"
-              [(ngModel)]="resourceForm.visibility"
-              [disabled]="resourceCreateSubmitting()"
-            >
-              <option *ngFor="let visibility of suggestedResourceVisibilities" [value]="visibility">{{ visibility }}</option>
-            </select>
-          </label>
-
-          <label class="admin-organization-detail__assignment-field--wide">
-            <span>metadataJson</span>
-            <textarea
-              name="resourceMetadataJson"
-              [(ngModel)]="resourceForm.metadataJson"
-              rows="5"
-              placeholder='{"owner":"operations"}'
-              [disabled]="resourceCreateSubmitting()"
-            ></textarea>
-          </label>
-        </div>
-
-        <p class="admin-organization-detail__form-error" *ngIf="resourceCreateValidation()">
-          {{ resourceCreateValidation() }}
-        </p>
-        <p class="admin-organization-detail__form-error" *ngIf="resourceCreateError()">
-          {{ resourceCreateError() }}
-        </p>
-
-        <div class="admin-organization-detail__assignment-actions">
-          <button
-            class="admin-organization-detail__secondary-action"
-            type="button"
-            (click)="closeResourceCreateForm()"
-            [disabled]="resourceCreateSubmitting()"
-          >
-            Cancelar
-          </button>
-          <button
-            class="admin-organization-detail__primary-action"
-            type="submit"
-            [disabled]="resourceCreateSubmitting()"
-          >
-            {{ resourceCreateSubmitting() ? 'Creando...' : 'Crear recurso' }}
-          </button>
-        </div>
-      </form>
 
       <div class="state state-loading" *ngIf="resourcesState() === 'LOADING'">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -509,6 +228,35 @@
       </div>
     </section>
 
+    <evaas-admin-tool-access-create-modal
+      *ngIf="assignmentModalOpen()"
+      [organizationId]="organization()!.id"
+      [organizationName]="organization()!.name"
+      (cancelled)="closeAssignmentModal()"
+      (created)="onToolAccessCreated()"
+    />
+
+    <evaas-admin-resource-create-modal
+      *ngIf="resourceCreateModalOpen()"
+      [organizationId]="organization()!.id"
+      [organizationName]="organization()!.name"
+      [toolAccess]="toolAccess()"
+      (cancelled)="closeResourceCreateModal()"
+      (created)="onResourceCreated()"
+    />
+
+    <evaas-confirmation-modal
+      *ngIf="toolAccessDisableConfirmation() as access"
+      title="Deshabilitar acceso"
+      contextLabel="Organization"
+      [contextValue]="organization()!.name"
+      [message]="'Esta acción deshabilitará este acceso legacy: ' + access.toolKey + '.'"
+      confirmLabel="Deshabilitar"
+      [destructive]="true"
+      (cancelled)="cancelToolAccessDisable()"
+      (confirmed)="confirmToolAccessDisable()"
+    />
+
   </ng-container>
 
   <div
@@ -518,17 +266,21 @@
   >
     <section
       class="admin-organization-detail__modal"
+      tabindex="-1"
+      evaasModalInteraction
+      (modalEscape)="closeResourceDetail()"
       role="dialog"
       aria-modal="true"
       aria-labelledby="resource-detail-modal-title"
+      aria-describedby="resource-detail-modal-description"
     >
       <header class="admin-organization-detail__modal-header">
         <div>
-          <p class="admin-organization-detail__section-kicker">Detalle de recurso</p>
+          <p id="resource-detail-modal-description" class="admin-organization-detail__section-kicker">Detalle de recurso</p>
           <h2 id="resource-detail-modal-title">{{ resourceTitle(resource) }}</h2>
         </div>
 
-        <button class="admin-organization-detail__link-button" type="button" (click)="closeResourceDetail()">
+        <button class="admin-organization-detail__link-button" type="button" data-modal-initial-focus (click)="closeResourceDetail()">
           Cerrar
         </button>
       </header>

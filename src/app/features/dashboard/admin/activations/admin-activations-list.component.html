@@ -80,9 +80,15 @@
   >
     <section
       class="admin-activations__modal"
+      tabindex="-1"
+      evaasModalInteraction
+      [modalCloseDisabled]="createState() === 'SUBMITTING'"
+      (modalEscape)="closeCreateModal()"
       role="dialog"
       aria-modal="true"
       aria-labelledby="admin-activation-create-title"
+      aria-describedby="admin-activation-create-description"
+      [attr.aria-busy]="createState() === 'SUBMITTING'"
       (click)="$event.stopPropagation()"
     >
       <header class="admin-activations__modal-header">
@@ -95,7 +101,7 @@
           type="button"
           class="admin-activations__icon-button"
           aria-label="Cerrar"
-          [disabled]="createState() === 'loading'"
+          [disabled]="createState() === 'SUBMITTING'"
           (click)="closeCreateModal()"
         >
           &times;
@@ -103,11 +109,13 @@
       </header>
 
       <form [formGroup]="createForm" (ngSubmit)="createActivation()" class="admin-activations__form">
+        <p id="admin-activation-create-description" class="visually-hidden">Completa los datos para crear una activación.</p>
         <label>
           <span>Provider</span>
           <select
             class="form-select"
             formControlName="provider"
+            data-modal-initial-focus
             [class.is-invalid]="createForm.controls.provider.touched && createForm.controls.provider.invalid"
           >
             <option *ngFor="let provider of providerOptions" [value]="provider">{{ provider }}</option>
@@ -191,11 +199,11 @@
           <input type="text" class="form-control" formControlName="idempotencyKey" autocomplete="off" />
         </label>
 
-        <div class="admin-activations__form-error" *ngIf="createState() === 'error' && createError()">
+        <div class="admin-activations__form-error" role="alert" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
           {{ createError() }}
         </div>
 
-        <div class="admin-activations__form-error" *ngIf="createState() === 'validation'">
+        <div class="admin-activations__form-error" role="alert" *ngIf="createState() === 'VALIDATION_ERROR'">
           Revisa los campos requeridos.
         </div>
 
@@ -203,13 +211,13 @@
           <button
             type="button"
             class="btn btn-outline-secondary"
-            [disabled]="createState() === 'loading'"
+            [disabled]="createState() === 'SUBMITTING'"
             (click)="closeCreateModal()"
           >
             Cancelar
           </button>
-          <button type="submit" class="admin-activations__primary" [disabled]="createState() === 'loading'">
-            {{ createState() === 'loading' ? 'Creando...' : 'Crear activación' }}
+          <button type="submit" class="admin-activations__primary" [disabled]="createState() === 'SUBMITTING'">
+            {{ createState() === 'SUBMITTING' ? 'Creando...' : 'Crear activación' }}
           </button>
         </footer>
       </form>
