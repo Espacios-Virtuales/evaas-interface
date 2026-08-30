@@ -11,11 +11,9 @@ import {
   AdminUserLookupDto,
   CreateAdminResourcePayload,
   CreateToolAccessPayload,
-  ExternalCommerceActivationDto,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
-import { AdminCommerceService } from '../../../../core/services/admin-commerce.service';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 
 interface DetailField {
@@ -28,7 +26,6 @@ interface AssignmentForm {
   toolKey: string;
   userEmail: string;
   externalCommerceActivationId: string;
-  selectedActivationId: string;
 }
 
 interface ResourceForm {
@@ -69,7 +66,6 @@ type ResourceCollectionState =
 export class AdminOrganizationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly adminAccess = inject(AdminAccessService);
-  private readonly adminCommerce = inject(AdminCommerceService);
   private readonly adminResources = inject(AdminResourceService);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -89,9 +85,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly userLookupError = signal<string | null>(null);
   readonly selectedUser = signal<AdminUserLookupDto | null>(null);
   readonly selectedUserId = signal<number | null>(null);
-  readonly activationsLoading = signal(false);
-  readonly activationsError = signal<string | null>(null);
-  readonly activations = signal<ExternalCommerceActivationDto[]>([]);
   readonly disablingToolAccessId = signal<number | null>(null);
   readonly disableToolAccessSuccess = signal<string | null>(null);
   readonly disableToolAccessError = signal<string | null>(null);
@@ -108,7 +101,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     toolKey: '',
     userEmail: '',
     externalCommerceActivationId: '',
-    selectedActivationId: '',
   };
 
   resourceForm: ResourceForm = {
@@ -144,7 +136,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   readonly suggestedResourceVisibilities = ['ADMIN_ONLY', 'USER_VISIBLE'];
 
-  readonly organizationFields = computed(() => {
+  readonly organizationIdentityFields = computed(() => {
     const organization = this.organization();
     if (!organization) return [];
 
@@ -152,11 +144,20 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'ID', value: organization.id },
       { label: 'Nombre', value: organization.name },
       { label: 'Tax ID', value: organization.taxId },
-      { label: 'Email del responsable (owner)', value: organization.ownerEmail },
-      { label: 'ID de usuario responsable (owner)', value: organization.ownerUserId },
       { label: 'Enabled', value: organization.enabled, kind: 'status' as const },
       { label: 'Creada', value: organization.createdAt, kind: 'date' as const },
+      { label: 'Actualizada', value: organization.updatedAt, kind: 'date' as const },
     ];
+  });
+
+  readonly ownershipFields = computed(() => {
+    const organization = this.organization();
+    if (!organization) return [];
+
+    return [
+      { label: 'Email del responsable (owner)', value: organization.ownerEmail },
+      { label: 'ID de usuario responsable (owner)', value: organization.ownerUserId },
+    ].filter(field => this.hasValue(field.value));
   });
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
@@ -164,50 +165,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly resourcesAreUnavailable = computed(() =>
     ['UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'ERROR'].includes(this.resourcesState()),
   );
-  readonly activationCandidates = computed(() => {
-    const organizationName = this.organization()?.name.trim().toLowerCase();
-    const selectedUserEmail = this.selectedUser()?.email.trim().toLowerCase();
-
-    return this.activations().filter(activation => {
-      const isActive = String(activation.status).toUpperCase() === 'ACTIVE';
-      const matchesOrganization = organizationName
-        ? activation.organizationName?.trim().toLowerCase() === organizationName
-        : false;
-      const matchesUser = selectedUserEmail
-        ? activation.buyerEmail?.trim().toLowerCase() === selectedUserEmail
-        : false;
-
-      return isActive && (matchesOrganization || matchesUser);
-    });
-  });
-  readonly activationOptions = computed(() => {
-    const candidates = this.activationCandidates();
-    if (candidates.length > 0) return candidates;
-
-    return this.activations().filter(activation => String(activation.status).toUpperCase() === 'ACTIVE');
-  });
-  readonly operationalStatements = computed(() => {
-    const organization = this.organization();
-    const enabledStatement = organization?.enabled === true
-      ? 'Organizacion habilitada.'
-      : organization?.enabled === false
-        ? 'Organizacion deshabilitada.'
-        : 'Estado enabled no informado por backend.';
-
-    return [
-      enabledStatement,
-      this.hasToolAccess()
-        ? `Esta organizacion posee ${this.toolAccess().length} accesos registrados.`
-        : 'Esta organizacion aun no posee accesos registrados.',
-      this.hasResources()
-        ? `Esta organizacion posee ${this.resources().length} recursos asociados.`
-        : 'Esta organizacion aun no posee recursos asociados.',
-      this.activationCandidates().length > 0
-        ? `Vista transitoria encontro ${this.activationCandidates().length} activaciones activas candidatas.`
-        : 'Activaciones activas pendientes de contrato backend filtrado por organizacion.',
-    ];
-  });
-
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
@@ -268,7 +225,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.assignmentValidation.set(null);
     this.disableToolAccessSuccess.set(null);
     this.disableToolAccessError.set(null);
-    this.loadActivationsForAssignment();
   }
 
   closeAssignmentForm(): void {
@@ -402,7 +358,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.selectedUser.set(null);
     this.selectedUserId.set(null);
     this.userLookupError.set(null);
-    this.assignmentForm.selectedActivationId = '';
   }
 
   disableToolAccess(access: AdminToolAccessDto): void {
@@ -444,26 +399,10 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return `${access.toolKey}${status} - ID ${access.id}`;
   }
 
-  activationLabel(activation: ExternalCommerceActivationDto): string {
-    return [
-      activation.provider,
-      activation.productCode,
-      activation.status,
-      `ID ${activation.id}`,
-      activation.buyerEmail,
-      activation.organizationName,
-    ].filter(value => this.hasValue(value)).join(' - ');
-  }
-
   readonly trackToolAccess = (
     index: number,
     access: AdminToolAccessDto | null | undefined,
   ): string | number => access?.id ?? access?.toolKey ?? index;
-
-  readonly trackActivation = (
-    index: number,
-    activation: ExternalCommerceActivationDto | null | undefined,
-  ): string | number => activation?.id ?? activation?.productCode ?? index;
 
   readonly trackResource = (
     index: number,
@@ -639,32 +578,11 @@ export class AdminOrganizationDetailComponent implements OnInit {
     return 'No fue posible cargar los recursos de esta organización.';
   }
 
-  private loadActivationsForAssignment(): void {
-    if (this.activations().length > 0 || this.activationsLoading()) return;
-
-    this.activationsLoading.set(true);
-    this.activationsError.set(null);
-
-    this.adminCommerce.getActivations().pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe({
-      next: activations => {
-        this.activations.set(Array.isArray(activations) ? activations : []);
-        this.activationsLoading.set(false);
-      },
-      error: err => {
-        this.activations.set([]);
-        this.activationsLoading.set(false);
-        this.activationsError.set(this.activationsErrorMessage(err));
-      },
-    });
-  }
-
   private buildAssignmentPayload(organizationId: number): CreateToolAccessPayload | null {
     const toolKey = this.assignmentForm.toolKey.trim();
     const selectedUserId = this.selectedUserId();
     const externalCommerceActivationId = this.parseOptionalPositiveInteger(
-      this.assignmentForm.selectedActivationId || this.assignmentForm.externalCommerceActivationId,
+      this.assignmentForm.externalCommerceActivationId,
       'externalCommerceActivationId',
     );
 
@@ -776,7 +694,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
       toolKey: '',
       userEmail: '',
       externalCommerceActivationId: '',
-      selectedActivationId: '',
     };
   }
 
@@ -835,18 +752,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     }
 
     return 'No fue posible buscar el usuario. Intenta nuevamente.';
-  }
-
-  private activationsErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      return 'No fue posible cargar activaciones globales.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para cargar activaciones globales.';
-    }
-
-    return 'No fue posible cargar activaciones globales.';
   }
 
   private disableToolAccessErrorMessage(err: unknown): string {
