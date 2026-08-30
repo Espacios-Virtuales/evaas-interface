@@ -152,8 +152,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
       { label: 'ID', value: organization.id },
       { label: 'Nombre', value: organization.name },
       { label: 'Tax ID', value: organization.taxId },
-      { label: 'Owner email', value: organization.ownerEmail },
-      { label: 'Owner user ID', value: organization.ownerUserId },
+      { label: 'Email del responsable (owner)', value: organization.ownerEmail },
+      { label: 'ID de usuario responsable (owner)', value: organization.ownerUserId },
       { label: 'Enabled', value: organization.enabled, kind: 'status' as const },
       { label: 'Creada', value: organization.createdAt, kind: 'date' as const },
     ];
