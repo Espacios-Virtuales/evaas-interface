@@ -35,7 +35,7 @@
       </div>
 
       <dl class="admin-organization-detail__facts">
-        <div *ngFor="let field of organizationFields()">
+        <div *ngFor="let field of organizationIdentityFields()">
           <dt>{{ field.label }}</dt>
           <dd *ngIf="field.kind === 'status'">
             <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
@@ -46,11 +46,32 @@
       </dl>
     </section>
 
+    <section
+      class="admin-organization-detail__section"
+      *ngIf="ownershipFields().length > 0"
+      aria-labelledby="organization-owner-title"
+    >
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">Ownership</p>
+          <h2 id="organization-owner-title">Responsable (owner)</h2>
+          <p>Referencia de ownership expuesta por el contrato de Organization; no representa membresía.</p>
+        </div>
+      </div>
+
+      <dl class="admin-organization-detail__facts">
+        <div *ngFor="let field of ownershipFields()">
+          <dt>{{ field.label }}</dt>
+          <dd>{{ formatValue(field.value) }}</dd>
+        </div>
+      </dl>
+    </section>
+
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">
       <div class="admin-organization-detail__section-header">
         <div>
-          <p class="admin-organization-detail__section-kicker">Tool access</p>
-          <h2 id="organization-access-title">Accesos habilitados</h2>
+          <p class="admin-organization-detail__section-kicker">Accesos legacy</p>
+          <h2 id="organization-access-title">ToolAccess</h2>
           <p>
             Los accesos actuales corresponden al contrato legacy ToolAccess. InstrumentAccess canónico
             se integrará cuando la organización exponga organizationRef UUID o exista el contrato
@@ -161,7 +182,7 @@
 
         <div class="admin-organization-detail__assignment-grid">
           <label>
-            <span>externalCommerceActivationId</span>
+            <span>ID de activación comercial (opcional)</span>
             <input
               type="number"
               name="externalCommerceActivationId"
@@ -171,34 +192,8 @@
               placeholder="789"
               [disabled]="assignmentSubmitting()"
             />
+            <small>Referencia contractual opcional; no demuestra una activación asociada a esta Organization.</small>
           </label>
-
-          <label>
-            <span>Activacion candidata</span>
-            <select
-              name="selectedActivationId"
-              [(ngModel)]="assignmentForm.selectedActivationId"
-              [disabled]="assignmentSubmitting() || activationsLoading() || activationOptions().length === 0"
-            >
-              <option value="">Sin activacion seleccionada</option>
-              <option *ngFor="let activation of activationOptions(); trackBy: trackActivation" [value]="activation.id">
-                {{ activationLabel(activation) }}
-              </option>
-            </select>
-          </label>
-        </div>
-
-        <div class="state state-empty admin-organization-detail__section-state">
-          <strong>Filtro de activaciones por organizacion pendiente de contrato backend.</strong>
-          <p>Vista transitoria filtrada en frontend hasta contar con filtro backend.</p>
-          <p *ngIf="activationsLoading()">Cargando activaciones globales...</p>
-          <p *ngIf="activationsError()">{{ activationsError() }}</p>
-          <p *ngIf="!activationsLoading() && !activationsError() && activations().length === 0">
-            No hay activaciones globales cargadas.
-          </p>
-          <p *ngIf="!activationsLoading() && !activationsError() && activations().length > 0 && activationCandidates().length === 0">
-            No hay coincidencias por organizacion o usuario; se muestran activaciones activas globales como seleccion transitoria.
-          </p>
         </div>
 
         <div class="admin-organization-detail__suggestions" aria-label="Ejemplos sugeridos de toolKey">
@@ -240,8 +235,8 @@
       </form>
 
       <div class="state state-empty" *ngIf="!hasToolAccess()">
-        <strong>Esta organizacion no tiene accesos habilitados.</strong>
-        <p>Cuando existan accesos reales para esta organizacion, apareceran aqui.</p>
+        <strong>No hay accesos registrados.</strong>
+        <p>Cuando existan ToolAccess reales para esta organización, aparecerán aquí.</p>
       </div>
 
       <div class="table-responsive" *ngIf="hasToolAccess()">
@@ -292,7 +287,7 @@
     <section class="admin-organization-detail__section" aria-labelledby="organization-resources-title">
       <div class="admin-organization-detail__section-header">
         <div>
-          <p class="admin-organization-detail__section-kicker">Resources</p>
+          <p class="admin-organization-detail__section-kicker">Recursos</p>
           <h2 id="organization-resources-title">Recursos asociados</h2>
           <p>Activos, infraestructura y capacidades disponibles para sostener la operación de esta organización.</p>
         </div>
@@ -514,43 +509,6 @@
       </div>
     </section>
 
-    <section class="admin-organization-detail__section" aria-labelledby="organization-activations-title">
-      <div class="admin-organization-detail__section-header">
-        <div>
-          <p class="admin-organization-detail__section-kicker">Commerce activations</p>
-          <h2 id="organization-activations-title">Activaciones asociadas</h2>
-        </div>
-      </div>
-
-      <div class="state state-empty admin-organization-detail__contract-pending">
-        <strong>Activaciones asociadas</strong>
-        <p>Pendiente de contrato backend filtrado por organizacion.</p>
-      </div>
-    </section>
-
-    <section class="admin-organization-detail__section" aria-labelledby="organization-operational-title">
-      <div class="admin-organization-detail__section-header">
-        <div>
-          <p class="admin-organization-detail__section-kicker">Operational status</p>
-          <h2 id="organization-operational-title">Estado operacional</h2>
-        </div>
-      </div>
-
-      <ul class="admin-organization-detail__status-list">
-        <li *ngFor="let statement of operationalStatements()">{{ statement }}</li>
-      </ul>
-    </section>
-
-    <section class="admin-organization-detail__section admin-organization-detail__section--muted" aria-labelledby="organization-flow-title">
-      <div class="admin-organization-detail__section-header">
-        <div>
-          <p class="admin-organization-detail__section-kicker">Future program flow placeholder</p>
-          <h2 id="organization-flow-title">Flujo operativo</h2>
-        </div>
-      </div>
-
-      <p>Proximamente: programa, fases y avance del proyecto.</p>
-    </section>
   </ng-container>
 
   <div
