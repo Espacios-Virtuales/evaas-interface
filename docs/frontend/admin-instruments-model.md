@@ -32,29 +32,29 @@ queda como compatibilidad transitoria y redirige a Instrumentos.
 
 | Concepto | Definicion | Ejemplo |
 | --- | --- | --- |
-| Instrumento | Capacidad operable del ecosistema EVAAS. | Comunicador |
+| Instrumento | Capacidad especializada, reusable y gobernada por EVAAS. | Comunicador (`LIORA`) |
 | InstrumentAccess | Autorización canónica de un instrumento por organización. | Acceso a Comunicador por `organizationRef` UUID |
 | ToolAccess | Autorizacion o habilitacion funcional para usar una herramienta/capacidad. | Acceso de una organizacion a una capacidad |
 | Resource | Activo operacional asociado a una organización; una asociación con Instrument solo puede mostrarse con evidencia contractual explícita. | URL, VPS, dashboard, worker, repositorio |
 | Activation | Origen comercial o manual que justifica acceso o continuidad. | Activacion externa recibida |
 
-## Relacion conceptual
+## Fronteras de acceso
 
 ```txt
-Comunicador
+Instrument (catálogo canónico)
 ↓
-ToolAccess
-↓
-Resource
-↓
-CommunicationAction
+InstrumentAccess (habilitación canónica por organizationRef UUID)
+
+ToolAccess (contrato legacy por Organization.id Long)
 ```
+
+`ToolAccess` no se presenta como `InstrumentAccess`. Un Resource puede tener una asociación explícita con Instrument, pero no pertenece a Instrument por definición.
 
 ## Reglas
 
 - Instrumentos no reemplaza ToolAccess.
 - `GET /admin/instruments` es la fuente canónica del catálogo de instrumentos; `[]` se representa como estado vacío válido.
-- Recursos no son instrumentos.
+- Recursos no son instrumentos; instrumentos tampoco son integraciones técnicas.
 - ToolAccess no es menu principal para usuarios humanos.
 - La UI puede enmascarar nombres internos.
 - Liora se muestra como Comunicador en la UI.
@@ -80,16 +80,12 @@ No usar Liora como marca principal visible.
 
 ## Asociación de Resource a Instrument
 
-La tabla global de recursos puede mostrar una columna `Instrumento asociado` solo cuando exista relación contractual o metadata explícita del backend:
+La tabla global de recursos puede mostrar una columna `Instrumento asociado` solo cuando exista relación contractual o metadata explícita del backend (`instrumentKey`, `instrument` o metadata contractual):
 
 ```txt
-type
-key
-toolAccessId
-visibility
-metadataJson
-url
-organizationId
+instrumentKey
+instrument
+metadata contractual
 ```
 
 Valores actuales:
