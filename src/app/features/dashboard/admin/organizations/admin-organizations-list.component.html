@@ -170,4 +170,16 @@
       </form>
     </section>
   </div>
+
+  <evaas-confirmation-modal
+    *ngIf="statusConfirmation() as confirmation"
+    [title]="confirmation.enabled ? 'Habilitar organización' : 'Deshabilitar organización'"
+    [contextLabel]="'Organization'"
+    [contextValue]="confirmation.organization.name"
+    [message]="confirmation.enabled ? 'Esta acción cambiará el estado operativo de esta Organization a habilitado.' : 'Esta acción cambiará el estado operativo de esta Organization a deshabilitado.'"
+    [confirmLabel]="confirmation.enabled ? 'Habilitar' : 'Deshabilitar'"
+    [destructive]="!confirmation.enabled"
+    (cancelled)="cancelOrganizationStatusChange()"
+    (confirmed)="confirmOrganizationStatusChange()"
+  />
 </section>

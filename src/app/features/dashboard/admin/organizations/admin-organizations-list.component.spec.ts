@@ -52,4 +52,50 @@ describe('AdminOrganizationsListComponent create request state', () => {
     expect(component.createModalOpen()).toBeTrue();
     expect(component.createError()).toContain('permisos');
   });
+
+  it('requires contextual confirmation before changing Organization status', () => {
+    const response = new Subject<{ id: number; name: string; enabled: boolean }>();
+    const access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', ['updateOrganizationStatus']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    access.updateOrganizationStatus.and.returnValue(response);
+    TestBed.configureTestingModule({ providers: [{ provide: AdminAccessService, useValue: access }, { provide: Router, useValue: router }] });
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationsListComponent());
+    const organization = { id: 7, name: 'EVAAS Operations', enabled: true };
+    component.organizations.set([organization]);
+
+    component.updateOrganizationStatus(organization, false);
+    expect(component.statusConfirmation()?.organization.name).toBe('EVAAS Operations');
+    expect(access.updateOrganizationStatus).not.toHaveBeenCalled();
+
+    component.cancelOrganizationStatusChange();
+    expect(component.statusConfirmation()).toBeNull();
+    expect(access.updateOrganizationStatus).not.toHaveBeenCalled();
+
+    component.updateOrganizationStatus(organization, false);
+    component.confirmOrganizationStatusChange();
+    component.confirmOrganizationStatusChange();
+    expect(component.statusRequestState()).toBe('SUBMITTING');
+    expect(access.updateOrganizationStatus).toHaveBeenCalledOnceWith(7, false);
+
+    response.next({ ...organization, enabled: false });
+    expect(component.organizations()[0].enabled).toBeFalse();
+    expect(component.statusSuccess()).toContain('deshabilitada');
+  });
+
+  it('does not update Organization state falsely when the confirmed PATCH fails', () => {
+    const access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', ['updateOrganizationStatus']);
+    const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
+    access.updateOrganizationStatus.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+    TestBed.configureTestingModule({ providers: [{ provide: AdminAccessService, useValue: access }, { provide: Router, useValue: router }] });
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationsListComponent());
+    const organization = { id: 7, name: 'EVAAS Operations', enabled: true };
+    component.organizations.set([organization]);
+
+    component.updateOrganizationStatus(organization, false);
+    component.confirmOrganizationStatusChange();
+
+    expect(component.statusRequestState()).toBe('CONFLICT');
+    expect(component.organizations()[0].enabled).toBeTrue();
+    expect(component.statusSuccess()).toBeNull();
+  });
 });

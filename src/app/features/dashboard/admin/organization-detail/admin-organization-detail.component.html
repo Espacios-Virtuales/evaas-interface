@@ -139,7 +139,7 @@
                 <button
                   class="admin-organization-detail__danger-action"
                   type="button"
-                  (click)="disableToolAccess(access)"
+                  (click)="requestToolAccessDisable(access)"
                   [disabled]="disablingToolAccessId() === access.id"
                 >
                   {{ disablingToolAccessId() === access.id ? 'Deshabilitando...' : 'Deshabilitar acceso' }}
@@ -243,6 +243,18 @@
       [toolAccess]="toolAccess()"
       (cancelled)="closeResourceCreateModal()"
       (created)="onResourceCreated()"
+    />
+
+    <evaas-confirmation-modal
+      *ngIf="toolAccessDisableConfirmation() as access"
+      title="Deshabilitar acceso"
+      contextLabel="Organization"
+      [contextValue]="organization()!.name"
+      [message]="'Esta acción deshabilitará este acceso legacy: ' + access.toolKey + '.'"
+      confirmLabel="Deshabilitar"
+      [destructive]="true"
+      (cancelled)="cancelToolAccessDisable()"
+      (confirmed)="confirmToolAccessDisable()"
     />
 
   </ng-container>

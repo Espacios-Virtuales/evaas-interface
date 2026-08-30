@@ -1,0 +1,10 @@
+:host { display: contents; }
+.confirmation-modal__backdrop { position: fixed; inset: 0; z-index: 1060; display: grid; place-items: center; padding: 1rem; background: rgba(13, 27, 42, .5); }
+.confirmation-modal { width: min(480px, 100%); border-radius: .75rem; padding: 1.25rem; background: #fff; box-shadow: 0 1rem 3rem rgba(0,0,0,.25); }
+.confirmation-modal h2 { margin: 0 0 .75rem; }
+.confirmation-modal p { margin: .5rem 0; line-height: 1.5; }
+.confirmation-modal footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: .75rem; margin-top: 1.25rem; }
+.confirmation-modal button { border-radius: .375rem; padding: .5rem .75rem; font: inherit; cursor: pointer; }
+.confirmation-modal__cancel { border: 1px solid #6c757d; background: #fff; color: #343a40; }
+.confirmation-modal__confirm { border: 1px solid #0d6efd; background: #0d6efd; color: #fff; }
+.confirmation-modal__confirm--danger { border-color: #b42318; background: #b42318; }

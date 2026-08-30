@@ -12,6 +12,8 @@ import {
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
 import { AdminResourceCreateModalComponent } from './admin-resource-create-modal.component';
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
+import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 
 interface DetailField {
   label: string;
@@ -44,6 +46,7 @@ type ResourceCollectionState =
     RouterLink,
     AdminResourceCreateModalComponent,
     AdminToolAccessCreateModalComponent,
+    ConfirmationModalComponent,
   ],
   templateUrl: './admin-organization-detail.component.html',
   styleUrls: ['./admin-organization-detail.component.scss'],
@@ -64,6 +67,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly assignmentSuccess = signal<string | null>(null);
   readonly assignmentRefreshError = signal<string | null>(null);
   readonly disablingToolAccessId = signal<number | null>(null);
+  readonly disableRequestState = signal<OperationRequestState>('IDLE');
+  readonly toolAccessDisableConfirmation = signal<AdminToolAccessDto | null>(null);
   readonly disableToolAccessSuccess = signal<string | null>(null);
   readonly disableToolAccessError = signal<string | null>(null);
   readonly resourceCreateModalOpen = signal(false);
@@ -210,16 +215,25 @@ export class AdminOrganizationDetailComponent implements OnInit {
     });
   }
 
-  disableToolAccess(access: AdminToolAccessDto): void {
+  requestToolAccessDisable(access: AdminToolAccessDto): void {
+    if (this.disableRequestState() === 'SUBMITTING' || !access.id) return;
+    this.toolAccessDisableConfirmation.set(access);
+    this.disableToolAccessError.set(null);
+    this.disableToolAccessSuccess.set(null);
+  }
+
+  cancelToolAccessDisable(): void {
+    this.toolAccessDisableConfirmation.set(null);
+  }
+
+  confirmToolAccessDisable(): void {
+    const access = this.toolAccessDisableConfirmation();
     const organizationId = this.currentOrganizationId();
-    if (!organizationId || !access.id) return;
+    if (!organizationId || !access?.id || this.disableRequestState() === 'SUBMITTING') return;
 
-    const confirmed = window.confirm(
-      '¿Deshabilitar este acceso?\nEsta accion no borra el historial. Solo deshabilita el acceso operativo.',
-    );
-    if (!confirmed) return;
-
+    this.toolAccessDisableConfirmation.set(null);
     this.disablingToolAccessId.set(access.id);
+    this.disableRequestState.set('SUBMITTING');
     this.disableToolAccessError.set(null);
     this.disableToolAccessSuccess.set(null);
 
@@ -230,11 +244,20 @@ export class AdminOrganizationDetailComponent implements OnInit {
       next: toolAccess => {
         this.toolAccess.set(Array.isArray(toolAccess) ? toolAccess : []);
         this.disablingToolAccessId.set(null);
+        this.disableRequestState.set('SUCCESS');
         this.disableToolAccessSuccess.set('Acceso deshabilitado correctamente.');
       },
       error: err => {
         this.disablingToolAccessId.set(null);
-        this.disableToolAccessError.set(this.disableToolAccessErrorMessage(err));
+        const presentation = mapOperationHttpError(err, {
+          fallback: 'No fue posible deshabilitar el acceso. Intenta nuevamente.',
+          unauthorized: 'Tu sesión no está autorizada para deshabilitar este acceso.',
+          forbidden: 'No tienes permisos suficientes para deshabilitar este acceso.',
+          notFound: 'No se encontro el acceso indicado.',
+          conflict: 'El acceso no puede deshabilitarse en su estado actual.',
+        });
+        this.disableRequestState.set(presentation.state);
+        this.disableToolAccessError.set(presentation.message);
       },
     });
   }
@@ -416,26 +439,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     if (status === 404) return 'La colección de recursos no está disponible para esta organización.';
     if (status === 409) return 'La colección de recursos está en conflicto. Intenta nuevamente.';
     return 'No fue posible cargar los recursos de esta organización.';
-  }
-
-  private disableToolAccessErrorMessage(err: unknown): string {
-    if (!(err instanceof HttpErrorResponse)) {
-      return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
-    }
-
-    if (err.status === 401 || err.status === 403) {
-      return 'No tienes permisos suficientes para deshabilitar este acceso.';
-    }
-
-    if (err.status === 404) {
-      return 'No se encontro el acceso indicado.';
-    }
-
-    if (err.status === 409) {
-      return 'El acceso no puede deshabilitarse en su estado actual.';
-    }
-
-    return 'No fue posible deshabilitar el acceso. Intenta nuevamente.';
   }
 
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {
