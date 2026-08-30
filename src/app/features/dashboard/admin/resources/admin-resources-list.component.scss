@@ -6,6 +6,7 @@
 }
 
 .admin-resources__header,
+.admin-resources__semantic-note,
 .state,
 .admin-resources__table {
   margin-left: auto;
@@ -44,6 +45,12 @@ h1 {
 .admin-resources__header p:not(.admin-resources__eyebrow) {
   color: #526173;
   margin-top: 8px;
+}
+
+.admin-resources__semantic-note {
+  color: #526173;
+  font-size: 0.9rem;
+  margin: -10px auto 20px;
 }
 
 .admin-resources__back,

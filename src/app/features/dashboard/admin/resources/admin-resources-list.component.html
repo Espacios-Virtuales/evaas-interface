@@ -3,11 +3,15 @@
     <div>
       <p class="admin-resources__eyebrow">Dashboard Admin</p>
       <h1 id="admin-resources-title">Recursos</h1>
-      <p>Inventario operacional global de recursos EVAAS. Un Resource no es un Instrumento.</p>
+      <p>Activos, infraestructura y capacidades disponibles para sostener la operación.</p>
     </div>
 
     <a class="admin-resources__back" routerLink="/dashboard/admin">Volver al overview</a>
   </header>
+
+  <p class="admin-resources__semantic-note">
+    Resource no es un Service, Artifact ni Instrument. Una asociación con Instrumento solo se muestra cuando existe evidencia contractual explícita.
+  </p>
 
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
