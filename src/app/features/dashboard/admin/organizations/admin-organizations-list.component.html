@@ -98,9 +98,15 @@
   >
     <section
       class="admin-organizations__modal"
+      tabindex="-1"
+      evaasModalInteraction
+      [modalCloseDisabled]="createState() === 'SUBMITTING'"
+      (modalEscape)="closeCreateModal()"
       role="dialog"
       aria-modal="true"
       aria-labelledby="admin-organization-create-title"
+      aria-describedby="admin-organization-create-description"
+      [attr.aria-busy]="createState() === 'SUBMITTING'"
       (click)="$event.stopPropagation()"
     >
       <header class="admin-organizations__modal-header">
@@ -113,7 +119,7 @@
           type="button"
           class="admin-organizations__icon-button"
           aria-label="Cerrar"
-          [disabled]="createState() === 'loading'"
+          [disabled]="createState() === 'SUBMITTING'"
           (click)="closeCreateModal()"
         >
           &times;
@@ -121,6 +127,7 @@
       </header>
 
       <form [formGroup]="createForm" (ngSubmit)="createOrganization()" class="admin-organizations__form">
+        <p id="admin-organization-create-description" class="visually-hidden">Completa los datos para crear una organización.</p>
         <label>
           <span>Nombre</span>
           <input
@@ -128,6 +135,7 @@
             class="form-control"
             formControlName="name"
             autocomplete="organization"
+            data-modal-initial-focus
             [class.is-invalid]="createForm.controls.name.touched && createForm.controls.name.invalid"
           />
           <small *ngIf="createForm.controls.name.touched && createForm.controls.name.hasError('required')">
@@ -146,11 +154,11 @@
           <small>Referencia de ownership opcional; no crea una membresía.</small>
         </label>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() === 'error' && createError()">
+        <div class="admin-organizations__form-error" role="alert" *ngIf="createState() !== 'IDLE' && createState() !== 'SUBMITTING' && createState() !== 'SUCCESS' && createError()">
           {{ createError() }}
         </div>
 
-        <div class="admin-organizations__form-error" *ngIf="createState() === 'validation'">
+        <div class="admin-organizations__form-error" role="alert" *ngIf="createState() === 'VALIDATION_ERROR'">
           Revisa los campos requeridos.
         </div>
 
@@ -158,16 +166,28 @@
           <button
             type="button"
             class="btn btn-outline-secondary"
-            [disabled]="createState() === 'loading'"
+            [disabled]="createState() === 'SUBMITTING'"
             (click)="closeCreateModal()"
           >
             Cancelar
           </button>
-          <button type="submit" class="admin-organizations__primary" [disabled]="createState() === 'loading'">
-            {{ createState() === 'loading' ? 'Creando...' : 'Crear organización' }}
+          <button type="submit" class="admin-organizations__primary" [disabled]="createState() === 'SUBMITTING'">
+            {{ createState() === 'SUBMITTING' ? 'Creando...' : 'Crear organización' }}
           </button>
         </footer>
       </form>
     </section>
   </div>
+
+  <evaas-confirmation-modal
+    *ngIf="statusConfirmation() as confirmation"
+    [title]="confirmation.enabled ? 'Habilitar organización' : 'Deshabilitar organización'"
+    [contextLabel]="'Organization'"
+    [contextValue]="confirmation.organization.name"
+    [message]="confirmation.enabled ? 'Esta acción cambiará el estado operativo de esta Organization a habilitado.' : 'Esta acción cambiará el estado operativo de esta Organization a deshabilitado.'"
+    [confirmLabel]="confirmation.enabled ? 'Habilitar' : 'Deshabilitar'"
+    [destructive]="!confirmation.enabled"
+    (cancelled)="cancelOrganizationStatusChange()"
+    (confirmed)="confirmOrganizationStatusChange()"
+  />
 </section>

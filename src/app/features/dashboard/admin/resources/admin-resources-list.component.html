@@ -78,17 +78,21 @@
   <div class="admin-resources__modal-backdrop" *ngIf="selectedResource() as resource" role="presentation">
     <section
       class="admin-resources__modal"
+      tabindex="-1"
+      evaasModalInteraction
+      (modalEscape)="closeResourceDetail()"
       role="dialog"
       aria-modal="true"
       aria-labelledby="admin-resource-detail-title"
+      aria-describedby="admin-resource-detail-description"
     >
       <header class="admin-resources__modal-header">
         <div>
-          <p class="admin-resources__eyebrow">Detalle de recurso</p>
+          <p id="admin-resource-detail-description" class="admin-resources__eyebrow">Detalle de recurso</p>
           <h2 id="admin-resource-detail-title">{{ resourceName(resource) }}</h2>
         </div>
 
-        <button class="admin-resources__link-button" type="button" (click)="closeResourceDetail()">
+        <button class="admin-resources__link-button" type="button" data-modal-initial-focus (click)="closeResourceDetail()">
           Cerrar
         </button>
       </header>

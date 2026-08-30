@@ -83,3 +83,40 @@ html, body {
 .evaas-dialog .mat-mdc-dialog-actions {
   padding: 8px 16px 16px;
 }
+
+/* L04 C05: overlays administrativos propios, fuera de los presupuestos SCSS por componente. */
+.admin-organizations__modal,
+.admin-resources__modal {
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.admin-organizations__modal :is(button, input):focus-visible,
+.admin-activations__modal :is(button, input, select):focus-visible,
+.admin-resources__modal :is(button, a, summary):focus-visible,
+.admin-organization-detail__modal :is(button, a, summary):focus-visible {
+  outline: 3px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+@media (max-width: 720px) {
+  .admin-organizations__modal-backdrop,
+  .admin-activations__modal-backdrop,
+  .admin-resources__modal-backdrop {
+    align-items: flex-start;
+    padding: 16px;
+  }
+
+  .admin-organizations__modal-actions,
+  .admin-activations__modal-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .admin-organizations__modal-actions button,
+  .admin-activations__modal-actions button,
+  .admin-resources__modal-actions > * {
+    justify-content: center;
+    width: 100%;
+  }
+}
