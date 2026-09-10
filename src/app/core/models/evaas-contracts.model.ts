@@ -16,13 +16,21 @@ export interface MyResourceDto {
 export interface OrganizationDto {
   id: number;
   name: string;
-  taxId?: string;
-  enabled?: boolean;
-  status?: string;
-  ownerUserId?: number;
-  ownerEmail?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  brandColor?: string | null;
+  ownerUserId?: number | null;
+  ownerEmail?: string | null;
+  enabled: boolean;
+  createdAt?: string | null;
+}
+
+export interface OrganizationMemberDto {
+  canonicalId: string;
+  userId: number;
+  userEmail: string;
+  role: string;
+  status: string;
 }
 
 export interface CreateOrganizationRequest {

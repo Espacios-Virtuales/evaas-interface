@@ -43,6 +43,23 @@
           <dd *ngIf="field.kind === 'date'">{{ formatDate($any(field.value)) }}</dd>
           <dd *ngIf="field.kind !== 'date' && field.kind !== 'status'">{{ formatValue(field.value) }}</dd>
         </div>
+        <div>
+          <dt>Branding</dt>
+          <dd *ngIf="branding().configured; else brandingNotConfigured">
+            <a
+              *ngIf="branding().logoUrl as logoUrl"
+              [href]="logoUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver logo
+            </a>
+            <span *ngIf="branding().brandColor as brandColor">
+              {{ branding().logoUrl ? ' · ' : '' }}Color: {{ brandColor }}
+            </span>
+          </dd>
+          <ng-template #brandingNotConfigured><dd>Branding no configurado</dd></ng-template>
+        </div>
       </dl>
     </section>
 
@@ -65,6 +82,51 @@
           <dd>{{ formatValue(field.value) }}</dd>
         </div>
       </dl>
+    </section>
+
+    <section class="admin-organization-detail__section" aria-labelledby="organization-members-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">OrganizationMember</p>
+          <h2 id="organization-members-title">Miembros</h2>
+          <p>Relaciones de pertenencia de la organización. El responsable (owner) se mantiene separado.</p>
+        </div>
+      </div>
+
+      <div class="state state-loading" *ngIf="membersState() === 'LOADING'">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span>Cargando miembros...</span>
+      </div>
+
+      <div class="state state-error" *ngIf="membersState() === 'ERROR'">
+        <strong>{{ membersError() }}</strong>
+      </div>
+
+      <div class="state state-empty" *ngIf="membersState() === 'EMPTY'">
+        <strong>Esta organización no tiene miembros registrados.</strong>
+        <p>Cuando CORE entregue memberships reales, aparecerán aquí.</p>
+      </div>
+
+      <div class="table-responsive" *ngIf="membersState() === 'READY' && hasMembers()">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Rol</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let member of members(); trackBy: trackMember">
+              <td>{{ formatValue(member.userEmail) }}</td>
+              <td>{{ formatValue(member.role) }}</td>
+              <td>
+                <span [class]="statusClass(member.status)">{{ formatValue(member.status) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">

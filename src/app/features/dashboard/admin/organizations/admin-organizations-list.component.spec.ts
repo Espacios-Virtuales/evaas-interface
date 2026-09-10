@@ -7,7 +7,7 @@ import { AdminOrganizationsListComponent } from './admin-organizations-list.comp
 
 describe('AdminOrganizationsListComponent create request state', () => {
   it('prevents duplicate create while SUBMITTING and closes only after HTTP success', () => {
-    const response = new Subject<{ id: number; name: string }>();
+    const response = new Subject<{ id: number; name: string; enabled: boolean }>();
     const access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', ['createOrganization', 'getOrganizations']);
     const router = jasmine.createSpyObj<Router>('Router', ['navigate']);
     access.createOrganization.and.returnValue(response);
@@ -30,7 +30,7 @@ describe('AdminOrganizationsListComponent create request state', () => {
     expect(access.createOrganization).toHaveBeenCalledTimes(1);
     expect(component.createModalOpen()).toBeTrue();
 
-    response.next({ id: 7, name: 'EVAAS Operations' });
+    response.next({ id: 7, name: 'EVAAS Operations', enabled: true });
 
     expect(component.createState()).toBe('SUCCESS');
     expect(component.createModalOpen()).toBeFalse();

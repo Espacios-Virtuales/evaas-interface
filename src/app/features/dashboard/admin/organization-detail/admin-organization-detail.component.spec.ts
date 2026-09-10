@@ -11,9 +11,10 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
 
   beforeEach(() => {
     access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', [
-      'getOrganizationById', 'getOrganizationToolAccess', 'getOrganizationResources', 'disableToolAccess',
+      'getOrganizationById', 'getOrganizationMembers', 'getOrganizationToolAccess', 'getOrganizationResources', 'disableToolAccess',
     ]);
-    access.getOrganizationById.and.returnValue(of({ id: 7, name: 'EVAAS Operations' }));
+    access.getOrganizationById.and.returnValue(of({ id: 7, name: 'EVAAS Operations', enabled: true }));
+    access.getOrganizationMembers.and.returnValue(of([]));
     access.getOrganizationToolAccess.and.returnValue(of([]));
     access.getOrganizationResources.and.returnValue(of([]));
 
@@ -91,5 +92,79 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(component.disableRequestState()).toBe('FORBIDDEN');
     expect(component.toolAccess()).toEqual([toolAccess]);
     expect(component.disableToolAccessSuccess()).toBeNull();
+  });
+
+  it('projects Organization branding without mixing the owner with members', () => {
+    access.getOrganizationById.and.returnValue(of({
+      id: 7,
+      name: 'Espacios Virtuales',
+      enabled: true,
+      ownerEmail: 'owner@example.com',
+      ownerUserId: 12,
+      logoUrl: 'https://example.com/logo.svg',
+      brandColor: '#154360',
+    }));
+    access.getOrganizationMembers.and.returnValue(of([
+      { canonicalId: 'member-1', userId: 24, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' },
+    ]));
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.branding()).toEqual({
+      logoUrl: 'https://example.com/logo.svg', brandColor: '#154360', configured: true,
+    });
+    expect(component.ownershipFields()).toEqual([
+      { label: 'Email del responsable (owner)', value: 'owner@example.com' },
+      { label: 'ID de usuario responsable (owner)', value: 12 },
+    ]);
+    expect(component.members()).toEqual([
+      { canonicalId: 'member-1', userId: 24, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' },
+    ]);
+    expect(component.membersState()).toBe('READY');
+  });
+
+  it('marks branding as not configured when logoUrl and brandColor are null', () => {
+    access.getOrganizationById.and.returnValue(of({
+      id: 7, name: 'Espacios Virtuales', enabled: true, logoUrl: null, brandColor: null,
+    }));
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.branding()).toEqual({ logoUrl: null, brandColor: null, configured: false });
+  });
+
+  it('loads members by organization and marks an empty 200 response as EMPTY', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(access.getOrganizationMembers).toHaveBeenCalledWith(7);
+    expect(component.members()).toEqual([]);
+    expect(component.membersState()).toBe('EMPTY');
+  });
+
+  it('keeps members in LOADING while their response is pending', () => {
+    const response = new Subject<[]>();
+    access.getOrganizationMembers.and.returnValue(response);
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.membersState()).toBe('LOADING');
+    response.next([]);
+    response.complete();
+  });
+
+  it('marks members as ERROR when their request fails without discarding Organization', () => {
+    access.getOrganizationMembers.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.organization()?.name).toBe('EVAAS Operations');
+    expect(component.members()).toEqual([]);
+    expect(component.membersState()).toBe('ERROR');
+    expect(component.membersError()).toContain('miembros');
   });
 });

@@ -9,6 +9,7 @@ import {
   AdminUserLookupDto,
   CreateOrganizationRequest,
   CreateToolAccessPayload,
+  OrganizationMemberDto,
   OrganizationDto,
 } from '../models/evaas-contracts.model';
 
@@ -48,6 +49,10 @@ export class AdminAccessService {
 
   getOrganizationById(id: number): Observable<OrganizationDto> {
     return this.http.get<OrganizationDto>(apiUrl(API.adminAccess.organizationById(id)));
+  }
+
+  getOrganizationMembers(id: number): Observable<OrganizationMemberDto[]> {
+    return this.http.get<OrganizationMemberDto[]>(apiUrl(API.adminAccess.organizationMembers(id)));
   }
 
   getOrganizationToolAccess(id: number): Observable<AdminToolAccessDto[]> {

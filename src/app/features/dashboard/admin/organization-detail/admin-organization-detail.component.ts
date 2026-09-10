@@ -7,6 +7,7 @@ import { Observable, catchError, distinctUntilChanged, forkJoin, map, of, switch
 import {
   AdminResourceDto,
   AdminToolAccessDto,
+  OrganizationMemberDto,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
@@ -24,6 +25,8 @@ interface DetailField {
 
 interface OrganizationDetailResult {
   organization: OrganizationDto;
+  members: OrganizationMemberDto[];
+  membersError: unknown | null;
   toolAccess: AdminToolAccessDto[];
   resources: AdminResourceDto[];
   resourceError: unknown | null;
@@ -38,6 +41,14 @@ type ResourceCollectionState =
   | 'NOT_FOUND'
   | 'CONFLICT'
   | 'ERROR';
+
+type MembersCollectionState = 'LOADING' | 'EMPTY' | 'READY' | 'ERROR';
+
+interface OrganizationBranding {
+  logoUrl: string | null;
+  brandColor: string | null;
+  configured: boolean;
+}
 
 @Component({
   standalone: true,
@@ -61,6 +72,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly organization = signal<OrganizationDto | null>(null);
+  readonly members = signal<OrganizationMemberDto[]>([]);
+  readonly membersState = signal<MembersCollectionState>('LOADING');
+  readonly membersError = signal<string | null>(null);
   readonly toolAccess = signal<AdminToolAccessDto[]>([]);
   readonly resources = signal<AdminResourceDto[]>([]);
   readonly resourcesState = signal<ResourceCollectionState>('LOADING');
@@ -84,13 +98,19 @@ export class AdminOrganizationDetailComponent implements OnInit {
     if (!organization) return [];
 
     return [
-      { label: 'ID', value: organization.id },
       { label: 'Nombre', value: organization.name },
       { label: 'Tax ID', value: organization.taxId },
       { label: 'Enabled', value: organization.enabled, kind: 'status' as const },
       { label: 'Creada', value: organization.createdAt, kind: 'date' as const },
-      { label: 'Actualizada', value: organization.updatedAt, kind: 'date' as const },
     ];
+  });
+
+  readonly branding = computed<OrganizationBranding>(() => {
+    const organization = this.organization();
+    const logoUrl = this.optionalText(organization?.logoUrl);
+    const brandColor = this.optionalText(organization?.brandColor);
+
+    return { logoUrl, brandColor, configured: logoUrl !== null || brandColor !== null };
   });
 
   readonly ownershipFields = computed(() => {
@@ -104,6 +124,7 @@ export class AdminOrganizationDetailComponent implements OnInit {
   });
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
+  readonly hasMembers = computed(() => this.members().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
   readonly resourcesAreUnavailable = computed(() =>
     ['UNAUTHORIZED', 'FORBIDDEN', 'NOT_FOUND', 'CONFLICT', 'ERROR'].includes(this.resourcesState()),
@@ -121,6 +142,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.loading.set(true);
           this.error.set(null);
           this.organization.set(null);
+          this.members.set([]);
+          this.membersState.set('LOADING');
+          this.membersError.set(null);
           this.toolAccess.set([]);
           this.resources.set([]);
           this.resourcesState.set('LOADING');
@@ -139,6 +163,13 @@ export class AdminOrganizationDetailComponent implements OnInit {
       .subscribe({
         next: result => {
           this.organization.set(result.organization);
+          this.members.set(Array.isArray(result.members) ? result.members : []);
+          if (result.membersError) {
+            this.membersError.set(this.membersCollectionErrorMessage());
+            this.membersState.set('ERROR');
+          } else {
+            this.membersState.set(result.members.length === 0 ? 'EMPTY' : 'READY');
+          }
           this.toolAccess.set(Array.isArray(result.toolAccess) ? result.toolAccess : []);
           this.resources.set(Array.isArray(result.resources) ? result.resources : []);
           if (result.resourceError) {
@@ -152,6 +183,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
         error: err => {
           console.error('[AdminOrganizationDetail] organization detail load error', err);
           this.organization.set(null);
+          this.members.set([]);
+          this.membersState.set('ERROR');
+          this.membersError.set(this.membersCollectionErrorMessage());
           this.toolAccess.set([]);
           this.resources.set([]);
           this.resourcesState.set('ERROR');
@@ -268,6 +302,11 @@ export class AdminOrganizationDetailComponent implements OnInit {
     index: number,
     access: AdminToolAccessDto | null | undefined,
   ): string | number => access?.id ?? access?.toolKey ?? index;
+
+  readonly trackMember = (
+    index: number,
+    member: OrganizationMemberDto | null | undefined,
+  ): string | number => member?.canonicalId ?? member?.userId ?? index;
 
   readonly trackResource = (
     index: number,
@@ -411,14 +450,19 @@ export class AdminOrganizationDetailComponent implements OnInit {
   private loadOrganizationDetail(id: number): Observable<OrganizationDetailResult> {
     return forkJoin({
       organization: this.adminAccess.getOrganizationById(id),
+      membersResult: this.adminAccess.getOrganizationMembers(id).pipe(
+        map(members => ({ members: Array.isArray(members) ? members : [], membersError: null })),
+        catchError(membersError => of({ members: [], membersError })),
+      ),
       toolAccess: this.adminAccess.getOrganizationToolAccess(id),
       resourceResult: this.adminAccess.getOrganizationResources(id).pipe(
         map(resources => ({ resources: Array.isArray(resources) ? resources : [], resourceError: null })),
         catchError(resourceError => of({ resources: [], resourceError })),
       ),
     }).pipe(
-      map(({ organization, toolAccess, resourceResult }) => ({
+      map(({ organization, membersResult, toolAccess, resourceResult }) => ({
         organization,
+        ...membersResult,
         toolAccess,
         ...resourceResult,
       })),
@@ -441,6 +485,14 @@ export class AdminOrganizationDetailComponent implements OnInit {
     if (status === 404) return 'La colección de recursos no está disponible para esta organización.';
     if (status === 409) return 'La colección de recursos está en conflicto. Intenta nuevamente.';
     return 'No fue posible cargar los recursos de esta organización.';
+  }
+
+  private membersCollectionErrorMessage(): string {
+    return 'No fue posible cargar los miembros de esta organización.';
+  }
+
+  private optionalText(value: string | null | undefined): string | null {
+    return typeof value === 'string' && value.trim() ? value.trim() : null;
   }
 
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {
