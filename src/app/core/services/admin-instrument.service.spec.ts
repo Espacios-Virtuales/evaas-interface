@@ -20,11 +20,12 @@ describe('AdminInstrumentService', () => {
   afterEach(() => http.verify());
 
   it('gets the canonical instrument catalogue', () => {
-    service.getInstruments().subscribe(result => expect(result).toEqual([{ key: 'LIORA' }]));
+    const instruments = [{ canonicalId: 'instrument-1', key: 'LIORA', status: 'ACTIVE' }];
+    service.getInstruments().subscribe(result => expect(result).toEqual(instruments));
 
     const req = http.expectOne(
       request => request.method === 'GET' && request.url === apiUrl(API.adminInstruments.instruments),
     );
-    req.flush([{ key: 'LIORA' }]);
+    req.flush(instruments);
   });
 });

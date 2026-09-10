@@ -57,9 +57,8 @@
           <tr>
             <th *ngIf="showId()">ID</th>
             <th *ngIf="showName()">Nombre</th>
-            <th *ngIf="showStatus()">Estado</th>
+            <th *ngIf="showEnabled()">Estado</th>
             <th *ngIf="showCreatedAt()">Creada</th>
-            <th *ngIf="showUpdatedAt()">Actualizada</th>
             <th>Acción</th>
           </tr>
         </thead>
@@ -67,9 +66,8 @@
           <tr *ngFor="let organization of organizations(); trackBy: trackOrganization">
             <td *ngIf="showId()">{{ formatValue(organization.id) }}</td>
             <td *ngIf="showName()">{{ formatValue(organization.name) }}</td>
-            <td *ngIf="showStatus()">{{ formatValue(organization.status) }}</td>
+            <td *ngIf="showEnabled()">{{ formatEnabled(organization.enabled) }}</td>
             <td *ngIf="showCreatedAt()">{{ formatDate(organization.createdAt) }}</td>
-            <td *ngIf="showUpdatedAt()">{{ formatDate(organization.updatedAt) }}</td>
             <td>
               <a class="admin-organizations__detail" [routerLink]="['/dashboard/admin/organizations', organization.id]">
                 Ver detalle

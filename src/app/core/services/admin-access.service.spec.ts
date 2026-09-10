@@ -39,13 +39,13 @@ describe('AdminAccessService', () => {
 
   it('creates an organization', () => {
     const payload = { name: 'EV', taxId: '76.000.000-0' };
-    service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
+    service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV', enabled: true }));
 
     const req = http.expectOne(
       r => r.method === 'POST' && r.url === apiUrl(API.adminAccess.organizations)
     );
     expect(req.request.body).toEqual(payload);
-    req.flush({ id: 7, name: 'EV' });
+    req.flush({ id: 7, name: 'EV', enabled: true });
   });
 
   it('updates organization status', () => {
@@ -106,12 +106,21 @@ describe('AdminAccessService', () => {
   });
 
   it('gets an organization by id', () => {
-    service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV' }));
+    service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV', enabled: true }));
 
     const req = http.expectOne(
       r => r.method === 'GET' && r.url === apiUrl(API.adminAccess.organizationById(7))
     );
-    req.flush({ id: 7, name: 'EV' });
+    req.flush({ id: 7, name: 'EV', enabled: true });
+  });
+
+  it('gets organization members', () => {
+    service.getOrganizationMembers(7).subscribe(result => expect(result).toEqual([]));
+
+    const req = http.expectOne(
+      r => r.method === 'GET' && r.url === apiUrl(API.adminAccess.organizationMembers(7)),
+    );
+    req.flush([]);
   });
 
   it('gets organization tool access', () => {

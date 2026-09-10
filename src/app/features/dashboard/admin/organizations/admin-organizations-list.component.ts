@@ -63,9 +63,8 @@ export class AdminOrganizationsListComponent implements OnInit {
 
   readonly showId = computed(() => this.hasKnownValue('id'));
   readonly showName = computed(() => this.hasKnownValue('name'));
-  readonly showStatus = computed(() => this.hasKnownValue('status'));
+  readonly showEnabled = computed(() => this.hasKnownValue('enabled'));
   readonly showCreatedAt = computed(() => this.hasKnownValue('createdAt'));
-  readonly showUpdatedAt = computed(() => this.hasKnownValue('updatedAt'));
 
   ngOnInit(): void {
     this.load();
@@ -143,6 +142,10 @@ export class AdminOrganizationsListComponent implements OnInit {
     return organization.enabled === true;
   }
 
+  formatEnabled(enabled: boolean): string {
+    return enabled ? 'Habilitada' : 'Deshabilitada';
+  }
+
   openCreateModal(): void {
     this.createForm.reset({ name: '', taxId: '', ownerUserId: null });
     this.createState.set('IDLE');
@@ -210,14 +213,14 @@ export class AdminOrganizationsListComponent implements OnInit {
     return String(value);
   }
 
-  formatDate(value: string | undefined): string {
+  formatDate(value: string | null | undefined): string {
     if (!value) return '-';
 
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
   }
 
-  private hasKnownValue(key: keyof Pick<OrganizationDto, 'id' | 'name' | 'status' | 'createdAt' | 'updatedAt'>): boolean {
+  private hasKnownValue(key: keyof Pick<OrganizationDto, 'id' | 'name' | 'enabled' | 'createdAt'>): boolean {
     return this.organizations().some(organization => {
       const value = organization[key];
       return value !== undefined && value !== null && value !== '';

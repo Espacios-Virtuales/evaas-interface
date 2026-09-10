@@ -16,13 +16,21 @@ export interface MyResourceDto {
 export interface OrganizationDto {
   id: number;
   name: string;
-  taxId?: string;
-  enabled?: boolean;
-  status?: string;
-  ownerUserId?: number;
-  ownerEmail?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  taxId?: string | null;
+  logoUrl?: string | null;
+  brandColor?: string | null;
+  ownerUserId?: number | null;
+  ownerEmail?: string | null;
+  enabled: boolean;
+  createdAt?: string | null;
+}
+
+export interface OrganizationMemberDto {
+  canonicalId: string;
+  userId: number;
+  userEmail: string;
+  role: string;
+  status: string;
 }
 
 export interface CreateOrganizationRequest {
@@ -61,13 +69,59 @@ export interface AdminUserLookupDto {
 }
 
 export interface AdminResourceDto {
+  id?: number;
+  organizationId?: number;
+  organizationName?: string;
+  toolAccessId?: number | null;
+  toolKey?: string | null;
+  type?: string;
+  provider?: string | null;
+  key?: string;
+  name?: string;
+  url?: string | null;
+  status?: string;
+  visibility?: string;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
 /** Canonical catalogue item returned by GET /admin/instruments. */
 export interface AdminInstrumentDto {
+  canonicalId: string;
   key: string;
-  [key: string]: unknown;
+  status: string;
+}
+
+/** Read-only administrative evidence returned by GET /admin/communication-actions. */
+export interface CommunicationActionDto {
+  id: number;
+  organizationId: number;
+  sourceSystem?: string | null;
+  channel?: string | null;
+  operation?: string | null;
+  status: string;
+  approvalStatus?: string | null;
+  recipientAddress?: string | null;
+  recipientDisplayName?: string | null;
+  subject?: string | null;
+  contentSummary?: string | null;
+  templateKey?: string | null;
+  provider?: string | null;
+  providerMessageId?: string | null;
+  providerThreadId?: string | null;
+  lioraCommunicationId?: string | null;
+  lioraTechnicalStatus?: string | null;
+  lioraRequestId?: string | null;
+  lioraLastSyncedAt?: string | null;
+  lioraLastErrorCode?: string | null;
+  lioraLastErrorMessage?: string | null;
+  idempotencyKey?: string | null;
+  requestId?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
 }
 
 export interface CreateAdminResourcePayload {
