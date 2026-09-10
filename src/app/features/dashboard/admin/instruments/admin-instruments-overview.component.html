@@ -14,7 +14,7 @@
       Los instrumentos representan capacidades especializadas del ecosistema EVAAS. Su
       disponibilidad real debe provenir de contratos backend; no son Resources ni Integrations.
     </p>
-    <p>Los accesos actuales siguen gestionándose desde el detalle de cada organización.</p>
+    <p>Este catálogo no indica instrumentos habilitados para una Organization; InstrumentAccess sigue bloqueado por API.</p>
   </section>
 
   <div class="state state-loading" *ngIf="state() === 'LOADING'">
@@ -41,7 +41,7 @@
           <tr>
             <th>Instrumento</th>
             <th>Clave técnica</th>
-            <th>Descripción</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -51,7 +51,7 @@
               <strong>{{ instrumentLabel(instrument) }}</strong>
             </td>
             <td>{{ instrumentKey(instrument) }}</td>
-            <td>{{ instrumentDescription(instrument) }}</td>
+            <td>{{ instrument.status }}</td>
             <td>
               <a *ngIf="hasDetail(instrument)" class="admin-instruments__detail" routerLink="/dashboard/admin/instruments/comunicador">Ver detalle</a>
               <span *ngIf="!hasDetail(instrument)">Sin detalle disponible</span>

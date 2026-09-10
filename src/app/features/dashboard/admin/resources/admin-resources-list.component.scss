@@ -220,24 +220,6 @@ h1 {
   overflow-wrap: anywhere;
 }
 
-.admin-resources__metadata summary {
-  color: #17456f;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.admin-resources__metadata pre {
-  background: #f6f8fb;
-  border: 1px solid #dfe7ef;
-  border-radius: 8px;
-  color: #243246;
-  margin: 10px 0 0;
-  max-height: 260px;
-  overflow: auto;
-  padding: 12px;
-  white-space: pre-wrap;
-}
-
 .admin-resources__modal-actions {
   border-top: 1px solid #dfe7ef;
   margin-top: 16px;
