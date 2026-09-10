@@ -9,9 +9,7 @@
     <a class="admin-resources__back" routerLink="/dashboard/admin">Volver a Administración</a>
   </header>
 
-  <p class="admin-resources__semantic-note">
-    Resource no es un Service, Artifact ni Instrument. Una asociación con Instrumento solo se muestra cuando existe evidencia contractual explícita.
-  </p>
+  <p class="admin-resources__semantic-note">Resource no es un Service, Artifact ni Instrument.</p>
 
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -39,11 +37,11 @@
             <th>Nombre</th>
             <th>Key</th>
             <th>Tipo</th>
+            <th>Proveedor</th>
             <th>Estado</th>
             <th>Visibilidad</th>
             <th>Organización</th>
             <th>ToolAccess</th>
-            <th>Instrumento asociado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -53,13 +51,11 @@
             <td>{{ resourceName(resource) }}</td>
             <td>{{ resourceKey(resource) }}</td>
             <td>{{ resourceType(resource) }}</td>
+            <td>{{ resourceProvider(resource) }}</td>
             <td>{{ resourceStatus(resource) }}</td>
             <td>{{ resourceVisibility(resource) }}</td>
             <td>{{ resourceOrganization(resource) }}</td>
             <td>{{ resourceToolAccessId(resource) }}</td>
-            <td>
-              <span class="admin-resources__instrument">{{ resourceInstrument(resource) }}</span>
-            </td>
             <td>
               <button
                 class="admin-resources__detail"
@@ -113,18 +109,12 @@
             <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
           </dd>
           <dd *ngIf="field.kind === 'date'">{{ formatDate(field.value) }}</dd>
-          <dd *ngIf="field.kind === 'structured'">
-            <details class="admin-resources__metadata" open>
-              <summary>Ver metadata</summary>
-              <pre>{{ formatStructuredValue(field.value) }}</pre>
-            </details>
-          </dd>
           <dd *ngIf="field.kind === 'url'">
             <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
               {{ formatValue(field.value) }}
             </a>
           </dd>
-          <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
+          <dd *ngIf="field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
             {{ formatValue(field.value) }}
           </dd>
         </div>

@@ -63,19 +63,12 @@ export class AdminInstrumentsOverviewComponent implements OnInit {
     return typeof instrument.key === 'string' && instrument.key.trim() ? instrument.key.trim() : 'Sin clave';
   }
 
-  instrumentDescription(instrument: AdminInstrumentDto): string {
-    const description = instrument['description'];
-    return typeof description === 'string' && description.trim()
-      ? description.trim()
-      : 'Sin descripción expuesta por el catálogo.';
-  }
-
   hasDetail(instrument: AdminInstrumentDto): boolean {
     return this.instrumentKey(instrument) === 'LIORA';
   }
 
   trackInstrument(_: number, instrument: AdminInstrumentDto): string {
-    return this.instrumentKey(instrument);
+    return instrument.canonicalId;
   }
 
   private errorMessage(error: unknown): string {

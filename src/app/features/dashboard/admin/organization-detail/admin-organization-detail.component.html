@@ -129,6 +129,56 @@
       </div>
     </section>
 
+    <section class="admin-organization-detail__section" aria-labelledby="organization-communication-actions-title">
+      <div class="admin-organization-detail__section-header">
+        <div>
+          <p class="admin-organization-detail__section-kicker">CommunicationAction</p>
+          <h2 id="organization-communication-actions-title">Evidencia comunicacional</h2>
+          <p>Memoria, correlación y evidencia registrada por CORE. Esta proyección es solo de lectura.</p>
+        </div>
+      </div>
+
+      <div class="state state-loading" *ngIf="communicationActionsState() === 'LOADING'">
+        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        <span>Cargando evidencia comunicacional...</span>
+      </div>
+
+      <div class="state state-error" *ngIf="communicationActionsState() === 'ERROR'">
+        <strong>{{ communicationActionsError() }}</strong>
+      </div>
+
+      <div class="state state-empty" *ngIf="communicationActionsState() === 'EMPTY'">
+        <strong>No hay evidencia comunicacional para esta organización.</strong>
+      </div>
+
+      <div class="table-responsive" *ngIf="communicationActionsState() === 'READY' && hasCommunicationActions()">
+        <table class="table align-middle">
+          <thead>
+            <tr>
+              <th>Operación</th>
+              <th>Canal</th>
+              <th>Estado</th>
+              <th>Correlación</th>
+              <th>Evidencia</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let action of communicationActions(); trackBy: trackCommunicationAction">
+              <td>{{ formatValue(action.operation) }}</td>
+              <td>{{ formatValue(action.channel) }}</td>
+              <td>
+                <span [class]="statusClass(action.status)">{{ formatValue(action.status) }}</span>
+              </td>
+              <td>{{ communicationCorrelation(action) }}</td>
+              <td>{{ communicationEvidence(action) }}</td>
+              <td>{{ communicationError(action) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">
       <div class="admin-organization-detail__section-header">
         <div>
@@ -255,6 +305,7 @@
               <th>Nombre</th>
               <th>Clave</th>
               <th>Tipo</th>
+              <th>Proveedor</th>
               <th>Estado</th>
               <th>Visibilidad</th>
               <th>ToolAccess</th>
@@ -266,6 +317,7 @@
               <td>{{ resourceTitle(resource) }}</td>
               <td>{{ resourceKey(resource) }}</td>
               <td>{{ resourceType(resource) }}</td>
+              <td>{{ resourceProvider(resource) }}</td>
               <td>
                 <span [class]="statusClass(resourceStatus(resource))">
                   {{ formatValue(resourceStatus(resource)) }}
@@ -354,18 +406,12 @@
             <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
           </dd>
           <dd *ngIf="field.kind === 'date'">{{ formatDate($any(field.value)) }}</dd>
-          <dd *ngIf="field.kind === 'structured'">
-            <details class="admin-organization-detail__metadata" open>
-              <summary>Ver metadata</summary>
-              <pre>{{ formatStructuredValue(field.value) }}</pre>
-            </details>
-          </dd>
           <dd *ngIf="field.kind === 'url'">
             <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
               {{ formatValue(field.value) }}
             </a>
           </dd>
-          <dd *ngIf="field.kind !== 'structured' && field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
+          <dd *ngIf="field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
             {{ formatValue(field.value) }}
           </dd>
         </div>

@@ -4,10 +4,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
+import { AdminCommunicationActionService } from '../../../../core/services/admin-communication-action.service';
 import { AdminOrganizationDetailComponent } from './admin-organization-detail.component';
 
 describe('AdminOrganizationDetailComponent request refreshes', () => {
   let access: jasmine.SpyObj<AdminAccessService>;
+  let communicationActions: jasmine.SpyObj<AdminCommunicationActionService>;
 
   beforeEach(() => {
     access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', [
@@ -17,10 +19,16 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     access.getOrganizationMembers.and.returnValue(of([]));
     access.getOrganizationToolAccess.and.returnValue(of([]));
     access.getOrganizationResources.and.returnValue(of([]));
+    communicationActions = jasmine.createSpyObj<AdminCommunicationActionService>(
+      'AdminCommunicationActionService',
+      ['getCommunicationActions'],
+    );
+    communicationActions.getCommunicationActions.and.returnValue(of([]));
 
     TestBed.configureTestingModule({
       providers: [
         { provide: AdminAccessService, useValue: access },
+        { provide: AdminCommunicationActionService, useValue: communicationActions },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '7' })) } },
       ],
     });
@@ -166,5 +174,59 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(component.members()).toEqual([]);
     expect(component.membersState()).toBe('ERROR');
     expect(component.membersError()).toContain('miembros');
+  });
+
+  it('maps a 200 empty communication collection to EMPTY', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(communicationActions.getCommunicationActions).toHaveBeenCalled();
+    expect(component.communicationActions()).toEqual([]);
+    expect(component.communicationActionsState()).toBe('EMPTY');
+  });
+
+  it('shows only communication evidence whose DTO organizationId matches the current Organization', () => {
+    communicationActions.getCommunicationActions.and.returnValue(of([
+      { id: 1, organizationId: 7, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-7' },
+      { id: 2, organizationId: 8, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-8' },
+    ]));
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.communicationActions()).toEqual([
+      { id: 1, organizationId: 7, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-7' },
+    ]);
+    expect(component.communicationActionsState()).toBe('READY');
+  });
+
+  it('keeps communication evidence in LOADING while its response is pending', () => {
+    const response = new Subject<[]>();
+    communicationActions.getCommunicationActions.and.returnValue(response);
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.communicationActionsState()).toBe('LOADING');
+    response.next([]);
+    response.complete();
+  });
+
+  it('keeps Organization, Members and Resources available when communication evidence fails', () => {
+    access.getOrganizationMembers.and.returnValue(of([
+      { canonicalId: 'member-1', userId: 2, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' },
+    ]));
+    access.getOrganizationResources.and.returnValue(of([{ id: 99, name: 'Gateway', provider: 'DigitalOcean' }]));
+    communicationActions.getCommunicationActions.and.returnValue(
+      throwError(() => new HttpErrorResponse({ status: 500 })),
+    );
+
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+
+    expect(component.organization()?.name).toBe('EVAAS Operations');
+    expect(component.membersState()).toBe('READY');
+    expect(component.resourcesState()).toBe('POPULATED');
+    expect(component.communicationActionsState()).toBe('ERROR');
   });
 });

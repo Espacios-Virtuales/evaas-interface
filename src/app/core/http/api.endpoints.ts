@@ -66,6 +66,10 @@ export const API = {
   adminInstruments: {
     instruments: '/admin/instruments',
   },
+  adminCommunicationActions: {
+    actions: '/admin/communication-actions',
+    actionById: (id: number) => `/admin/communication-actions/${encodeURIComponent(String(id))}`,
+  },
   legacy: {
     integrations: {
       software: '/integrations/software',
