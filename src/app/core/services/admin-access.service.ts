@@ -11,6 +11,7 @@ import {
   CreateToolAccessPayload,
   OrganizationMemberDto,
   OrganizationDto,
+  UpdateOrganizationRequest,
 } from '../models/evaas-contracts.model';
 
 @Injectable({ providedIn: 'root' })
@@ -31,6 +32,10 @@ export class AdminAccessService {
       apiUrl(API.adminAccess.organizationStatus(id)),
       { enabled },
     );
+  }
+
+  updateOrganization(id: number, payload: UpdateOrganizationRequest): Observable<OrganizationDto> {
+    return this.http.put<OrganizationDto>(apiUrl(API.adminAccess.organizationById(id)), payload);
   }
 
   createToolAccess(payload: CreateToolAccessPayload): Observable<AdminToolAccessDto> {

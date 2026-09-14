@@ -143,6 +143,23 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(component.branding()).toEqual({ logoUrl: null, brandColor: null, configured: false });
   });
 
+  it('replaces Organization only with the update response without changing related collections', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    component.members.set([{ canonicalId: 'member-1', userId: 24, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' }]);
+    component.resources.set([{ id: 99, name: 'Gateway' }]);
+    const response = { id: 7, name: 'Espacios Virtuales', taxId: null, logoUrl: null, brandColor: null, enabled: true };
+
+    component.openOrganizationEditModal();
+    component.onOrganizationUpdated(response);
+
+    expect(component.organization()).toEqual(response);
+    expect(component.organizationEditModalOpen()).toBeFalse();
+    expect(component.organizationEditSuccess()).toContain('actualizada');
+    expect(component.members()).toHaveSize(1);
+    expect(component.resources()).toHaveSize(1);
+  });
+
   it('loads members by organization and marks an empty 200 response as EMPTY', () => {
     const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
     component.ngOnInit();

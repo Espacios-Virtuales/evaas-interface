@@ -32,6 +32,13 @@
           <p class="admin-organization-detail__section-kicker">Organization</p>
           <h2 id="organization-summary-title">Resumen de organizacion</h2>
         </div>
+        <button class="admin-organization-detail__action" type="button" (click)="openOrganizationEditModal()">
+          Editar organización
+        </button>
+      </div>
+
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="organizationEditSuccess()">
+        <strong>{{ organizationEditSuccess() }}</strong>
       </div>
 
       <dl class="admin-organization-detail__facts">
@@ -348,6 +355,13 @@
       [organizationName]="organization()!.name"
       (cancelled)="closeAssignmentModal()"
       (created)="onToolAccessCreated()"
+    />
+
+    <evaas-admin-organization-edit-modal
+      *ngIf="organizationEditModalOpen()"
+      [organization]="organization()!"
+      (cancelled)="closeOrganizationEditModal()"
+      (updated)="onOrganizationUpdated($event)"
     />
 
     <evaas-admin-resource-create-modal

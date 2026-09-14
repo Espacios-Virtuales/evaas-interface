@@ -15,6 +15,7 @@ import { AdminAccessService } from '../../../../core/services/admin-access.servi
 import { AdminCommunicationActionService } from '../../../../core/services/admin-communication-action.service';
 import { AdminResourceCreateModalComponent } from './admin-resource-create-modal.component';
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
+import { AdminOrganizationEditModalComponent } from './admin-organization-edit-modal.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
@@ -63,6 +64,7 @@ interface OrganizationBranding {
     RouterLink,
     AdminResourceCreateModalComponent,
     AdminToolAccessCreateModalComponent,
+    AdminOrganizationEditModalComponent,
     ConfirmationModalComponent,
     ModalInteractionDirective,
   ],
@@ -89,6 +91,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly resourcesState = signal<ResourceCollectionState>('LOADING');
   readonly resourcesError = signal<string | null>(null);
   readonly assignmentModalOpen = signal(false);
+  readonly organizationEditModalOpen = signal(false);
+  readonly organizationEditSuccess = signal<string | null>(null);
   readonly assignmentSuccess = signal<string | null>(null);
   readonly assignmentRefreshError = signal<string | null>(null);
   readonly disablingToolAccessId = signal<number | null>(null);
@@ -166,6 +170,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.assignmentSuccess.set(null);
           this.resourceCreateSuccess.set(null);
           this.assignmentModalOpen.set(false);
+          this.organizationEditModalOpen.set(false);
+          this.organizationEditSuccess.set(null);
           this.resourceCreateModalOpen.set(false);
           this.closeResourceDetail();
 
@@ -226,6 +232,21 @@ export class AdminOrganizationDetailComponent implements OnInit {
     this.assignmentRefreshError.set(null);
     this.disableToolAccessSuccess.set(null);
     this.disableToolAccessError.set(null);
+  }
+
+  openOrganizationEditModal(): void {
+    this.organizationEditModalOpen.set(true);
+    this.organizationEditSuccess.set(null);
+  }
+
+  closeOrganizationEditModal(): void {
+    this.organizationEditModalOpen.set(false);
+  }
+
+  onOrganizationUpdated(organization: OrganizationDto): void {
+    this.organization.set(organization);
+    this.organizationEditModalOpen.set(false);
+    this.organizationEditSuccess.set('Organización actualizada correctamente.');
   }
 
   closeAssignmentModal(): void {
