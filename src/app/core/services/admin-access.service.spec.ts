@@ -60,6 +60,24 @@ describe('AdminAccessService', () => {
     req.flush({ id: 7, name: 'EV', enabled: false });
   });
 
+  it('updates an organization profile using the individual organization endpoint', () => {
+    const payload = {
+      name: 'Espacios Virtuales',
+      taxId: null,
+      logoUrl: 'https://example.com/logo.svg',
+      brandColor: '#154360',
+    };
+    const response = { id: 7, ...payload, enabled: true };
+
+    service.updateOrganization(7, payload).subscribe(result => expect(result).toEqual(response));
+
+    const req = http.expectOne(
+      r => r.method === 'PUT' && r.url === apiUrl(API.adminAccess.organizationById(7)),
+    );
+    expect(req.request.body).toEqual(payload);
+    req.flush(response);
+  });
+
   it('creates tool access', () => {
     const payload = {
       organizationId: 7,

@@ -1,0 +1,52 @@
+<div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
+  <section
+    class="organization-request-modal"
+    tabindex="-1"
+    evaasModalInteraction
+    [modalCloseDisabled]="submitting()"
+    (modalEscape)="cancel()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="organization-edit-modal-title"
+    aria-describedby="organization-edit-modal-description"
+    [attr.aria-busy]="submitting()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="organization-request-modal__header">
+      <div>
+        <p class="organization-request-modal__eyebrow">Organization</p>
+        <h2 id="organization-edit-modal-title">Editar organización</h2>
+        <p id="organization-edit-modal-description">Actualiza el perfil de <strong>{{ organizationName }}</strong>.</p>
+      </div>
+      <button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button>
+    </header>
+
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="organization-request-modal__grid">
+        <label class="organization-request-modal__field--wide">
+          <span>Nombre *</span>
+          <input type="text" name="organizationName" [(ngModel)]="form.name" required maxlength="160" data-modal-initial-focus [disabled]="submitting()" />
+        </label>
+        <label>
+          <span>Tax ID</span>
+          <input type="text" name="organizationTaxId" [(ngModel)]="form.taxId" maxlength="32" [disabled]="submitting()" />
+        </label>
+        <label>
+          <span>Color de marca</span>
+          <input type="text" name="organizationBrandColor" [(ngModel)]="form.brandColor" maxlength="7" placeholder="#RRGGBB" [disabled]="submitting()" />
+        </label>
+        <label class="organization-request-modal__field--wide">
+          <span>Logo URL</span>
+          <input type="url" name="organizationLogoUrl" [(ngModel)]="form.logoUrl" maxlength="500" placeholder="https://…" [disabled]="submitting()" />
+          <small>Opcional. Debe utilizar HTTP o HTTPS.</small>
+        </label>
+      </div>
+      <p class="organization-request-modal__error" role="alert" *ngIf="validation()">{{ validation() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
+      <footer class="organization-request-modal__actions">
+        <button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button>
+        <button type="submit" class="organization-request-modal__primary" [disabled]="submitting()">{{ submitting() ? 'Guardando...' : 'Guardar cambios' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

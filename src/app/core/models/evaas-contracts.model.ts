@@ -39,6 +39,14 @@ export interface CreateOrganizationRequest {
   ownerUserId?: number;
 }
 
+/** Administrative profile fields accepted by PUT /admin/access/organizations/{id}. */
+export interface UpdateOrganizationRequest {
+  name: string;
+  taxId: string | null;
+  logoUrl: string | null;
+  brandColor: string | null;
+}
+
 export interface AdminToolAccessDto {
   id: number;
   toolKey: string;
