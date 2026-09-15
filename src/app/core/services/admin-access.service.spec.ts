@@ -141,6 +141,35 @@ describe('AdminAccessService', () => {
     req.flush([]);
   });
 
+  it('updates the owner through the contractual endpoint and payload', () => {
+    const payload = { ownerUserId: 203 };
+    const response = { id: 7, name: 'EV', enabled: true, ownerUserId: 203 };
+    service.updateOrganizationOwner(7, payload).subscribe(result => expect(result).toEqual(response));
+    const req = http.expectOne(r => r.method === 'PUT' && r.url === apiUrl(API.adminAccess.organizationOwner(7)));
+    expect(req.request.body).toEqual(payload);
+    req.flush(response);
+  });
+
+  it('adds a member using only the contractual userId payload', () => {
+    const payload = { userId: 203 };
+    const response = { canonicalId: '7c6954ce-d581-4f56-8f24-49a1c56ef941', userId: 203, userEmail: 'member@example.com', role: 'MEMBER' as const, status: 'ACTIVE' as const };
+    service.addOrganizationMember(7, payload).subscribe(result => expect(result).toEqual(response));
+    const req = http.expectOne(r => r.method === 'POST' && r.url === apiUrl(API.adminAccess.organizationMembers(7)));
+    expect(req.request.body).toEqual(payload);
+    req.flush(response);
+  });
+
+  it('updates member status using its canonical UUID reference, never an internal id', () => {
+    const canonicalId = '7c6954ce-d581-4f56-8f24-49a1c56ef941';
+    const payload = { status: 'SUSPENDED' as const };
+    const response = { canonicalId, userId: 203, userEmail: 'member@example.com', role: 'MEMBER' as const, status: 'SUSPENDED' as const };
+    service.updateOrganizationMemberStatus(7, canonicalId, payload).subscribe(result => expect(result).toEqual(response));
+    const req = http.expectOne(r => r.method === 'PATCH' && r.url === apiUrl(API.adminAccess.organizationMemberStatus(7, canonicalId)));
+    expect(req.request.body).toEqual(payload);
+    expect(req.request.url).toContain(canonicalId);
+    req.flush(response);
+  });
+
   it('gets organization tool access', () => {
     service.getOrganizationToolAccess(7).subscribe(result => expect(result).toEqual([]));
 

@@ -8,9 +8,12 @@ import {
   AdminToolAccessDto,
   AdminUserLookupDto,
   CreateOrganizationRequest,
+  CreateOrganizationMemberRequest,
   CreateToolAccessPayload,
   OrganizationMemberDto,
   OrganizationDto,
+  UpdateOrganizationMemberStatusRequest,
+  UpdateOrganizationOwnerRequest,
   UpdateOrganizationRequest,
 } from '../models/evaas-contracts.model';
 
@@ -58,6 +61,32 @@ export class AdminAccessService {
 
   getOrganizationMembers(id: number): Observable<OrganizationMemberDto[]> {
     return this.http.get<OrganizationMemberDto[]>(apiUrl(API.adminAccess.organizationMembers(id)));
+  }
+
+  updateOrganizationOwner(
+    organizationId: number,
+    payload: UpdateOrganizationOwnerRequest,
+  ): Observable<OrganizationDto> {
+    return this.http.put<OrganizationDto>(apiUrl(API.adminAccess.organizationOwner(organizationId)), payload);
+  }
+
+  addOrganizationMember(
+    organizationId: number,
+    payload: CreateOrganizationMemberRequest,
+  ): Observable<OrganizationMemberDto> {
+    return this.http.post<OrganizationMemberDto>(
+      apiUrl(API.adminAccess.organizationMembers(organizationId)), payload,
+    );
+  }
+
+  updateOrganizationMemberStatus(
+    organizationId: number,
+    memberRef: string,
+    payload: UpdateOrganizationMemberStatusRequest,
+  ): Observable<OrganizationMemberDto> {
+    return this.http.patch<OrganizationMemberDto>(
+      apiUrl(API.adminAccess.organizationMemberStatus(organizationId, memberRef)), payload,
+    );
   }
 
   getOrganizationToolAccess(id: number): Observable<AdminToolAccessDto[]> {

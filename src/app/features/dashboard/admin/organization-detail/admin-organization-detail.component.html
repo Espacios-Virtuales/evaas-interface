@@ -72,7 +72,6 @@
 
     <section
       class="admin-organization-detail__section"
-      *ngIf="ownershipFields().length > 0"
       aria-labelledby="organization-owner-title"
     >
       <div class="admin-organization-detail__section-header">
@@ -81,7 +80,13 @@
           <h2 id="organization-owner-title">Responsable (owner)</h2>
           <p>Referencia de ownership expuesta por el contrato de Organization; no representa membresía.</p>
         </div>
+        <button class="admin-organization-detail__action" type="button" (click)="openOwnerTransferModal()">
+          Cambiar owner
+        </button>
       </div>
+
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="ownerTransferSuccess()"><strong>{{ ownerTransferSuccess() }}</strong></div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="ownerTransferError()"><strong>{{ ownerTransferError() }}</strong></div>
 
       <dl class="admin-organization-detail__facts">
         <div *ngFor="let field of ownershipFields()">
@@ -98,7 +103,13 @@
           <h2 id="organization-members-title">Miembros</h2>
           <p>Relaciones de pertenencia de la organización. El responsable (owner) se mantiene separado.</p>
         </div>
+        <button class="admin-organization-detail__action" type="button" (click)="openMemberCreateModal()">
+          Agregar miembro
+        </button>
       </div>
+
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="memberCreateSuccess() || memberStatusSuccess()"><strong>{{ memberCreateSuccess() || memberStatusSuccess() }}</strong></div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="memberCreateError() || memberStatusError()"><strong>{{ memberCreateError() || memberStatusError() }}</strong></div>
 
       <div class="state state-loading" *ngIf="membersState() === 'LOADING'">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -110,8 +121,8 @@
       </div>
 
       <div class="state state-empty" *ngIf="membersState() === 'EMPTY'">
-        <strong>Esta organización no tiene miembros registrados.</strong>
-        <p>Cuando CORE entregue memberships reales, aparecerán aquí.</p>
+        <strong>Esta organización no tiene memberships registradas.</strong>
+        <p>Puedes agregar un miembro desde esta sección.</p>
       </div>
 
       <div class="table-responsive" *ngIf="membersState() === 'READY' && hasMembers()">
@@ -121,6 +132,7 @@
               <th>Usuario</th>
               <th>Rol</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -129,6 +141,17 @@
               <td>{{ formatValue(member.role) }}</td>
               <td>
                 <span [class]="statusClass(member.status)">{{ formatValue(member.status) }}</span>
+              </td>
+              <td>
+                <ng-container *ngIf="member.role === 'MEMBER'; else ownerLifecycleProtected">
+                  <div class="admin-organization-detail__resource-actions" *ngIf="updatingMemberRef() !== member.canonicalId; else memberUpdating">
+                    <button class="admin-organization-detail__secondary-action" type="button" *ngIf="member.status === 'ACTIVE'" (click)="requestMemberStatus(member, 'SUSPENDED')">Suspender</button>
+                    <button class="admin-organization-detail__danger-action" type="button" *ngIf="member.status !== 'REVOKED'" (click)="requestMemberStatus(member, 'REVOKED')">Revocar</button>
+                    <button class="admin-organization-detail__secondary-action" type="button" *ngIf="member.status === 'SUSPENDED' || member.status === 'REVOKED'" (click)="requestMemberStatus(member, 'ACTIVE')">Reactivar</button>
+                  </div>
+                  <ng-template #memberUpdating><span>Actualizando...</span></ng-template>
+                </ng-container>
+                <ng-template #ownerLifecycleProtected><span>Gestionado mediante transferencia de ownership</span></ng-template>
               </td>
             </tr>
           </tbody>
@@ -373,6 +396,22 @@
       (created)="onResourceCreated()"
     />
 
+    <evaas-admin-owner-transfer-modal
+      *ngIf="ownerTransferModalOpen()"
+      [organization]="organization()!"
+      (cancelled)="closeOwnerTransferModal()"
+      (transferred)="onOwnerTransferred($event)"
+      (failed)="onOwnerTransferFailed($event)"
+    />
+
+    <evaas-admin-organization-member-create-modal
+      *ngIf="memberCreateModalOpen()"
+      [organizationId]="organization()!.id"
+      [organizationName]="organization()!.name"
+      (cancelled)="closeMemberCreateModal()"
+      (created)="onMemberCreated()"
+    />
+
     <evaas-confirmation-modal
       *ngIf="toolAccessDisableConfirmation() as access"
       title="Deshabilitar acceso"
@@ -383,6 +422,18 @@
       [destructive]="true"
       (cancelled)="cancelToolAccessDisable()"
       (confirmed)="confirmToolAccessDisable()"
+    />
+
+    <evaas-confirmation-modal
+      *ngIf="memberStatusConfirmation() as request"
+      title="Revocar membership"
+      contextLabel="Organization"
+      [contextValue]="organization()!.name"
+      [message]="'Usuario: ' + request.member.userEmail"
+      confirmLabel="Revocar"
+      [destructive]="true"
+      (cancelled)="cancelMemberStatus()"
+      (confirmed)="confirmMemberStatus()"
     />
 
   </ng-container>
