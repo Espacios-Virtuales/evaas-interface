@@ -25,12 +25,29 @@ export interface OrganizationDto {
   createdAt?: string | null;
 }
 
+export type OrganizationMemberRole = 'OWNER' | 'MEMBER';
+
+export type OrganizationMemberStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
+
 export interface OrganizationMemberDto {
   canonicalId: string;
   userId: number;
   userEmail: string;
-  role: string;
-  status: string;
+  role: OrganizationMemberRole;
+  status: OrganizationMemberStatus;
+}
+
+export interface UpdateOrganizationOwnerRequest {
+  ownerUserId: number;
+}
+
+/** Contractual payload for POST /admin/access/organizations/{id}/members. */
+export interface CreateOrganizationMemberRequest {
+  userId: number;
+}
+
+export interface UpdateOrganizationMemberStatusRequest {
+  status: OrganizationMemberStatus;
 }
 
 export interface CreateOrganizationRequest {

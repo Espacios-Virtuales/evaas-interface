@@ -1,0 +1,13 @@
+<div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
+  <section class="organization-request-modal" tabindex="-1" evaasModalInteraction [modalCloseDisabled]="submitting()" (modalEscape)="cancel()" role="dialog" aria-modal="true" aria-labelledby="owner-transfer-title" (click)="$event.stopPropagation()">
+    <header class="organization-request-modal__header"><div><p class="organization-request-modal__eyebrow">Ownership</p><h2 id="owner-transfer-title">Cambiar owner</h2><p>Organization: <strong>{{ organization.name }}</strong></p></div><button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button></header>
+    <p>Esta acción cambia la responsabilidad de la Organization.</p>
+    <p><strong>Owner actual:</strong> {{ organization.ownerEmail || organization.ownerUserId || '-' }}</p>
+    <form (ngSubmit)="submit()" novalidate>
+      <label><span>Correo del nuevo owner</span><input type="email" name="ownerEmail" [(ngModel)]="userEmail" autocomplete="email" data-modal-initial-focus [disabled]="submitting() || userLookupLoading() || !!selectedUser()"></label>
+      <div class="organization-request-modal__inline-actions"><button type="button" class="organization-request-modal__secondary" (click)="searchUserByEmail()" [disabled]="submitting() || userLookupLoading() || !!selectedUser()">{{ userLookupLoading() ? 'Buscando...' : 'Buscar usuario' }}</button><button type="button" class="organization-request-modal__link-button" *ngIf="selectedUser()" (click)="clearSelectedUser()" [disabled]="submitting()">Limpiar selección</button></div>
+      <p class="organization-request-modal__success" *ngIf="selectedUser() as user"><strong>Nuevo owner:</strong> {{ user.email }}</p><p class="organization-request-modal__error" role="alert" *ngIf="userLookupError()">{{ userLookupError() }}</p><p class="organization-request-modal__error" role="alert" *ngIf="validation()">{{ validation() }}</p><p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
+      <footer class="organization-request-modal__actions"><button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button><button type="submit" class="organization-request-modal__primary" [disabled]="submitting() || !selectedUser()">{{ submitting() ? 'Transfiriendo...' : 'Transferir owner' }}</button></footer>
+    </form>
+  </section>
+</div>
