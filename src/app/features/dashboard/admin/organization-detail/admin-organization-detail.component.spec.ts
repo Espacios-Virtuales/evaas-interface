@@ -14,6 +14,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
   beforeEach(() => {
     access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', [
       'getOrganizationById', 'getOrganizationMembers', 'getOrganizationToolAccess', 'getOrganizationResources', 'disableToolAccess',
+      'updateOrganizationMemberStatus',
     ]);
     access.getOrganizationById.and.returnValue(of({ id: 7, name: 'EVAAS Operations', enabled: true }));
     access.getOrganizationMembers.and.returnValue(of([]));
@@ -167,6 +168,54 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(access.getOrganizationMembers).toHaveBeenCalledWith(7);
     expect(component.members()).toEqual([]);
     expect(component.membersState()).toBe('EMPTY');
+  });
+
+  it('refreshes memberships after an owner transfer without changing unrelated collections', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    component.resources.set([{ id: 99, name: 'Gateway' }]);
+    access.getOrganizationMembers.and.returnValue(of([
+      { canonicalId: 'owner-uuid', userId: 203, userEmail: 'new-owner@example.com', role: 'OWNER', status: 'ACTIVE' },
+    ]));
+    const response = { id: 7, name: 'EVAAS Operations', enabled: true, ownerUserId: 203, ownerEmail: 'new-owner@example.com' };
+
+    component.onOwnerTransferred(response);
+
+    expect(component.organization()).toEqual(response);
+    expect(access.getOrganizationMembers).toHaveBeenCalledWith(7);
+    expect(component.members()[0].canonicalId).toBe('owner-uuid');
+    expect(component.resources()).toEqual([{ id: 99, name: 'Gateway' }]);
+  });
+
+  it('uses canonicalId UUID for member lifecycle and keeps OWNER protected', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const member = { canonicalId: '7c6954ce-d581-4f56-8f24-49a1c56ef941', userId: 24, userEmail: 'member@example.com', role: 'MEMBER' as const, status: 'ACTIVE' as const };
+    const owner = { canonicalId: 'owner-uuid', userId: 12, userEmail: 'owner@example.com', role: 'OWNER' as const, status: 'ACTIVE' as const };
+    access.updateOrganizationMemberStatus.and.returnValue(of({ ...member, status: 'SUSPENDED' as const }));
+    access.getOrganizationMembers.and.returnValue(of([{ ...member, status: 'SUSPENDED' as const }, owner]));
+
+    component.requestMemberStatus(member, 'SUSPENDED');
+    component.requestMemberStatus(owner, 'SUSPENDED');
+
+    expect(access.updateOrganizationMemberStatus).toHaveBeenCalledOnceWith(7, member.canonicalId, { status: 'SUSPENDED' });
+    expect(component.members()).toContain(owner);
+  });
+
+  it('requires confirmation before revoking a member and does not clear memberships on failure', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const member = { canonicalId: 'member-uuid', userId: 24, userEmail: 'member@example.com', role: 'MEMBER' as const, status: 'ACTIVE' as const };
+    component.members.set([member]);
+    access.updateOrganizationMemberStatus.and.returnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
+
+    component.requestMemberStatus(member, 'REVOKED');
+    expect(access.updateOrganizationMemberStatus).not.toHaveBeenCalled();
+    component.confirmMemberStatus();
+
+    expect(access.updateOrganizationMemberStatus).toHaveBeenCalledWith(7, 'member-uuid', { status: 'REVOKED' });
+    expect(component.members()).toEqual([member]);
+    expect(component.memberStatusError()).toContain('conflicto');
   });
 
   it('keeps members in LOADING while their response is pending', () => {

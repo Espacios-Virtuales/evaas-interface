@@ -9,6 +9,7 @@ import {
   AdminToolAccessDto,
   CommunicationActionDto,
   OrganizationMemberDto,
+  OrganizationMemberStatus,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
@@ -19,6 +20,8 @@ import { AdminOrganizationEditModalComponent } from './admin-organization-edit-m
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
+import { AdminOwnerTransferModalComponent } from './admin-owner-transfer-modal.component';
+import { AdminOrganizationMemberCreateModalComponent } from './admin-organization-member-create-modal.component';
 
 interface DetailField {
   label: string;
@@ -67,6 +70,8 @@ interface OrganizationBranding {
     AdminOrganizationEditModalComponent,
     ConfirmationModalComponent,
     ModalInteractionDirective,
+    AdminOwnerTransferModalComponent,
+    AdminOrganizationMemberCreateModalComponent,
   ],
   templateUrl: './admin-organization-detail.component.html',
   styleUrls: ['./admin-organization-detail.component.scss'],
@@ -105,6 +110,19 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly selectedResource = signal<AdminResourceDto | null>(null);
   readonly isResourceDetailOpen = signal(false);
   readonly currentOrganizationId = signal<number | null>(null);
+  readonly ownerTransferModalOpen = signal(false);
+  readonly ownerTransferState = signal<OperationRequestState>('IDLE');
+  readonly ownerTransferSuccess = signal<string | null>(null);
+  readonly ownerTransferError = signal<string | null>(null);
+  readonly memberCreateModalOpen = signal(false);
+  readonly memberCreateState = signal<OperationRequestState>('IDLE');
+  readonly memberCreateSuccess = signal<string | null>(null);
+  readonly memberCreateError = signal<string | null>(null);
+  readonly memberStatusState = signal<OperationRequestState>('IDLE');
+  readonly memberStatusError = signal<string | null>(null);
+  readonly memberStatusSuccess = signal<string | null>(null);
+  readonly updatingMemberRef = signal<string | null>(null);
+  readonly memberStatusConfirmation = signal<{ member: OrganizationMemberDto; status: OrganizationMemberStatus } | null>(null);
 
   readonly organizationIdentityFields = computed(() => {
     const organization = this.organization();
@@ -172,6 +190,14 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.assignmentModalOpen.set(false);
           this.organizationEditModalOpen.set(false);
           this.organizationEditSuccess.set(null);
+          this.ownerTransferModalOpen.set(false);
+          this.memberCreateModalOpen.set(false);
+          this.ownerTransferSuccess.set(null);
+          this.ownerTransferError.set(null);
+          this.memberCreateSuccess.set(null);
+          this.memberCreateError.set(null);
+          this.memberStatusError.set(null);
+          this.memberStatusSuccess.set(null);
           this.resourceCreateModalOpen.set(false);
           this.closeResourceDetail();
 
@@ -251,6 +277,91 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   closeAssignmentModal(): void {
     this.assignmentModalOpen.set(false);
+  }
+
+  openOwnerTransferModal(): void {
+    this.ownerTransferModalOpen.set(true);
+    this.ownerTransferState.set('IDLE');
+    this.ownerTransferSuccess.set(null);
+    this.ownerTransferError.set(null);
+  }
+
+  closeOwnerTransferModal(): void { this.ownerTransferModalOpen.set(false); }
+
+  onOwnerTransferFailed(message: string): void {
+    this.ownerTransferState.set('ERROR');
+    this.ownerTransferError.set(message);
+  }
+
+  onOwnerTransferred(organization: OrganizationDto): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId) return;
+    this.organization.set(organization);
+    this.ownerTransferModalOpen.set(false);
+    this.ownerTransferState.set('SUCCESS');
+    this.ownerTransferSuccess.set('Owner actualizado correctamente.');
+    this.adminAccess.getOrganizationMembers(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: members => this.replaceMembers(members),
+      error: error => {
+        this.ownerTransferError.set('El owner fue actualizado, pero no se pudieron refrescar los miembros.');
+        console.error('[AdminOrganizationDetail] member refresh after owner transfer failed', error);
+      },
+    });
+  }
+
+  openMemberCreateModal(): void {
+    this.memberCreateModalOpen.set(true);
+    this.memberCreateState.set('IDLE');
+    this.memberCreateSuccess.set(null);
+    this.memberCreateError.set(null);
+  }
+
+  closeMemberCreateModal(): void { this.memberCreateModalOpen.set(false); }
+
+  onMemberCreated(): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId) return;
+    this.memberCreateModalOpen.set(false);
+    this.memberCreateState.set('SUBMITTING');
+    this.adminAccess.getOrganizationMembers(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: members => { this.replaceMembers(members); this.memberCreateState.set('SUCCESS'); this.memberCreateSuccess.set('Miembro agregado correctamente.'); },
+      error: error => { this.memberCreateState.set('ERROR'); this.memberCreateError.set('El miembro fue agregado, pero no se pudieron refrescar los memberships.'); console.error('[AdminOrganizationDetail] member refresh after create failed', error); },
+    });
+  }
+
+  requestMemberStatus(member: OrganizationMemberDto, status: OrganizationMemberStatus): void {
+    if (member.role !== 'MEMBER' || this.updatingMemberRef()) return;
+    this.memberStatusError.set(null);
+    this.memberStatusSuccess.set(null);
+    if (status === 'REVOKED') { this.memberStatusConfirmation.set({ member, status }); return; }
+    this.updateMemberStatus(member, status);
+  }
+
+  cancelMemberStatus(): void { this.memberStatusConfirmation.set(null); }
+  confirmMemberStatus(): void {
+    const request = this.memberStatusConfirmation();
+    if (!request) return;
+    this.memberStatusConfirmation.set(null);
+    this.updateMemberStatus(request.member, request.status);
+  }
+
+  private updateMemberStatus(member: OrganizationMemberDto, status: OrganizationMemberStatus): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId || !member.canonicalId || this.updatingMemberRef()) return;
+    this.updatingMemberRef.set(member.canonicalId);
+    this.memberStatusState.set('SUBMITTING');
+    this.adminAccess.updateOrganizationMemberStatus(organizationId, member.canonicalId, { status }).pipe(
+      switchMap(() => this.adminAccess.getOrganizationMembers(organizationId)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: members => { this.replaceMembers(members); this.updatingMemberRef.set(null); this.memberStatusState.set('SUCCESS'); this.memberStatusSuccess.set('Estado del miembro actualizado correctamente.'); },
+      error: error => { this.updatingMemberRef.set(null); const p = mapOperationHttpError(error, { fallback: 'No fue posible actualizar el estado del miembro. Intenta nuevamente.', badRequest: 'La solicitud de estado no es válida.', unauthorized: 'Tu sesión no está autorizada para administrar miembros.', forbidden: 'No tienes permisos suficientes para administrar miembros.', notFound: 'La organización o membership no existe.', conflict: 'La membership entra en conflicto con su estado actual.' }); this.memberStatusState.set(p.state); this.memberStatusError.set(p.message); },
+    });
+  }
+
+  private replaceMembers(members: OrganizationMemberDto[]): void {
+    const result = Array.isArray(members) ? members : [];
+    this.members.set(result); this.membersState.set(result.length === 0 ? 'EMPTY' : 'READY'); this.membersError.set(null);
   }
 
   openResourceCreateModal(): void {
