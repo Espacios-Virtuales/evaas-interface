@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 import { MyResourceDto, MyToolAccessDto } from '../../../core/models/evaas-contracts.model';
 import { MeService } from '../../../core/services/me.service';
+import { AccessProfileComponent } from '../../../shared/components/access-profile/access-profile.component';
 
 type ClientDashboardData = {
   toolAccess: MyToolAccessDto[];
@@ -12,7 +13,7 @@ type ClientDashboardData = {
 @Component({
   standalone: true,
   selector: 'evaas-client-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, AccessProfileComponent],
   templateUrl: './client-dashboard.component.html',
   styleUrls: ['./client-dashboard.component.scss'],
 })
