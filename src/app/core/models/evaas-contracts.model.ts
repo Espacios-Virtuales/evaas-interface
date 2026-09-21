@@ -29,6 +29,24 @@ export type OrganizationMemberRole = 'OWNER' | 'MEMBER';
 
 export type OrganizationMemberStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
 
+/** Read-only authenticated HUMAN access context returned by GET /me/access-context. */
+export interface MyAccessContextDto {
+  email: string;
+  enabled: boolean;
+  authorities: string[];
+  organizations: MyOrganizationContextDto[];
+}
+
+/** Read-only organization membership in the authenticated HUMAN access context. */
+export interface MyOrganizationContextDto {
+  organizationRef: string;
+  organizationName: string;
+  organizationEnabled: boolean;
+  memberRef: string;
+  role: OrganizationMemberRole;
+  status: OrganizationMemberStatus;
+}
+
 export interface OrganizationMemberDto {
   canonicalId: string;
   userId: number;

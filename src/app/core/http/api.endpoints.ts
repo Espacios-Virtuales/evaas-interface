@@ -30,6 +30,7 @@ export const API = {
     resendActivation: '/onboarding/resend-activation',
   },
   me: {
+    accessContext: '/me/access-context',
     toolAccess: '/me/tool-access',
     resources: '/me/resources',
     intake: '/me/intake',
