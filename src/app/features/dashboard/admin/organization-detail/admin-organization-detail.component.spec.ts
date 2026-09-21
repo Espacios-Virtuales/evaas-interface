@@ -16,7 +16,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
       'getOrganizationById', 'getOrganizationMembers', 'getOrganizationToolAccess', 'getOrganizationResources', 'disableToolAccess',
       'updateOrganizationMemberStatus',
     ]);
-    access.getOrganizationById.and.returnValue(of({ id: 7, name: 'EVAAS Operations', enabled: true }));
+    access.getOrganizationById.and.returnValue(of({ id: 7, canonicalId: 'organization-uuid', name: 'EVAAS Operations', enabled: true }));
     access.getOrganizationMembers.and.returnValue(of([]));
     access.getOrganizationToolAccess.and.returnValue(of([]));
     access.getOrganizationResources.and.returnValue(of([]));
@@ -106,6 +106,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
   it('projects Organization branding without mixing the owner with members', () => {
     access.getOrganizationById.and.returnValue(of({
       id: 7,
+      canonicalId: 'organization-uuid',
       name: 'Espacios Virtuales',
       enabled: true,
       ownerEmail: 'owner@example.com',
@@ -135,7 +136,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
 
   it('marks branding as not configured when logoUrl and brandColor are null', () => {
     access.getOrganizationById.and.returnValue(of({
-      id: 7, name: 'Espacios Virtuales', enabled: true, logoUrl: null, brandColor: null,
+      id: 7, canonicalId: 'organization-uuid', name: 'Espacios Virtuales', enabled: true, logoUrl: null, brandColor: null,
     }));
 
     const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
@@ -149,7 +150,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     component.ngOnInit();
     component.members.set([{ canonicalId: 'member-1', userId: 24, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' }]);
     component.resources.set([{ id: 99, name: 'Gateway' }]);
-    const response = { id: 7, name: 'Espacios Virtuales', taxId: null, logoUrl: null, brandColor: null, enabled: true };
+    const response = { id: 7, canonicalId: 'organization-uuid', name: 'Espacios Virtuales', taxId: null, logoUrl: null, brandColor: null, enabled: true };
 
     component.openOrganizationEditModal();
     component.onOrganizationUpdated(response);
@@ -177,7 +178,7 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     access.getOrganizationMembers.and.returnValue(of([
       { canonicalId: 'owner-uuid', userId: 203, userEmail: 'new-owner@example.com', role: 'OWNER', status: 'ACTIVE' },
     ]));
-    const response = { id: 7, name: 'EVAAS Operations', enabled: true, ownerUserId: 203, ownerEmail: 'new-owner@example.com' };
+    const response = { id: 7, canonicalId: 'organization-uuid', name: 'EVAAS Operations', enabled: true, ownerUserId: 203, ownerEmail: 'new-owner@example.com' };
 
     component.onOwnerTransferred(response);
 

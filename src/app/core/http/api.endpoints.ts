@@ -71,6 +71,12 @@ export const API = {
   adminInstruments: {
     instruments: '/admin/instruments',
   },
+  adminInstrumentAccess: {
+    byOrganization: (organizationRef: string) =>
+      `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access`,
+    status: (organizationRef: string, instrumentAccessRef: string) =>
+      `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access/${encodeURIComponent(instrumentAccessRef)}/status`,
+  },
   adminCommunicationActions: {
     actions: '/admin/communication-actions',
     actionById: (id: number) => `/admin/communication-actions/${encodeURIComponent(String(id))}`,

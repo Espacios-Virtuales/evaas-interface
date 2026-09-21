@@ -16,6 +16,7 @@ describe('AdminOrganizationEditModalComponent', () => {
     const component = TestBed.runInInjectionContext(() => new AdminOrganizationEditModalComponent());
     component.organization = {
       id: 7,
+      canonicalId: 'organization-uuid',
       name: 'Espacios Virtuales',
       taxId: '76.000.000-0',
       logoUrl: 'https://example.com/logo.svg',
@@ -52,7 +53,7 @@ describe('AdminOrganizationEditModalComponent', () => {
   it('sends empty optional values as null and never includes owner or enabled', () => {
     const component = createComponent();
     component.form = { name: ' Espacios Virtuales ', taxId: ' ', logoUrl: '', brandColor: '  ' };
-    access.updateOrganization.and.returnValue(of({ id: 7, name: 'Espacios Virtuales', enabled: true }));
+    access.updateOrganization.and.returnValue(of({ id: 7, canonicalId: 'organization-uuid', name: 'Espacios Virtuales', enabled: true }));
 
     component.submit();
 
@@ -64,7 +65,7 @@ describe('AdminOrganizationEditModalComponent', () => {
   it('emits the backend response and transitions to SUCCESS', () => {
     const component = createComponent();
     const response = {
-      id: 7, name: 'Espacios Virtuales actualizados', taxId: null, logoUrl: null,
+      id: 7, canonicalId: 'organization-uuid', name: 'Espacios Virtuales actualizados', taxId: null, logoUrl: null,
       brandColor: '#112233', ownerUserId: 12, enabled: true,
     };
     const updated = jasmine.createSpy('updated');
@@ -79,7 +80,7 @@ describe('AdminOrganizationEditModalComponent', () => {
 
   it('prevents a double submission while SUBMITTING', () => {
     const component = createComponent();
-    const response = new Subject<{ id: number; name: string; enabled: boolean }>();
+    const response = new Subject<{ id: number; canonicalId: string; name: string; enabled: boolean }>();
     access.updateOrganization.and.returnValue(response);
 
     component.submit();

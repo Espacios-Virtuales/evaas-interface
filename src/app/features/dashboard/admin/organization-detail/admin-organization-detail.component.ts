@@ -22,6 +22,7 @@ import { OperationRequestState, mapOperationHttpError } from '../../../../core/h
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 import { AdminOwnerTransferModalComponent } from './admin-owner-transfer-modal.component';
 import { AdminOrganizationMemberCreateModalComponent } from './admin-organization-member-create-modal.component';
+import { AdminOrganizationInstrumentAccessComponent } from './admin-organization-instrument-access.component';
 
 interface DetailField {
   label: string;
@@ -72,6 +73,7 @@ interface OrganizationBranding {
     ModalInteractionDirective,
     AdminOwnerTransferModalComponent,
     AdminOrganizationMemberCreateModalComponent,
+    AdminOrganizationInstrumentAccessComponent,
   ],
   templateUrl: './admin-organization-detail.component.html',
   styleUrls: ['./admin-organization-detail.component.scss'],

@@ -1,0 +1,31 @@
+<div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
+  <section class="organization-request-modal" tabindex="-1" evaasModalInteraction [modalCloseDisabled]="submitting()" (modalEscape)="cancel()" role="dialog" aria-modal="true" aria-labelledby="instrument-access-grant-modal-title" aria-describedby="instrument-access-grant-modal-description" [attr.aria-busy]="submitting()" (click)="$event.stopPropagation()">
+    <header class="organization-request-modal__header">
+      <div>
+        <p class="organization-request-modal__eyebrow">InstrumentAccess canónico</p>
+        <h2 id="instrument-access-grant-modal-title">Habilitar instrumento</h2>
+        <p id="instrument-access-grant-modal-description">Organization: <strong>{{ organizationName }}</strong></p>
+      </div>
+      <button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button>
+    </header>
+
+    <form (ngSubmit)="submit()" novalidate>
+      <label class="organization-request-modal__field--wide">
+        <span>Instrumento</span>
+        <select name="instrumentRef" [(ngModel)]="instrumentRef" data-modal-initial-focus [disabled]="submitting() || !instruments.length">
+          <option value="">Selecciona un instrumento</option>
+          <option *ngFor="let instrument of instruments" [value]="instrument.canonicalId" [disabled]="instrument.status === 'INACTIVE'">
+            {{ instrument.key }}{{ instrument.status === 'INACTIVE' ? ' · INACTIVE' : '' }}
+          </option>
+        </select>
+        <small *ngIf="!instruments.length">No hay instrumentos disponibles para habilitar.</small>
+      </label>
+      <p class="organization-request-modal__error" role="alert" *ngIf="validation()">{{ validation() }}</p>
+      <p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
+      <footer class="organization-request-modal__actions">
+        <button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button>
+        <button type="submit" class="organization-request-modal__primary" [disabled]="submitting() || !instruments.length">{{ submitting() ? 'Habilitando...' : 'Habilitar instrumento' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

@@ -159,6 +159,11 @@
       </div>
     </section>
 
+    <evaas-admin-organization-instrument-access
+      [organizationRef]="organization()!.canonicalId"
+      [organizationName]="organization()!.name"
+    />
+
     <section class="admin-organization-detail__section" aria-labelledby="organization-communication-actions-title">
       <div class="admin-organization-detail__section-header">
         <div>
@@ -212,13 +217,9 @@
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">
       <div class="admin-organization-detail__section-header">
         <div>
-          <p class="admin-organization-detail__section-kicker">Accesos legacy</p>
+          <p class="admin-organization-detail__section-kicker">ToolAccess · legacy</p>
           <h2 id="organization-access-title">ToolAccess</h2>
-          <p>
-            Los accesos actuales corresponden al contrato legacy ToolAccess. InstrumentAccess canónico
-            se integrará cuando la organización exponga organizationRef UUID o exista el contrato
-            necesario en esta vista.
-          </p>
+          <p>ToolAccess es un contrato legacy de acceso individual. Se mantiene por compatibilidad y no representa InstrumentAccess.</p>
         </div>
 
         <button
