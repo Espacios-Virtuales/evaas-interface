@@ -39,25 +39,25 @@ describe('AdminAccessService', () => {
 
   it('creates an organization', () => {
     const payload = { name: 'EV', taxId: '76.000.000-0' };
-    service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV', enabled: true }));
+    service.createOrganization(payload).subscribe(result => expect(result).toEqual({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: true }));
 
     const req = http.expectOne(
       r => r.method === 'POST' && r.url === apiUrl(API.adminAccess.organizations)
     );
     expect(req.request.body).toEqual(payload);
-    req.flush({ id: 7, name: 'EV', enabled: true });
+    req.flush({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: true });
   });
 
   it('updates organization status', () => {
     service.updateOrganizationStatus(7, false).subscribe(result => {
-      expect(result).toEqual({ id: 7, name: 'EV', enabled: false });
+      expect(result).toEqual({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: false });
     });
 
     const req = http.expectOne(
       r => r.method === 'PATCH' && r.url === apiUrl(API.adminAccess.organizationStatus(7)),
     );
     expect(req.request.body).toEqual({ enabled: false });
-    req.flush({ id: 7, name: 'EV', enabled: false });
+    req.flush({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: false });
   });
 
   it('updates an organization profile using the individual organization endpoint', () => {
@@ -67,7 +67,7 @@ describe('AdminAccessService', () => {
       logoUrl: 'https://example.com/logo.svg',
       brandColor: '#154360',
     };
-    const response = { id: 7, ...payload, enabled: true };
+    const response = { id: 7, canonicalId: 'organization-uuid', ...payload, enabled: true };
 
     service.updateOrganization(7, payload).subscribe(result => expect(result).toEqual(response));
 
@@ -124,12 +124,12 @@ describe('AdminAccessService', () => {
   });
 
   it('gets an organization by id', () => {
-    service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, name: 'EV', enabled: true }));
+    service.getOrganizationById(7).subscribe(result => expect(result).toEqual({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: true }));
 
     const req = http.expectOne(
       r => r.method === 'GET' && r.url === apiUrl(API.adminAccess.organizationById(7))
     );
-    req.flush({ id: 7, name: 'EV', enabled: true });
+    req.flush({ id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: true });
   });
 
   it('gets organization members', () => {
@@ -143,7 +143,7 @@ describe('AdminAccessService', () => {
 
   it('updates the owner through the contractual endpoint and payload', () => {
     const payload = { ownerUserId: 203 };
-    const response = { id: 7, name: 'EV', enabled: true, ownerUserId: 203 };
+    const response = { id: 7, canonicalId: 'organization-uuid', name: 'EV', enabled: true, ownerUserId: 203 };
     service.updateOrganizationOwner(7, payload).subscribe(result => expect(result).toEqual(response));
     const req = http.expectOne(r => r.method === 'PUT' && r.url === apiUrl(API.adminAccess.organizationOwner(7)));
     expect(req.request.body).toEqual(payload);

@@ -15,6 +15,8 @@ export interface MyResourceDto {
 
 export interface OrganizationDto {
   id: number;
+  /** Canonical UUID used by canonical organization relations, including InstrumentAccess. */
+  canonicalId: string;
   name: string;
   taxId?: string | null;
   logoUrl?: string | null;
@@ -134,6 +136,25 @@ export interface AdminInstrumentDto {
   canonicalId: string;
   key: string;
   status: string;
+}
+
+export type InstrumentAccessStatus = 'ENABLED' | 'SUSPENDED' | 'REVOKED';
+
+/** Canonical organization-to-instrument availability; it is not a user permission. */
+export interface InstrumentAccessDto {
+  canonicalId: string;
+  organizationRef: string;
+  instrumentRef: string;
+  instrumentKey: string;
+  status: InstrumentAccessStatus;
+}
+
+export interface CreateInstrumentAccessRequest {
+  instrumentRef: string;
+}
+
+export interface UpdateInstrumentAccessStatusRequest {
+  status: InstrumentAccessStatus;
 }
 
 /** Read-only administrative evidence returned by GET /admin/communication-actions. */

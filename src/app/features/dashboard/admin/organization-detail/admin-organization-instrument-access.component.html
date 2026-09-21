@@ -1,0 +1,60 @@
+<section class="admin-organization-instrument-access" aria-labelledby="organization-instrument-access-title">
+  <header class="admin-organization-instrument-access__header">
+    <div>
+      <p class="admin-organization-instrument-access__kicker">InstrumentAccess · canónico</p>
+      <h2 id="organization-instrument-access-title">InstrumentAccess</h2>
+      <p>Instrumentos habilitados para esta organización. Esta relación representa disponibilidad organizacional, no autorización individual.</p>
+    </div>
+    <button class="admin-organization-instrument-access__action" type="button" (click)="openGrant()" [disabled]="!organizationRefValue">Habilitar instrumento</button>
+  </header>
+
+  <div class="admin-organization-instrument-access__success" *ngIf="success()"><strong>{{ success() }}</strong></div>
+  <div class="admin-organization-instrument-access__error" *ngIf="lifecycleError()"><strong>{{ lifecycleError() }}</strong></div>
+  <div class="admin-organization-instrument-access__loading" *ngIf="state() === 'LOADING'">Cargando InstrumentAccess...</div>
+  <div class="admin-organization-instrument-access__error" *ngIf="state() === 'UNAUTHORIZED' || state() === 'FORBIDDEN' || state() === 'NOT_FOUND' || state() === 'ERROR'"><strong>{{ error() }}</strong></div>
+  <div class="admin-organization-instrument-access__empty" *ngIf="state() === 'EMPTY'"><strong>Esta organización no tiene InstrumentAccess registrados.</strong></div>
+
+  <div class="table-responsive" *ngIf="state() === 'READY' && hasAccesses()">
+    <table class="table align-middle">
+      <thead><tr><th>Instrument</th><th>Estado</th><th>Acciones</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let access of accesses(); trackBy: trackAccess">
+          <td>{{ access.instrumentKey }}</td>
+          <td><span class="admin-organization-instrument-access__status">{{ access.status }}</span></td>
+          <td>
+            <ng-container *ngIf="updatingRef() !== access.canonicalId; else updating">
+              <div class="admin-organization-instrument-access__actions">
+                <button class="admin-organization-instrument-access__secondary" type="button" *ngIf="access.status === 'ENABLED'" (click)="requestStatus(access, 'SUSPENDED')">Suspender</button>
+                <button class="admin-organization-instrument-access__secondary" type="button" *ngIf="access.status === 'SUSPENDED' || access.status === 'REVOKED'" (click)="requestStatus(access, 'ENABLED')">Reactivar</button>
+                <button class="admin-organization-instrument-access__danger" type="button" *ngIf="access.status === 'ENABLED' || access.status === 'SUSPENDED'" (click)="requestStatus(access, 'REVOKED')">Revocar</button>
+              </div>
+            </ng-container>
+            <ng-template #updating><span>Actualizando...</span></ng-template>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-organization-instrument-access__error" *ngIf="catalogError()"><strong>{{ catalogError() }}</strong></div>
+  <div class="admin-organization-instrument-access__loading" *ngIf="grantOpen() && catalogLoading()">Cargando catálogo de instrumentos...</div>
+  <evaas-admin-instrument-access-grant-modal
+    *ngIf="grantOpen() && !catalogLoading() && !catalogError()"
+    [organizationRef]="organizationRefValue"
+    [organizationName]="organizationName"
+    [instruments]="availableInstruments()"
+    (cancelled)="closeGrant()"
+    (created)="onGranted()"
+  />
+  <evaas-confirmation-modal
+    *ngIf="revokeConfirmation() as access"
+    title="Revocar InstrumentAccess"
+    contextLabel="Organization"
+    [contextValue]="organizationName"
+    [message]="'Instrument: ' + access.instrumentKey + '. Esta acción revocará la disponibilidad canónica del instrumento para esta organización.'"
+    confirmLabel="Revocar"
+    [destructive]="true"
+    (cancelled)="cancelRevoke()"
+    (confirmed)="confirmRevoke()"
+  />
+</section>
