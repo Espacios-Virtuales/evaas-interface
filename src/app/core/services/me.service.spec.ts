@@ -19,6 +19,20 @@ describe('MeService', () => {
 
   afterEach(() => http.verify());
 
+  it('gets my access context', () => {
+    const accessContext = {
+      email: 'person@example.com',
+      enabled: true,
+      authorities: ['ROLE_USER'],
+      organizations: [],
+    };
+
+    service.getMyAccessContext().subscribe(result => expect(result).toEqual(accessContext));
+
+    const req = http.expectOne(r => r.method === 'GET' && r.url === apiUrl(API.me.accessContext));
+    req.flush(accessContext);
+  });
+
   it('gets my tool access', () => {
     service.getMyToolAccess().subscribe(result => expect(result).toEqual([]));
 

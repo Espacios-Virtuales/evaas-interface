@@ -1,0 +1,72 @@
+<section class="access-profile" aria-labelledby="access-profile-title">
+  <div class="access-profile__heading">
+    <div>
+      <p class="access-profile__eyebrow">Sesión autenticada</p>
+      <h2 id="access-profile-title">Mi perfil de acceso</h2>
+    </div>
+    <button type="button" class="access-profile__retry" *ngIf="state() === 'ERROR'" (click)="load()">
+      Reintentar
+    </button>
+  </div>
+
+  <div class="access-profile__loading" *ngIf="loading()" aria-live="polite">
+    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+    Cargando perfil de acceso...
+  </div>
+
+  <div class="access-profile__error" *ngIf="state() === 'ERROR'" role="alert">
+    {{ error() }}
+  </div>
+
+  <ng-container *ngIf="ready() && accessContext() as context">
+    <dl class="access-profile__identity">
+      <div>
+        <dt>Identidad</dt>
+        <dd>{{ context.email }}</dd>
+      </div>
+      <div>
+        <dt>Estado de cuenta</dt>
+        <dd>
+          <span class="access-profile__status" [class.access-profile__status--inactive]="!context.enabled">
+            {{ userState(context) }}
+          </span>
+        </dd>
+      </div>
+    </dl>
+
+    <section class="access-profile__section" aria-labelledby="access-profile-authorities-title">
+      <h3 id="access-profile-authorities-title">Autoridades</h3>
+      <p class="access-profile__empty" *ngIf="context.authorities.length === 0">Sin autoridades informadas.</p>
+      <ul class="access-profile__authorities" *ngIf="context.authorities.length > 0">
+        <li *ngFor="let authority of context.authorities; trackBy: trackAuthority">{{ authority }}</li>
+      </ul>
+    </section>
+
+    <section class="access-profile__section" aria-labelledby="access-profile-organizations-title">
+      <h3 id="access-profile-organizations-title">Mis organizaciones</h3>
+      <p class="access-profile__empty" *ngIf="context.organizations.length === 0">
+        No tienes membresías de organización informadas.
+      </p>
+      <div class="access-profile__organizations" *ngIf="context.organizations.length > 0">
+        <article class="access-profile__organization" *ngFor="let organization of context.organizations; trackBy: trackOrganization">
+          <div class="access-profile__organization-heading">
+            <h4>{{ organization.organizationName }}</h4>
+            <span class="access-profile__status" [class.access-profile__status--inactive]="!organization.organizationEnabled">
+              {{ organizationState(organization) }}
+            </span>
+          </div>
+          <dl>
+            <div>
+              <dt>Rol</dt>
+              <dd>{{ organization.role }}</dd>
+            </div>
+            <div>
+              <dt>Membresía</dt>
+              <dd>{{ organization.status }}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+    </section>
+  </ng-container>
+</section>
