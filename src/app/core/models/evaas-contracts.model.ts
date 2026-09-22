@@ -124,11 +124,19 @@ export interface AdminResourceDto {
   key?: string;
   name?: string;
   url?: string | null;
-  status?: string;
+  status?: ResourceStatus;
   visibility?: string;
   createdAt?: string;
   updatedAt?: string;
   [key: string]: unknown;
+}
+
+/** Operational lifecycle of a Resource. It is independent from Deployment and access statuses. */
+export type ResourceStatus = 'PLANNED' | 'ACTIVE' | 'MAINTENANCE' | 'DISABLED';
+
+/** Contractual body for PATCH /admin/resources/{id}/status. */
+export interface UpdateResourceStatusRequest {
+  status: ResourceStatus;
 }
 
 /** Canonical catalogue item returned by GET /admin/instruments. */
@@ -195,7 +203,7 @@ export interface CreateAdminResourcePayload {
   key?: string;
   name: string;
   url?: string;
-  status?: string;
+  status?: ResourceStatus;
   visibility?: string;
   metadataJson?: string;
 }

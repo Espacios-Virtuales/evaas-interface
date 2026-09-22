@@ -1,0 +1,40 @@
+<div class="organization-request-modal__backdrop" role="presentation" (click)="cancel()">
+  <section
+    class="organization-request-modal"
+    tabindex="-1"
+    evaasModalInteraction
+    [modalCloseDisabled]="submitting()"
+    (modalEscape)="cancel()"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="resource-status-modal-title"
+    aria-describedby="resource-status-modal-description"
+    [attr.aria-busy]="submitting()"
+    (click)="$event.stopPropagation()"
+  >
+    <header class="organization-request-modal__header">
+      <div>
+        <p class="organization-request-modal__eyebrow">Resource lifecycle</p>
+        <h2 id="resource-status-modal-title">Actualizar estado</h2>
+        <p id="resource-status-modal-description">{{ resourceTitle() }}</p>
+      </div>
+      <button type="button" class="organization-request-modal__link-button" (click)="cancel()" [disabled]="submitting()">Cerrar</button>
+    </header>
+
+    <form (ngSubmit)="submit()" novalidate>
+      <div class="organization-request-modal__grid">
+        <label>
+          <span>status</span>
+          <select name="resourceStatus" [(ngModel)]="status" [disabled]="submitting()" data-modal-initial-focus>
+            <option *ngFor="let option of statuses" [value]="option">{{ option }}</option>
+          </select>
+        </label>
+      </div>
+      <p class="organization-request-modal__error" role="alert" *ngIf="error()">{{ error() }}</p>
+      <footer class="organization-request-modal__actions">
+        <button type="button" class="organization-request-modal__secondary" (click)="cancel()" [disabled]="submitting()">Cancelar</button>
+        <button type="submit" class="organization-request-modal__primary" [disabled]="submitting()">{{ submitting() ? 'Actualizando...' : 'Actualizar estado' }}</button>
+      </footer>
+    </form>
+  </section>
+</div>

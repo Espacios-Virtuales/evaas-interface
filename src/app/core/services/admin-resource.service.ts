@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API, apiUrl } from '../http/api.endpoints';
-import { AdminResourceDto, CreateAdminResourcePayload } from '../models/evaas-contracts.model';
+import {
+  AdminResourceDto,
+  CreateAdminResourcePayload,
+  UpdateResourceStatusRequest,
+} from '../models/evaas-contracts.model';
 
 @Injectable({ providedIn: 'root' })
 export class AdminResourceService {
@@ -18,5 +22,19 @@ export class AdminResourceService {
 
   createResource(payload: CreateAdminResourcePayload): Observable<AdminResourceDto> {
     return this.http.post<AdminResourceDto>(apiUrl(API.adminResources.resources), payload);
+  }
+
+  /**
+   * CONTRACT_SOURCE = milestone/core-h08-refineria-administrativa
+   * Production availability remains gated by the H08 productive checkpoint.
+   */
+  updateResourceStatus(
+    id: number,
+    payload: UpdateResourceStatusRequest,
+  ): Observable<AdminResourceDto> {
+    return this.http.patch<AdminResourceDto>(
+      apiUrl(API.adminResources.resourceStatus(id)),
+      payload,
+    );
   }
 }
