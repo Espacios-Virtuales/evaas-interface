@@ -15,7 +15,7 @@
     [attr.aria-hidden]="isMobileViewport() && !isSidebarOpen()"
   >
     <div class="brand px-3 py-3">
-      <a [routerLink]="dashboardLink" class="brand-link" (click)="closeSidebarAfterNavigation()">
+      <a [routerLink]="dashboardLink()" class="brand-link" (click)="closeSidebarAfterNavigation()">
         <i class="bi bi-house-fill"></i>
       </a>
     </div>
@@ -74,8 +74,8 @@
     <div class="vstack gap-1 small">
       <div><span class="text-muted">Email:</span> <strong>{{ email() || '—' }}</strong></div>
       <div>
-        <span class="text-muted">Roles:</span>
-        <strong>{{ (session()?.roles || []).join(', ') || '—' }}</strong>
+        <span class="text-muted">Autoridades:</span>
+        <strong>{{ authorities().join(', ') || '—' }}</strong>
       </div>
       <div>
         <span class="text-muted">Conectado desde:</span>
