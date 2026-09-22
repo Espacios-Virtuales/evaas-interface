@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { AdminResourceDto } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
+import { AdminResourceStatusModalComponent } from '../organization-detail/admin-resource-status-modal.component';
 
 type ResourceLink = {
   label: string;
@@ -22,7 +23,7 @@ interface DetailField {
 @Component({
   standalone: true,
   selector: 'evaas-admin-resources-list',
-  imports: [CommonModule, RouterLink, ModalInteractionDirective],
+  imports: [CommonModule, RouterLink, ModalInteractionDirective, AdminResourceStatusModalComponent],
   templateUrl: './admin-resources-list.component.html',
   styleUrls: ['./admin-resources-list.component.scss'],
 })
@@ -36,6 +37,9 @@ export class AdminResourcesListComponent implements OnInit {
   readonly selectedResource = signal<AdminResourceDto | null>(null);
   readonly resourceDetailLoading = signal(false);
   readonly resourceDetailError = signal<string | null>(null);
+  readonly resourceStatusModalResource = signal<AdminResourceDto | null>(null);
+  readonly resourceStatusSuccess = signal<string | null>(null);
+  readonly resourceStatusError = signal<string | null>(null);
 
   readonly isEmpty = computed(
     () => !this.loading() && !this.error() && this.resources().length === 0,
@@ -61,6 +65,37 @@ export class AdminResourcesListComponent implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  openResourceStatusModal(resource: AdminResourceDto): void {
+    this.resourceStatusModalResource.set(resource);
+    this.resourceStatusSuccess.set(null);
+    this.resourceStatusError.set(null);
+  }
+
+  closeResourceStatusModal(): void {
+    this.resourceStatusModalResource.set(null);
+  }
+
+  onResourceStatusUpdated(): void {
+    this.closeResourceStatusModal();
+    this.resourceStatusError.set(null);
+
+    this.adminResources
+      .getResources()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: resources => {
+          this.resources.set(Array.isArray(resources) ? resources : []);
+          this.resourceStatusSuccess.set('Estado del recurso actualizado correctamente.');
+        },
+        error: err => {
+          console.error('[AdminResourcesList] resource status refresh error', err);
+          this.resourceStatusError.set(
+            'El estado fue actualizado, pero no se pudo refrescar la colección de recursos.',
+          );
+        },
+      });
   }
 
   trackResource(index: number, resource: AdminResourceDto): string {

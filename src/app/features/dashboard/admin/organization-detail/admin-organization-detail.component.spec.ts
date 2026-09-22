@@ -48,6 +48,41 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(component.resourceCreateSuccess()).toBe('Recurso creado correctamente.');
   });
 
+  it('refreshes only Organization Resources after lifecycle success and keeps ToolAccess unchanged', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const toolAccess = { id: 30, toolKey: 'EVAAS_WORKFLOW', organizationId: 7, organizationName: 'EVAAS Operations', status: 'ENABLED' as const, grantedAt: '2026-01-01' };
+    const active = { id: 99, name: 'Gateway', status: 'ACTIVE' as const };
+    const disabled = { id: 99, name: 'Gateway', status: 'DISABLED' as const };
+    component.toolAccess.set([toolAccess]);
+    component.resources.set([active]);
+    access.getOrganizationResources.calls.reset();
+    access.getOrganizationResources.and.returnValue(of([disabled]));
+
+    component.onResourceStatusUpdated();
+
+    expect(access.getOrganizationResources).toHaveBeenCalledOnceWith(7);
+    expect(component.resources()).toEqual([disabled]);
+    expect(component.toolAccess()).toEqual([toolAccess]);
+    expect(component.resourceStatusSuccess()).toContain('actualizado');
+  });
+
+  it('preserves Organization Resources and ToolAccess when lifecycle refresh fails', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const toolAccess = { id: 30, toolKey: 'EVAAS_WORKFLOW', organizationId: 7, organizationName: 'EVAAS Operations', status: 'ENABLED' as const, grantedAt: '2026-01-01' };
+    const resource = { id: 99, name: 'Gateway', status: 'ACTIVE' as const };
+    component.toolAccess.set([toolAccess]);
+    component.resources.set([resource]);
+    access.getOrganizationResources.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+    component.onResourceStatusUpdated();
+
+    expect(component.resources()).toEqual([resource]);
+    expect(component.toolAccess()).toEqual([toolAccess]);
+    expect(component.resourceStatusError()).toContain('no se pudo refrescar');
+  });
+
   it('refreshes only ToolAccess after the ToolAccess modal reports success', () => {
     const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
     component.ngOnInit();

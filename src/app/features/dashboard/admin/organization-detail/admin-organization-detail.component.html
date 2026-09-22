@@ -314,6 +314,12 @@
       <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceCreateSuccess()">
         <strong>{{ resourceCreateSuccess() }}</strong>
       </div>
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceStatusSuccess()">
+        <strong>{{ resourceStatusSuccess() }}</strong>
+      </div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="resourceStatusError()">
+        <strong>{{ resourceStatusError() }}</strong>
+      </div>
 
       <div class="state state-loading" *ngIf="resourcesState() === 'LOADING'">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -365,6 +371,13 @@
                   >
                     Ver detalle
                   </button>
+                  <button
+                    class="admin-organization-detail__secondary-action"
+                    type="button"
+                    (click)="openResourceStatusModal(resource)"
+                  >
+                    Cambiar estado
+                  </button>
                 </div>
               </td>
             </tr>
@@ -395,6 +408,13 @@
       [toolAccess]="toolAccess()"
       (cancelled)="closeResourceCreateModal()"
       (created)="onResourceCreated()"
+    />
+
+    <evaas-admin-resource-status-modal
+      *ngIf="resourceStatusModalResource() as resource"
+      [resource]="resource"
+      (cancelled)="closeResourceStatusModal()"
+      (updated)="onResourceStatusUpdated()"
     />
 
     <evaas-admin-owner-transfer-modal

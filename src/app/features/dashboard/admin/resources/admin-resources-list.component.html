@@ -11,6 +11,14 @@
 
   <p class="admin-resources__semantic-note">Resource no es un Service, Artifact ni Instrument.</p>
 
+  <div class="state state-success" *ngIf="resourceStatusSuccess()">
+    <strong>{{ resourceStatusSuccess() }}</strong>
+  </div>
+
+  <div class="state state-error" *ngIf="resourceStatusError()">
+    <strong>{{ resourceStatusError() }}</strong>
+  </div>
+
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
     <span>Cargando recursos...</span>
@@ -63,6 +71,13 @@
                 (click)="openResourceDetail(resource)"
               >
                 Ver detalle
+              </button>
+              <button
+                class="admin-resources__detail"
+                type="button"
+                (click)="openResourceStatusModal(resource)"
+              >
+                Cambiar estado
               </button>
             </td>
           </tr>
@@ -136,4 +151,11 @@
       </footer>
     </section>
   </div>
+
+  <evaas-admin-resource-status-modal
+    *ngIf="resourceStatusModalResource() as resource"
+    [resource]="resource"
+    (cancelled)="closeResourceStatusModal()"
+    (updated)="onResourceStatusUpdated()"
+  />
 </section>

@@ -47,4 +47,14 @@ describe('AdminResourceService', () => {
     expect(req.request.body).toEqual(payload);
     req.flush({});
   });
+
+  it('updates only the Resource status', () => {
+    service.updateResourceStatus(11, { status: 'MAINTENANCE' }).subscribe();
+
+    const req = http.expectOne(
+      r => r.method === 'PATCH' && r.url === apiUrl(API.adminResources.resourceStatus(11)),
+    );
+    expect(req.request.body).toEqual({ status: 'MAINTENANCE' });
+    req.flush({ id: 11, status: 'MAINTENANCE' });
+  });
 });

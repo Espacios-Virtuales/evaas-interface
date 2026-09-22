@@ -15,6 +15,7 @@ import {
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
 import { AdminCommunicationActionService } from '../../../../core/services/admin-communication-action.service';
 import { AdminResourceCreateModalComponent } from './admin-resource-create-modal.component';
+import { AdminResourceStatusModalComponent } from './admin-resource-status-modal.component';
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
 import { AdminOrganizationEditModalComponent } from './admin-organization-edit-modal.component';
 import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
@@ -67,6 +68,7 @@ interface OrganizationBranding {
     CommonModule,
     RouterLink,
     AdminResourceCreateModalComponent,
+    AdminResourceStatusModalComponent,
     AdminToolAccessCreateModalComponent,
     AdminOrganizationEditModalComponent,
     ConfirmationModalComponent,
@@ -109,6 +111,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
   readonly disableToolAccessError = signal<string | null>(null);
   readonly resourceCreateModalOpen = signal(false);
   readonly resourceCreateSuccess = signal<string | null>(null);
+  readonly resourceStatusModalResource = signal<AdminResourceDto | null>(null);
+  readonly resourceStatusSuccess = signal<string | null>(null);
+  readonly resourceStatusError = signal<string | null>(null);
   readonly selectedResource = signal<AdminResourceDto | null>(null);
   readonly isResourceDetailOpen = signal(false);
   readonly currentOrganizationId = signal<number | null>(null);
@@ -189,6 +194,9 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.currentOrganizationId.set(id);
           this.assignmentSuccess.set(null);
           this.resourceCreateSuccess.set(null);
+          this.resourceStatusModalResource.set(null);
+          this.resourceStatusSuccess.set(null);
+          this.resourceStatusError.set(null);
           this.assignmentModalOpen.set(false);
           this.organizationEditModalOpen.set(false);
           this.organizationEditSuccess.set(null);
@@ -390,6 +398,39 @@ export class AdminOrganizationDetailComponent implements OnInit {
       error: err => {
         this.resourcesError.set(this.resourceCollectionErrorMessage(err));
         this.resourcesState.set(this.resourceCollectionErrorState(err));
+      },
+    });
+  }
+
+  openResourceStatusModal(resource: AdminResourceDto): void {
+    this.resourceStatusModalResource.set(resource);
+    this.resourceStatusSuccess.set(null);
+    this.resourceStatusError.set(null);
+  }
+
+  closeResourceStatusModal(): void {
+    this.resourceStatusModalResource.set(null);
+  }
+
+  onResourceStatusUpdated(): void {
+    const organizationId = this.currentOrganizationId();
+    if (!organizationId) return;
+
+    this.closeResourceStatusModal();
+    this.resourceStatusError.set(null);
+    this.adminAccess.getOrganizationResources(organizationId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: resources => {
+        const result = Array.isArray(resources) ? resources : [];
+        this.resources.set(result);
+        this.resourcesState.set(result.length === 0 ? 'EMPTY' : 'POPULATED');
+        this.resourcesError.set(null);
+        this.resourceStatusSuccess.set('Estado del recurso actualizado correctamente.');
+      },
+      error: err => {
+        console.error('[AdminOrganizationDetail] resource status refresh error', err);
+        this.resourceStatusError.set(
+          'El estado fue actualizado, pero no se pudo refrescar la colección de recursos.',
+        );
       },
     });
   }
