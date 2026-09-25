@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthRequest } from '../../../core/models/http.model';
-import { dashboardRouteForSession } from '../../../core/auth/role-routing';
+import { AccessContextStore } from '../../../core/access/access-context.store';
 
 // Helper para tipar el formulario reactivo
 type LoginForm = {
@@ -25,6 +25,7 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private auth = inject(AuthService);
+  private accessContext = inject(AccessContextStore);
 
   submitting = signal(false);
   serverError = signal<string | null>(null);
@@ -55,7 +56,10 @@ export class LoginComponent {
 
     const payload: AuthRequest = this.form.getRawValue(); // <- strings no-null
     this.auth.login(payload).subscribe({
-      next: session => this.router.navigate(dashboardRouteForSession(session)),
+      next: () => {
+        this.accessContext.clear();
+        void this.router.navigate(['/dashboard']);
+      },
       error: (err: unknown) => {
         const msg = (err as any)?.error?.message ?? (err as any)?.message ?? 'Credenciales incorrectas.';
         this.serverError.set(msg);

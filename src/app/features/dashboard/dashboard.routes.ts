@@ -3,6 +3,7 @@ import { Routes } from '@angular/router';
 import { PATHS } from '../../utils/paths';
 import { lazy } from '../../shared/lazy';
 import { authGuard } from '../../core/auth/auth-guard';
+import { accessContextGuard } from '../../core/auth/access-context.guard';
 import { DASHBOARD_CHILD_PATHS } from '../../core/auth/role-routing';
 
 const DASHBOARD_LEGACY_PATHS = {
@@ -21,6 +22,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: DASHBOARD_CHILD_PATHS.client,
         title: 'Dashboard Cliente',
         data: { roles: ['ROLE_CLIENT', 'ROLE_USER', 'ROLE_COMPANY'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(import('./client/client-dashboard.component'), 'ClientDashboardComponent'),
       },
@@ -28,6 +30,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/organizations/:id`,
         title: 'Detalle Organizacion Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/organization-detail/admin-organization-detail.component'),
@@ -38,6 +41,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/organizations`,
         title: 'Organizaciones Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/organizations/admin-organizations-list.component'),
@@ -48,6 +52,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/resources`,
         title: 'Recursos Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/resources/admin-resources-list.component'),
@@ -58,6 +63,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/instruments/comunicador`,
         title: 'Comunicador Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/instruments/admin-communicator-instrument-detail.component'),
@@ -68,6 +74,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/instruments`,
         title: 'Instrumentos Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/instruments/admin-instruments-overview.component'),
@@ -77,12 +84,15 @@ export const DASHBOARD_ROUTES: Routes = [
       {
         path: `${DASHBOARD_CHILD_PATHS.admin}/access`,
         pathMatch: 'full',
+        data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         redirectTo: '/dashboard/admin/instruments',
       },
       {
         path: `${DASHBOARD_CHILD_PATHS.admin}/activations/:id`,
         title: 'Detalle Activacion Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/activations/admin-activation-detail.component'),
@@ -93,6 +103,7 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/activations`,
         title: 'Activaciones Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(
             import('./admin/activations/admin-activations-list.component'),
@@ -103,27 +114,30 @@ export const DASHBOARD_ROUTES: Routes = [
         path: DASHBOARD_CHILD_PATHS.admin,
         title: 'Panel Admin',
         data: { roles: ['ROLE_ADMIN'] },
+        canActivate: [accessContextGuard],
         loadComponent: () =>
           lazy(import('./admin/admin-dashboard-overview.component'), 'AdminDashboardOverviewComponent'),
       },
       {
         path: DASHBOARD_LEGACY_PATHS.resources,
-        title: 'Recursos',
-        loadComponent: () =>
-            lazy(import('./resources/resources-dashboard.component'), 'ResourcesDashboardComponent'),
+        pathMatch: 'full',
+        redirectTo: '/dashboard/context',
       },
       {
         path: DASHBOARD_LEGACY_PATHS.projects,
-        title: 'Proyectos',
+        pathMatch: 'full',
+        redirectTo: '/dashboard/context',
+      },
+      {
+        path: DASHBOARD_CHILD_PATHS.context,
+        title: 'Contexto de acceso',
         loadComponent: () =>
-            lazy(import('./objects/grid/objects-grid.component'), 'ObjectsGridComponent'),
+          lazy(import('./context/dashboard-context.component'), 'DashboardContextComponent'),
       },
       {
         path: '',
         pathMatch: 'full',
-        title: 'Panel',
-        loadComponent: () =>
-          lazy(import('./home/home.component'), 'HomeComponent'),
+        redirectTo: DASHBOARD_CHILD_PATHS.context,
       },
     ],
   },
