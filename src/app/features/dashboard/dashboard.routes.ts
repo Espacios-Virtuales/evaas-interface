@@ -120,15 +120,13 @@ export const DASHBOARD_ROUTES: Routes = [
       },
       {
         path: DASHBOARD_LEGACY_PATHS.resources,
-        title: 'Recursos',
-        loadComponent: () =>
-            lazy(import('./resources/resources-dashboard.component'), 'ResourcesDashboardComponent'),
+        pathMatch: 'full',
+        redirectTo: '/dashboard/context',
       },
       {
         path: DASHBOARD_LEGACY_PATHS.projects,
-        title: 'Proyectos',
-        loadComponent: () =>
-            lazy(import('./objects/grid/objects-grid.component'), 'ObjectsGridComponent'),
+        pathMatch: 'full',
+        redirectTo: '/dashboard/context',
       },
       {
         path: DASHBOARD_CHILD_PATHS.context,
