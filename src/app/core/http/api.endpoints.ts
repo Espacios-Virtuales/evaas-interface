@@ -31,6 +31,7 @@ export const API = {
   },
   me: {
     accessContext: '/me/access-context',
+    contextualProjection: '/api/v1/me/contextual-projection',
     toolAccess: '/me/tool-access',
     resources: '/me/resources',
     intake: '/me/intake',
