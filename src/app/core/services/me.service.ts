@@ -2,7 +2,12 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API, apiUrl } from '../http/api.endpoints';
-import { MyAccessContextDto, MyResourceDto, MyToolAccessDto } from '../models/evaas-contracts.model';
+import {
+  ContextualProjectionDto,
+  MyAccessContextDto,
+  MyResourceDto,
+  MyToolAccessDto,
+} from '../models/evaas-contracts.model';
 
 @Injectable({ providedIn: 'root' })
 export class MeService {
@@ -10,6 +15,10 @@ export class MeService {
 
   getMyAccessContext(): Observable<MyAccessContextDto> {
     return this.http.get<MyAccessContextDto>(apiUrl(API.me.accessContext));
+  }
+
+  getMyContextualProjection(): Observable<ContextualProjectionDto> {
+    return this.http.get<ContextualProjectionDto>(apiUrl(API.me.contextualProjection));
   }
 
   getMyToolAccess(): Observable<MyToolAccessDto[]> {

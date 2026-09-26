@@ -31,6 +31,85 @@ export type OrganizationMemberRole = 'OWNER' | 'MEMBER';
 
 export type OrganizationMemberStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
 
+export type ResourceType =
+  | 'VPS'
+  | 'HOSTING'
+  | 'CLOUD'
+  | 'MANAGED_PLATFORM'
+  | 'LOCAL'
+  | 'STORAGE'
+  | 'DASHBOARD'
+  | 'REPOSITORY'
+  | 'API'
+  | 'POWER_BI'
+  | 'WORDPRESS'
+  | 'DATABASE'
+  | 'DOCUMENTATION'
+  | 'OTHER';
+
+/** Read-only governed projection returned by GET /api/v1/me/contextual-projection. */
+export interface ContextualProjectionDto {
+  version: string;
+  identity: ContextualIdentityDto;
+  context: ContextualContextDto;
+  capabilities: ContextualCapabilityDto[];
+  relationships: ContextualRelationshipDto[];
+  resources: ContextualResourceDto[];
+  actions: ContextualActionDto[];
+  results: ContextualResultDto[];
+  evidence: ContextualEvidenceDto[];
+}
+
+export interface ContextualIdentityDto {
+  subjectRef: string;
+  enabled: boolean;
+}
+
+export interface ContextualContextDto {
+  authorities: string[];
+  organizationRefs: string[];
+}
+
+export interface ContextualCapabilityDto {
+  organizationRef: string;
+  instrumentAccessRef: string;
+  instrumentRef: string;
+  instrumentKey: string;
+}
+
+export interface ContextualRelationshipDto {
+  organizationRef: string;
+  organizationName: string;
+  organizationEnabled: boolean;
+  memberRef: string;
+  role: OrganizationMemberRole;
+  status: OrganizationMemberStatus;
+}
+
+export interface ContextualResourceDto {
+  organizationRef: string;
+  type: ResourceType;
+  key: string;
+  name: string;
+  status: ResourceStatus;
+}
+
+export interface ContextualActionDto {
+  actionKey: string;
+  organizationRef: string;
+}
+
+export interface ContextualResultDto {
+  resultRef: string;
+  status: string;
+}
+
+export interface ContextualEvidenceDto {
+  evidenceRef: string;
+  occurredAt: string;
+  status: string;
+}
+
 /** Read-only authenticated HUMAN access context returned by GET /me/access-context. */
 export interface MyAccessContextDto {
   email: string;

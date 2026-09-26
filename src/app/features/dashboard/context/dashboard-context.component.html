@@ -1,11 +1,124 @@
-<section class="py-5 text-center" aria-live="polite">
-  <div *ngIf="loading()" class="d-inline-flex align-items-center gap-2">
+<main class="container py-4">
+  <h1 class="h3 mb-4">Dashboard contextual</h1>
+
+  <div *ngIf="accessLoading()" class="d-inline-flex align-items-center gap-2 mb-3" aria-live="polite">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
     <span>Resolviendo tu contexto de acceso…</span>
   </div>
 
-  <div *ngIf="!loading() && !hasContextualRoute()" class="alert alert-warning d-inline-block text-start" role="alert">
+  <div *ngIf="!accessLoading() && !hasContextualRoute()" class="alert alert-warning" role="status">
     <strong>No hay un panel disponible para tu contexto de acceso.</strong>
-    <span *ngIf="errorMessage()" class="d-block mt-1">{{ errorMessage() }}</span>
+    <span *ngIf="accessErrorMessage()" class="d-block mt-1">{{ accessErrorMessage() }}</span>
   </div>
-</section>
+
+  <section *ngIf="projectionLoading()" class="py-3" aria-live="polite">
+    <div class="d-inline-flex align-items-center gap-2">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      <span>Cargando la proyección contextual…</span>
+    </div>
+  </section>
+
+  <div *ngIf="projectionState() === 'ERROR'" class="alert alert-danger" role="alert">
+    {{ projectionErrorMessage() }}
+  </div>
+
+  <ng-container *ngIf="projectionState() === 'READY' && projection() as data">
+    <section class="card mb-3" aria-labelledby="identity-heading">
+      <div class="card-body">
+        <h2 id="identity-heading" class="h5">Identidad</h2>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Subject ref</dt>
+          <dd class="col-sm-9">{{ data.identity.subjectRef }}</dd>
+          <dt class="col-sm-3">Enabled</dt>
+          <dd class="col-sm-9">{{ data.identity.enabled ? 'Sí' : 'No' }}</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="context-heading">
+      <div class="card-body">
+        <h2 id="context-heading" class="h5">Contexto</h2>
+        <h3 class="h6">Authorities</h3>
+        <ul *ngIf="data.context.authorities.length; else noAuthorities" class="mb-3">
+          <li *ngFor="let authority of data.context.authorities">{{ authority }}</li>
+        </ul>
+        <ng-template #noAuthorities><p>Sin authorities en este contexto.</p></ng-template>
+        <h3 class="h6">Organizaciones</h3>
+        <ul *ngIf="data.context.organizationRefs.length; else noOrganizationRefs" class="mb-0">
+          <li *ngFor="let organizationRef of data.context.organizationRefs">{{ organizationRef }}</li>
+        </ul>
+        <ng-template #noOrganizationRefs><p class="mb-0">Sin organizaciones en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="capabilities-heading">
+      <div class="card-body">
+        <h2 id="capabilities-heading" class="h5">Capacidades</h2>
+        <ul *ngIf="data.capabilities.length; else noCapabilities" class="mb-0">
+          <li *ngFor="let capability of data.capabilities">
+            {{ capability.instrumentKey }} · {{ capability.instrumentRef }} ·
+            {{ capability.instrumentAccessRef }} · {{ capability.organizationRef }}
+          </li>
+        </ul>
+        <ng-template #noCapabilities><p class="mb-0">Sin capacidades disponibles en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="relationships-heading">
+      <div class="card-body">
+        <h2 id="relationships-heading" class="h5">Relaciones</h2>
+        <ul *ngIf="data.relationships.length; else noRelationships" class="mb-0">
+          <li *ngFor="let relationship of data.relationships">
+            {{ relationship.organizationName }} · {{ relationship.role }} · {{ relationship.status }} ·
+            {{ relationship.memberRef }} · {{ relationship.organizationRef }} ·
+            {{ relationship.organizationEnabled ? 'Organización habilitada' : 'Organización deshabilitada' }}
+          </li>
+        </ul>
+        <ng-template #noRelationships><p class="mb-0">Sin relaciones disponibles en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="resources-heading">
+      <div class="card-body">
+        <h2 id="resources-heading" class="h5">Recursos</h2>
+        <ul *ngIf="data.resources.length; else noResources" class="mb-0">
+          <li *ngFor="let resource of data.resources">
+            {{ resource.name }} · {{ resource.type }} · {{ resource.key }} · {{ resource.status }} ·
+            {{ resource.organizationRef }}
+          </li>
+        </ul>
+        <ng-template #noResources><p class="mb-0">Sin recursos disponibles en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="actions-heading">
+      <div class="card-body">
+        <h2 id="actions-heading" class="h5">Acciones</h2>
+        <ul *ngIf="data.actions.length; else noActions" class="mb-0">
+          <li *ngFor="let action of data.actions">{{ action.actionKey }} · {{ action.organizationRef }}</li>
+        </ul>
+        <ng-template #noActions><p class="mb-0">Sin acciones disponibles en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="results-heading">
+      <div class="card-body">
+        <h2 id="results-heading" class="h5">Resultados</h2>
+        <ul *ngIf="data.results.length; else noResults" class="mb-0">
+          <li *ngFor="let result of data.results">{{ result.resultRef }} · {{ result.status }}</li>
+        </ul>
+        <ng-template #noResults><p class="mb-0">Sin resultados disponibles en este contexto.</p></ng-template>
+      </div>
+    </section>
+
+    <section class="card mb-3" aria-labelledby="evidence-heading">
+      <div class="card-body">
+        <h2 id="evidence-heading" class="h5">Evidencia</h2>
+        <ul *ngIf="data.evidence.length; else noEvidence" class="mb-0">
+          <li *ngFor="let item of data.evidence">{{ item.evidenceRef }} · {{ item.occurredAt }} · {{ item.status }}</li>
+        </ul>
+        <ng-template #noEvidence><p class="mb-0">Sin evidencia disponible en este contexto.</p></ng-template>
+      </div>
+    </section>
+  </ng-container>
+</main>
