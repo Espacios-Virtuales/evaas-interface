@@ -7,13 +7,11 @@ import { Observable, catchError, distinctUntilChanged, forkJoin, map, of, switch
 import {
   AdminResourceDto,
   AdminToolAccessDto,
-  CommunicationActionDto,
   OrganizationMemberDto,
   OrganizationMemberStatus,
   OrganizationDto,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
-import { AdminCommunicationActionService } from '../../../../core/services/admin-communication-action.service';
 import { AdminResourceCreateModalComponent } from './admin-resource-create-modal.component';
 import { AdminResourceStatusModalComponent } from './admin-resource-status-modal.component';
 import { AdminToolAccessCreateModalComponent } from './admin-tool-access-create-modal.component';
@@ -33,8 +31,6 @@ interface DetailField {
 
 interface OrganizationDetailResult {
   organization: OrganizationDto;
-  communicationActions: CommunicationActionDto[];
-  communicationActionsError: unknown | null;
   members: OrganizationMemberDto[];
   membersError: unknown | null;
   toolAccess: AdminToolAccessDto[];
@@ -53,7 +49,6 @@ type ResourceCollectionState =
   | 'ERROR';
 
 type MembersCollectionState = 'LOADING' | 'EMPTY' | 'READY' | 'ERROR';
-type CommunicationActionsCollectionState = 'LOADING' | 'EMPTY' | 'READY' | 'ERROR';
 
 interface OrganizationBranding {
   logoUrl: string | null;
@@ -83,15 +78,11 @@ interface OrganizationBranding {
 export class AdminOrganizationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly adminAccess = inject(AdminAccessService);
-  private readonly adminCommunicationActions = inject(AdminCommunicationActionService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly organization = signal<OrganizationDto | null>(null);
-  readonly communicationActions = signal<CommunicationActionDto[]>([]);
-  readonly communicationActionsState = signal<CommunicationActionsCollectionState>('LOADING');
-  readonly communicationActionsError = signal<string | null>(null);
   readonly members = signal<OrganizationMemberDto[]>([]);
   readonly membersState = signal<MembersCollectionState>('LOADING');
   readonly membersError = signal<string | null>(null);
@@ -162,7 +153,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
   });
 
   readonly hasToolAccess = computed(() => this.toolAccess().length > 0);
-  readonly hasCommunicationActions = computed(() => this.communicationActions().length > 0);
   readonly hasMembers = computed(() => this.members().length > 0);
   readonly hasResources = computed(() => this.resources().length > 0);
   readonly resourcesAreUnavailable = computed(() =>
@@ -181,9 +171,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
           this.loading.set(true);
           this.error.set(null);
           this.organization.set(null);
-          this.communicationActions.set([]);
-          this.communicationActionsState.set('LOADING');
-          this.communicationActionsError.set(null);
           this.members.set([]);
           this.membersState.set('LOADING');
           this.membersError.set(null);
@@ -218,15 +205,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
       .subscribe({
         next: result => {
           this.organization.set(result.organization);
-          this.communicationActions.set(result.communicationActions);
-          if (result.communicationActionsError) {
-            this.communicationActionsError.set(this.communicationActionsCollectionErrorMessage());
-            this.communicationActionsState.set('ERROR');
-          } else {
-            this.communicationActionsState.set(
-              result.communicationActions.length === 0 ? 'EMPTY' : 'READY',
-            );
-          }
           this.members.set(Array.isArray(result.members) ? result.members : []);
           if (result.membersError) {
             this.membersError.set(this.membersCollectionErrorMessage());
@@ -247,9 +225,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
         error: err => {
           console.error('[AdminOrganizationDetail] organization detail load error', err);
           this.organization.set(null);
-          this.communicationActions.set([]);
-          this.communicationActionsState.set('ERROR');
-          this.communicationActionsError.set(this.communicationActionsCollectionErrorMessage());
           this.members.set([]);
           this.membersState.set('ERROR');
           this.membersError.set(this.membersCollectionErrorMessage());
@@ -508,25 +483,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
     member: OrganizationMemberDto | null | undefined,
   ): string | number => member?.canonicalId ?? member?.userId ?? index;
 
-  readonly trackCommunicationAction = (
-    index: number,
-    action: CommunicationActionDto | null | undefined,
-  ): string | number => action?.id ?? index;
-
-  communicationCorrelation(action: CommunicationActionDto): string {
-    return this.formatValue(action.requestId ?? action.idempotencyKey);
-  }
-
-  communicationEvidence(action: CommunicationActionDto): string {
-    return this.formatValue(
-      action.providerMessageId ?? action.lioraCommunicationId ?? action.lioraRequestId,
-    );
-  }
-
-  communicationError(action: CommunicationActionDto): string {
-    return this.formatValue(action.errorMessage ?? action.lioraLastErrorMessage);
-  }
-
   readonly trackResource = (
     index: number,
     resource: AdminResourceDto | null | undefined,
@@ -643,17 +599,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
   private loadOrganizationDetail(id: number): Observable<OrganizationDetailResult> {
     return forkJoin({
       organization: this.adminAccess.getOrganizationById(id),
-      communicationActionsResult: this.adminCommunicationActions.getCommunicationActions().pipe(
-        map(actions => ({
-          communicationActions: (Array.isArray(actions) ? actions : [])
-            .filter(action => action.organizationId === id),
-          communicationActionsError: null,
-        })),
-        catchError(communicationActionsError => of({
-          communicationActions: [],
-          communicationActionsError,
-        })),
-      ),
       membersResult: this.adminAccess.getOrganizationMembers(id).pipe(
         map(members => ({ members: Array.isArray(members) ? members : [], membersError: null })),
         catchError(membersError => of({ members: [], membersError })),
@@ -664,9 +609,8 @@ export class AdminOrganizationDetailComponent implements OnInit {
         catchError(resourceError => of({ resources: [], resourceError })),
       ),
     }).pipe(
-      map(({ organization, communicationActionsResult, membersResult, toolAccess, resourceResult }) => ({
+      map(({ organization, membersResult, toolAccess, resourceResult }) => ({
         organization,
-        ...communicationActionsResult,
         ...membersResult,
         toolAccess,
         ...resourceResult,
@@ -694,10 +638,6 @@ export class AdminOrganizationDetailComponent implements OnInit {
 
   private membersCollectionErrorMessage(): string {
     return 'No fue posible cargar los miembros de esta organización.';
-  }
-
-  private communicationActionsCollectionErrorMessage(): string {
-    return 'No fue posible cargar la evidencia comunicacional de esta organización.';
   }
 
   private optionalText(value: string | null | undefined): string | null {

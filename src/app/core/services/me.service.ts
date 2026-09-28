@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { API, apiUrl } from '../http/api.endpoints';
 import {
   ContextualProjectionDto,
+  LioraEvidenceV1Dto,
   MyAccessContextDto,
   MyResourceDto,
   MyToolAccessDto,
@@ -19,6 +20,10 @@ export class MeService {
 
   getMyContextualProjection(): Observable<ContextualProjectionDto> {
     return this.http.get<ContextualProjectionDto>(apiUrl(API.me.contextualProjection));
+  }
+
+  getMyLioraEvidence(): Observable<LioraEvidenceV1Dto> {
+    return this.http.get<LioraEvidenceV1Dto>(apiUrl(API.me.lioraEvidence));
   }
 
   getMyToolAccess(): Observable<MyToolAccessDto[]> {

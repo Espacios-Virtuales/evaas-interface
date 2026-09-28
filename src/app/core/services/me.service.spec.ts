@@ -33,6 +33,28 @@ describe('MeService', () => {
     req.flush(accessContext);
   });
 
+  it('gets LIORA evidence from the exact governed endpoint without context selectors', () => {
+    const evidence = {
+      instrument: { canonicalId: 'liora-1', key: 'LIORA' as const, name: 'Comunicador' },
+      organizations: [],
+    };
+    let received: unknown;
+
+    service.getMyLioraEvidence().subscribe(result => received = result);
+
+    const req = http.expectOne('http://localhost:8091/api/v1/me/instruments/liora/evidence');
+    expect(req.request.method).toBe('GET');
+    expect(req.request.urlWithParams).toBe('http://localhost:8091/api/v1/me/instruments/liora/evidence');
+    expect(req.request.params.keys()).toEqual([]);
+    expect(req.request.body).toBeNull();
+    expect(req.request.url).not.toContain('organizationRef');
+    expect(req.request.url).not.toContain('userRef');
+    expect(req.request.url).not.toContain('tenant');
+    req.flush(evidence);
+
+    expect(received).toEqual(evidence);
+  });
+
   it('gets the complete contextual projection without browser-supplied context', () => {
     const projection = {
       version: 'v1',

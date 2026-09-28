@@ -110,6 +110,37 @@ export interface ContextualEvidenceDto {
   status: string;
 }
 
+/** Governed read-only LIORA evidence returned by GET /api/v1/me/instruments/liora/evidence. */
+export interface LioraEvidenceV1Dto {
+  instrument: LioraEvidenceInstrumentDto;
+  organizations: LioraEvidenceOrganizationDto[];
+}
+
+export interface LioraEvidenceInstrumentDto {
+  canonicalId: string;
+  key: 'LIORA';
+  name: string;
+}
+
+export interface LioraEvidenceOrganizationDto {
+  organizationRef: string;
+  organizationName: string;
+  instrumentAccess: {
+    canonicalId: string;
+    status: 'ENABLED';
+  };
+  evidence: LioraEvidenceRowDto[];
+}
+
+export interface LioraEvidenceRowDto {
+  actionRef: string;
+  notificationType: string;
+  status: string;
+  occurredAt: string;
+  sourceReference: string | null;
+  resultRef: string | null;
+}
+
 /** Read-only authenticated HUMAN access context returned by GET /me/access-context. */
 export interface MyAccessContextDto {
   email: string;
@@ -242,37 +273,6 @@ export interface CreateInstrumentAccessRequest {
 
 export interface UpdateInstrumentAccessStatusRequest {
   status: InstrumentAccessStatus;
-}
-
-/** Read-only administrative evidence returned by GET /admin/communication-actions. */
-export interface CommunicationActionDto {
-  id: number;
-  organizationId: number;
-  sourceSystem?: string | null;
-  channel?: string | null;
-  operation?: string | null;
-  status: string;
-  approvalStatus?: string | null;
-  recipientAddress?: string | null;
-  recipientDisplayName?: string | null;
-  subject?: string | null;
-  contentSummary?: string | null;
-  templateKey?: string | null;
-  provider?: string | null;
-  providerMessageId?: string | null;
-  providerThreadId?: string | null;
-  lioraCommunicationId?: string | null;
-  lioraTechnicalStatus?: string | null;
-  lioraRequestId?: string | null;
-  lioraLastSyncedAt?: string | null;
-  lioraLastErrorCode?: string | null;
-  lioraLastErrorMessage?: string | null;
-  idempotencyKey?: string | null;
-  requestId?: string | null;
-  errorCode?: string | null;
-  errorMessage?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
 }
 
 export interface CreateAdminResourcePayload {

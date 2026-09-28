@@ -36,6 +36,7 @@ export const API = {
     resources: '/me/resources',
     intake: '/me/intake',
     intakeSubmit: '/me/intake/submit',
+    lioraEvidence: '/api/v1/me/instruments/liora/evidence',
   },
   adminAccess: {
     organizations: '/admin/access/organizations',
@@ -79,10 +80,6 @@ export const API = {
       `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access`,
     status: (organizationRef: string, instrumentAccessRef: string) =>
       `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access/${encodeURIComponent(instrumentAccessRef)}/status`,
-  },
-  adminCommunicationActions: {
-    actions: '/admin/communication-actions',
-    actionById: (id: number) => `/admin/communication-actions/${encodeURIComponent(String(id))}`,
   },
   legacy: {
     integrations: {
