@@ -16,10 +16,6 @@ export class AdminResourceService {
     return this.http.get<AdminResourceDto[]>(apiUrl(API.adminResources.resources));
   }
 
-  getResourceById(id: number): Observable<AdminResourceDto> {
-    return this.http.get<AdminResourceDto>(apiUrl(API.adminResources.resourceById(id)));
-  }
-
   createResource(payload: CreateAdminResourcePayload): Observable<AdminResourceDto> {
     return this.http.post<AdminResourceDto>(apiUrl(API.adminResources.resources), payload);
   }

@@ -34,7 +34,7 @@ export class AdminResourceStatusModalComponent {
   }
 
   @Output() readonly cancelled = new EventEmitter<void>();
-  @Output() readonly updated = new EventEmitter<void>();
+  @Output() readonly updated = new EventEmitter<AdminResourceDto>();
 
   readonly statuses: readonly ResourceStatus[] = [
     'PLANNED',
@@ -64,9 +64,9 @@ export class AdminResourceStatusModalComponent {
     this.requestState.set('SUBMITTING');
     this.error.set(null);
     this.adminResources.updateResourceStatus(id, { status: this.status }).subscribe({
-      next: () => {
+      next: resource => {
         this.requestState.set('SUCCESS');
-        this.updated.emit();
+        this.updated.emit(resource);
       },
       error: err => {
         const presentation = mapOperationHttpError(err, {
