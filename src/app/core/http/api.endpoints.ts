@@ -68,7 +68,6 @@ export const API = {
   },
   adminResources: {
     resources: '/admin/resources',
-    resourceById: (id: number) => `/admin/resources/${encodeURIComponent(String(id))}`,
     resourceStatus: (id: number) =>
       `/admin/resources/${encodeURIComponent(String(id))}/status`,
   },

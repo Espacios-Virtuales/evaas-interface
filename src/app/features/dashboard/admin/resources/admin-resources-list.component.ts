@@ -1,18 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AdminResourceDto } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
 import { AdminResourceStatusModalComponent } from '../organization-detail/admin-resource-status-modal.component';
 
-type ResourceLink = {
-  label: string;
-  url: string;
-};
-
-type DetailFieldKind = 'date' | 'status' | 'url';
+type DetailFieldKind = 'date' | 'status';
 
 interface DetailField {
   label: string;
@@ -29,14 +23,10 @@ interface DetailField {
 })
 export class AdminResourcesListComponent implements OnInit {
   private readonly adminResources = inject(AdminResourceService);
-  private readonly destroyRef = inject(DestroyRef);
-
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly resources = signal<AdminResourceDto[]>([]);
   readonly selectedResource = signal<AdminResourceDto | null>(null);
-  readonly resourceDetailLoading = signal(false);
-  readonly resourceDetailError = signal<string | null>(null);
   readonly resourceStatusModalResource = signal<AdminResourceDto | null>(null);
   readonly resourceStatusSuccess = signal<string | null>(null);
   readonly resourceStatusError = signal<string | null>(null);
@@ -77,25 +67,17 @@ export class AdminResourcesListComponent implements OnInit {
     this.resourceStatusModalResource.set(null);
   }
 
-  onResourceStatusUpdated(): void {
+  onResourceStatusUpdated(updatedResource: AdminResourceDto): void {
     this.closeResourceStatusModal();
     this.resourceStatusError.set(null);
 
-    this.adminResources
-      .getResources()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: resources => {
-          this.resources.set(Array.isArray(resources) ? resources : []);
-          this.resourceStatusSuccess.set('Estado del recurso actualizado correctamente.');
-        },
-        error: err => {
-          console.error('[AdminResourcesList] resource status refresh error', err);
-          this.resourceStatusError.set(
-            'El estado fue actualizado, pero no se pudo refrescar la colección de recursos.',
-          );
-        },
-      });
+    this.resources.update(resources =>
+      resources.map(resource => resource.id === updatedResource.id ? updatedResource : resource),
+    );
+    if (this.selectedResource()?.id === updatedResource.id) {
+      this.selectedResource.set(updatedResource);
+    }
+    this.resourceStatusSuccess.set('Estado del recurso actualizado correctamente.');
   }
 
   trackResource(index: number, resource: AdminResourceDto): string {
@@ -119,10 +101,6 @@ export class AdminResourcesListComponent implements OnInit {
     return this.formatValue(this.valueFromKeys(resource, ['type']));
   }
 
-  resourceProvider(resource: AdminResourceDto): string {
-    return this.formatValue(this.valueFromKeys(resource, ['provider']));
-  }
-
   resourceStatus(resource: AdminResourceDto): string {
     return this.formatValue(this.valueFromKeys(resource, ['status']));
   }
@@ -131,67 +109,25 @@ export class AdminResourcesListComponent implements OnInit {
     return this.formatValue(this.valueFromKeys(resource, ['visibility']));
   }
 
-  resourceOrganization(resource: AdminResourceDto): string {
-    return this.formatValue(this.valueFromKeys(resource, ['organizationName', 'organizationId']));
-  }
-
-  resourceToolAccessId(resource: AdminResourceDto): string {
-    return this.formatValue(this.valueFromKeys(resource, ['toolAccessId']));
-  }
-
   resourceFields(resource: AdminResourceDto): DetailField[] {
     return [
       { label: 'ID', value: this.valueFromKeys(resource, ['id']) },
       { label: 'Nombre', value: this.valueFromKeys(resource, ['name']) },
       { label: 'Key', value: this.valueFromKeys(resource, ['key']) },
       { label: 'Tipo', value: this.valueFromKeys(resource, ['type']) },
-      { label: 'Proveedor', value: this.valueFromKeys(resource, ['provider']) },
       { label: 'Estado', value: this.valueFromKeys(resource, ['status']), kind: 'status' as const },
       { label: 'Visibilidad', value: this.valueFromKeys(resource, ['visibility']) },
-      { label: 'Organización', value: this.valueFromKeys(resource, ['organizationName', 'organizationId']) },
-      { label: 'ToolAccess', value: this.valueFromKeys(resource, ['toolAccessId']) },
-      { label: 'URL', value: this.valueFromKeys(resource, ['url']), kind: 'url' as const },
       { label: 'Creado', value: this.valueFromKeys(resource, ['createdAt']), kind: 'date' as const },
       { label: 'Actualizado', value: this.valueFromKeys(resource, ['updatedAt']), kind: 'date' as const },
-    ].filter(field => this.hasValue(field.value));
+    ];
   }
 
   openResourceDetail(resource: AdminResourceDto): void {
     this.selectedResource.set(resource);
-    this.resourceDetailError.set(null);
-
-    const id = this.resourceNumericId(resource);
-    if (id === null) return;
-
-    this.resourceDetailLoading.set(true);
-    this.adminResources
-      .getResourceById(id)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: detail => {
-          this.selectedResource.set(detail ?? resource);
-          this.resourceDetailLoading.set(false);
-        },
-        error: err => {
-          console.error('[AdminResourcesList] resource detail load error', err);
-          this.resourceDetailError.set('No fue posible cargar el detalle remoto; se muestra la fila disponible.');
-          this.resourceDetailLoading.set(false);
-        },
-      });
   }
 
   closeResourceDetail(): void {
     this.selectedResource.set(null);
-    this.resourceDetailLoading.set(false);
-    this.resourceDetailError.set(null);
-  }
-
-  resourceLinks(resource: AdminResourceDto | null): ResourceLink[] {
-    const links: ResourceLink[] = [];
-    if (!resource) return links;
-
-    this.addLink(links, 'URL', this.valueFromKeys(resource, ['url']));
-    return links;
   }
 
   statusClass(value: unknown): string {
@@ -215,15 +151,6 @@ export class AdminResourcesListComponent implements OnInit {
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
   }
 
-  private addLink(links: ResourceLink[], label: string, value: unknown): void {
-    if (typeof value !== 'string' || !value.trim()) return;
-
-    const url = value.trim();
-    if (links.some(link => link.url === url)) return;
-
-    links.push({ label, url });
-  }
-
   formatValue(value: unknown): string {
     if (!this.hasValue(value)) return '-';
     if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
@@ -231,13 +158,6 @@ export class AdminResourcesListComponent implements OnInit {
     }
 
     return '-';
-  }
-
-  private resourceNumericId(resource: AdminResourceDto): number | null {
-    const value = this.valueFromKeys(resource, ['id']);
-    const id = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN;
-
-    return Number.isInteger(id) && id > 0 ? id : null;
   }
 
   private valueFromKeys(source: AdminResourceDto, keys: string[]): unknown {
