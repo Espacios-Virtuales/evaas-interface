@@ -80,10 +80,7 @@ export class AdminResourcesListComponent implements OnInit {
     this.resourceStatusSuccess.set('Estado del recurso actualizado correctamente.');
   }
 
-  trackResource(index: number, resource: AdminResourceDto): string {
-    const id = this.valueFromKeys(resource, ['id']);
-    return id === undefined || id === null || id === '' ? String(index) : String(id);
-  }
+  readonly trackResource = (_index: number, resource: AdminResourceDto): number => resource.id!;
 
   resourceId(resource: AdminResourceDto): string {
     return this.formatValue(this.valueFromKeys(resource, ['id']));
