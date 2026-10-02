@@ -85,7 +85,6 @@ export const DASHBOARD_ROUTES: Routes = [
         path: `${DASHBOARD_CHILD_PATHS.admin}/access`,
         pathMatch: 'full',
         data: { roles: ['ROLE_ADMIN'] },
-        canActivate: [accessContextGuard],
         redirectTo: '/dashboard/admin/instruments',
       },
       {
