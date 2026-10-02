@@ -4,10 +4,22 @@ import { FormsModule } from '@angular/forms';
 import {
   AdminToolAccessDto,
   CreateAdminResourcePayload,
+  ResourceStatus,
 } from '../../../../core/models/evaas-contracts.model';
 import { AdminResourceService } from '../../../../core/services/admin-resource.service';
 import { OperationRequestState, mapOperationHttpError } from '../../../../core/http/operation-request-state';
 import { ModalInteractionDirective } from '../../../../shared/directives/modal-interaction.directive';
+
+interface ResourceForm {
+  name: string;
+  type: string;
+  key: string;
+  toolAccessId: string;
+  url: string;
+  status: ResourceStatus;
+  visibility: string;
+  metadataJson: string;
+}
 
 @Component({
   standalone: true,
@@ -35,7 +47,7 @@ export class AdminResourceCreateModalComponent {
   readonly suggestedResourceTypes = [
     'API', 'WORDPRESS', 'VPS', 'POWER_BI', 'REPOSITORY', 'DASHBOARD', 'WORKER', 'DOCUMENTATION', 'OTHER',
   ];
-  readonly suggestedResourceStatuses = ['PLANNED', 'ACTIVE', 'MAINTENANCE', 'DISABLED'];
+  readonly suggestedResourceStatuses: readonly ResourceStatus[] = ['PLANNED', 'ACTIVE', 'MAINTENANCE', 'DISABLED'];
   readonly suggestedResourceVisibilities = ['ADMIN_ONLY', 'USER_VISIBLE'];
 
   cancel(): void {
@@ -81,7 +93,7 @@ export class AdminResourceCreateModalComponent {
     const type = this.form.type.trim();
     const key = this.form.key.trim();
     const url = this.form.url.trim();
-    const status = this.form.status.trim();
+    const status = this.form.status;
     const visibility = this.form.visibility.trim();
     const metadataJson = this.form.metadataJson.trim();
     const toolAccessId = this.parseOptionalPositiveInteger(this.form.toolAccessId, 'toolAccessId');
@@ -141,7 +153,7 @@ export class AdminResourceCreateModalComponent {
     return /\b(password|passwd|secret|token|access[_-]?token|api[_-]?key|private[_-]?key|credential|authorization|bearer)\b/i.test(value);
   }
 
-  private emptyForm() {
+  private emptyForm(): ResourceForm {
     return { name: '', type: 'API', key: '', toolAccessId: '', url: '', status: 'ACTIVE', visibility: 'ADMIN_ONLY', metadataJson: '' };
   }
 }

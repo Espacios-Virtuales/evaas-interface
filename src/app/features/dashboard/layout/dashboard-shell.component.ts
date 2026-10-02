@@ -1,11 +1,11 @@
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../../core/auth/auth.service';
-import { AuthFacade } from '../../../core/auth/auth.facade'; 
-import { UserSession } from '../../../core/models/auth.model';
-import { PATHS } from '../../../utils/paths';
+import { AuthFacade } from '../../../core/auth/auth.facade';
+import { AuthStore } from '../../../core/auth/auth.store';
+import { AccessContextStore } from '../../../core/access/access-context.store';
 import { DASHBOARD_NAV_ITEMS } from './dashboard-nav';
+import { dashboardRouteForAuthorities } from '../../../core/auth/role-routing';
 
 @Component({
   selector: 'app-dashboard-shell',
@@ -16,10 +16,13 @@ import { DASHBOARD_NAV_ITEMS } from './dashboard-nav';
 })
 export class DashboardShellComponent {
   private readonly authfacade = inject(AuthFacade);
-  private readonly auth = inject(AuthService);
+  private readonly authStore = inject(AuthStore);
+  private readonly accessContextStore = inject(AccessContextStore);
   private readonly mobileMediaQuery = '(max-width: 768px)';
 
-  readonly dashboardLink = ['/', PATHS.dashboard];
+  readonly dashboardLink = computed(() =>
+    dashboardRouteForAuthorities(this.accessContextStore.context()?.authorities ?? []),
+  );
   
   readonly isMobileViewport = signal(this.matchesMobileViewport());
   readonly isSidebarOpen = signal(!this.matchesMobileViewport());
@@ -57,19 +60,19 @@ export class DashboardShellComponent {
     }
   }
 
-  session = computed<UserSession | null>(() => this.auth.getSession());
-  email = computed(() => this.session()?.email ?? null);
-  primaryRole = computed(() => this.session()?.roles?.[0] ?? null);
+  readonly email = computed(() => this.accessContextStore.context()?.email ?? null);
+  readonly authorities = computed(() => this.accessContextStore.context()?.authorities ?? []);
+  readonly primaryRole = computed(() => this.authorities()[0] ?? null);
   navItems = computed(() => {
-    const roles = this.session()?.roles ?? [];
+    const authorities = this.authorities();
     return DASHBOARD_NAV_ITEMS.filter(item =>
-      item.enabled !== false && item.roles.some(role => roles.includes(role)),
+      item.enabled !== false && item.roles.some(role => authorities.includes(role)),
     );
   });
 
 
   connectedAt = computed<Date | null>(() => {
-    const s = this.session();
+    const s = this.authStore.session();
     if (!s) return null;
     return s.loginAt ?? s.refreshExp ?? null;
   });
@@ -92,6 +95,10 @@ export class DashboardShellComponent {
 
   logout() {
     this.authfacade.logout();
+  }
+
+  constructor() {
+    this.accessContextStore.load().subscribe({ error: () => undefined });
   }
 
   private matchesMobileViewport(): boolean {

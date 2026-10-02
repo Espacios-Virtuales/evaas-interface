@@ -1,22 +1,24 @@
-import { UserSession } from '../models/auth.model';
 import { Role } from '../types/auth.types';
 import { PATHS } from '../../utils/paths';
 
 export const DASHBOARD_CHILD_PATHS = {
   admin: 'admin',
   client: 'client',
+  context: 'context',
 } as const;
 
-export function dashboardRouteForSession(session: Pick<UserSession, 'roles'> | null): string[] {
-  const roles = session?.roles ?? [];
-
-  if (roles.includes(Role.ADMIN)) {
+export function dashboardRouteForAuthorities(authorities: readonly string[]): string[] {
+  if (authorities.includes(Role.ADMIN)) {
     return ['/', PATHS.dashboard, DASHBOARD_CHILD_PATHS.admin];
   }
 
-  if (roles.includes(Role.CLIENT) || roles.includes(Role.USER) || roles.includes(Role.COMPANY)) {
+  if (
+    authorities.includes(Role.CLIENT) ||
+    authorities.includes(Role.USER) ||
+    authorities.includes(Role.COMPANY)
+  ) {
     return ['/', PATHS.dashboard, DASHBOARD_CHILD_PATHS.client];
   }
 
-  return ['/', PATHS.dashboard, DASHBOARD_CHILD_PATHS.client];
+  return ['/', PATHS.dashboard, DASHBOARD_CHILD_PATHS.context];
 }

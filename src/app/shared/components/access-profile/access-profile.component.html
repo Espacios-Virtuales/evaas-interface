@@ -4,7 +4,7 @@
       <p class="access-profile__eyebrow">Sesión autenticada</p>
       <h2 id="access-profile-title">Mi perfil de acceso</h2>
     </div>
-    <button type="button" class="access-profile__retry" *ngIf="state() === 'ERROR'" (click)="load()">
+    <button type="button" class="access-profile__retry" *ngIf="state() === 'ERROR'" (click)="retry()">
       Reintentar
     </button>
   </div>

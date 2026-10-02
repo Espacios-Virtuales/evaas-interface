@@ -9,7 +9,13 @@
     <a class="admin-resources__back" routerLink="/dashboard/admin">Volver a Administración</a>
   </header>
 
-  <p class="admin-resources__semantic-note">Resource no es un Service, Artifact ni Instrument.</p>
+  <div class="state state-success" *ngIf="resourceStatusSuccess()">
+    <strong>{{ resourceStatusSuccess() }}</strong>
+  </div>
+
+  <div class="state state-error" *ngIf="resourceStatusError()">
+    <strong>{{ resourceStatusError() }}</strong>
+  </div>
 
   <div class="state state-loading" *ngIf="loading()">
     <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -37,11 +43,8 @@
             <th>Nombre</th>
             <th>Key</th>
             <th>Tipo</th>
-            <th>Proveedor</th>
             <th>Estado</th>
             <th>Visibilidad</th>
-            <th>Organización</th>
-            <th>ToolAccess</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -51,11 +54,8 @@
             <td>{{ resourceName(resource) }}</td>
             <td>{{ resourceKey(resource) }}</td>
             <td>{{ resourceType(resource) }}</td>
-            <td>{{ resourceProvider(resource) }}</td>
             <td>{{ resourceStatus(resource) }}</td>
             <td>{{ resourceVisibility(resource) }}</td>
-            <td>{{ resourceOrganization(resource) }}</td>
-            <td>{{ resourceToolAccessId(resource) }}</td>
             <td>
               <button
                 class="admin-resources__detail"
@@ -63,6 +63,13 @@
                 (click)="openResourceDetail(resource)"
               >
                 Ver detalle
+              </button>
+              <button
+                class="admin-resources__detail"
+                type="button"
+                (click)="openResourceStatusModal(resource)"
+              >
+                Cambiar estado
               </button>
             </td>
           </tr>
@@ -93,15 +100,6 @@
         </button>
       </header>
 
-      <div class="state state-loading admin-resources__modal-state" *ngIf="resourceDetailLoading()">
-        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        <span>Cargando detalle...</span>
-      </div>
-
-      <div class="state state-error admin-resources__modal-state" *ngIf="resourceDetailError()">
-        <strong>{{ resourceDetailError() }}</strong>
-      </div>
-
       <dl class="admin-resources__modal-facts">
         <div *ngFor="let field of resourceFields(resource)">
           <dt>{{ field.label }}</dt>
@@ -109,31 +107,24 @@
             <span [class]="statusClass(field.value)">{{ formatValue(field.value) }}</span>
           </dd>
           <dd *ngIf="field.kind === 'date'">{{ formatDate(field.value) }}</dd>
-          <dd *ngIf="field.kind === 'url'">
-            <a [href]="formatValue(field.value)" target="_blank" rel="noopener noreferrer">
-              {{ formatValue(field.value) }}
-            </a>
-          </dd>
-          <dd *ngIf="field.kind !== 'url' && field.kind !== 'date' && field.kind !== 'status'">
+          <dd *ngIf="field.kind !== 'date' && field.kind !== 'status'">
             {{ formatValue(field.value) }}
           </dd>
         </div>
       </dl>
 
       <footer class="admin-resources__modal-actions">
-        <a
-          class="admin-resources__primary-link"
-          *ngFor="let link of resourceLinks(resource)"
-          [href]="link.url"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Abrir recurso
-        </a>
         <button class="admin-resources__secondary-action" type="button" (click)="closeResourceDetail()">
           Cerrar
         </button>
       </footer>
     </section>
   </div>
+
+  <evaas-admin-resource-status-modal
+    *ngIf="resourceStatusModalResource() as resource"
+    [resource]="resource"
+    (cancelled)="closeResourceStatusModal()"
+    (updated)="onResourceStatusUpdated($event)"
+  />
 </section>

@@ -30,10 +30,20 @@ La tabla no reclasifica datos productivos: los tipos `REPOSITORY`, `DASHBOARD` y
 | Resource global | `GET /admin/resources` |
 | Resource global por ID | `GET /admin/resources/{id}` |
 | Crear Resource | `POST /admin/resources` |
+| Actualizar lifecycle de Resource | `PATCH /admin/resources/{id}/status` — `UpdateResourceStatusRequest { status }` |
 | Service | Sin DTO, servicio ni endpoint HTTP consumido |
 | Artifact | Sin DTO, servicio ni endpoint HTTP consumido |
 
 La evidencia está en `AdminAccessService`, `AdminResourceService`, `API.adminAccess.organizationResources`, `API.adminResources` y `CreateAdminResourcePayload`.
+
+### C.1 Lifecycle administrativo (H08 C02)
+
+```txt
+CONTRACT_SOURCE = milestone/core-h08-refineria-administrativa
+CORE_DEVELOP_AVAILABILITY = pending
+```
+
+El PATCH se consume únicamente desde la rama contractual de H08 y no supone que producción ya lo exponga. Los únicos estados permitidos para `Resource.status` son `PLANNED`, `ACTIVE`, `MAINTENANCE` y `DISABLED`; no existe grafo de transiciones en Interface y el mismo estado es válido. El cambio no actualiza `ToolAccess`, `InstrumentAccess`, `Organization.enabled`, `visibility`, Deployment ni relaciones Service ↔ Resource.
 
 ## D. Deudas contractuales
 

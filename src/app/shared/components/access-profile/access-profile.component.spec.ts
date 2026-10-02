@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { of, throwError } from 'rxjs';
-import { MeService } from '../../../core/services/me.service';
+import { AccessContextStore } from '../../../core/access/access-context.store';
 import { AccessProfileComponent } from './access-profile.component';
 
 describe('AccessProfileComponent', () => {
   it('loads and exposes the authenticated access context', () => {
-    const me = jasmine.createSpyObj<MeService>('MeService', ['getMyAccessContext']);
     const accessContext = {
       email: 'person@example.com',
       enabled: true,
@@ -21,13 +21,28 @@ describe('AccessProfileComponent', () => {
         },
       ],
     };
-    me.getMyAccessContext.and.returnValue(of(accessContext));
-    TestBed.configureTestingModule({ providers: [{ provide: MeService, useValue: me }] });
+    const state = signal<'LOADING' | 'READY' | 'ERROR'>('LOADING');
+    const context = signal<typeof accessContext | null>(null);
+    const errorMessage = signal<string | null>(null);
+    const store = {
+      state,
+      context,
+      errorMessage,
+      loading: () => state() === 'LOADING',
+      ready: () => state() === 'READY',
+      load: jasmine.createSpy('load').and.callFake(() => {
+        context.set(accessContext);
+        state.set('READY');
+        return of(accessContext);
+      }),
+      refresh: jasmine.createSpy('refresh'),
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: AccessContextStore, useValue: store }] });
 
     const component = TestBed.runInInjectionContext(() => new AccessProfileComponent());
     component.load();
 
-    expect(me.getMyAccessContext).toHaveBeenCalledTimes(1);
+    expect(store.load).toHaveBeenCalledTimes(1);
     expect(component.ready()).toBeTrue();
     expect(component.accessContext()).toEqual(accessContext);
     expect(component.userState(accessContext)).toBe('Cuenta habilitada');
@@ -35,16 +50,26 @@ describe('AccessProfileComponent', () => {
   });
 
   it('keeps access data empty and reports an isolated load failure', () => {
-    const me = jasmine.createSpyObj<MeService>('MeService', ['getMyAccessContext']);
-    me.getMyAccessContext.and.returnValue(throwError(() => new Error('unavailable')));
-    TestBed.configureTestingModule({ providers: [{ provide: MeService, useValue: me }] });
-    spyOn(console, 'error');
+    const state = signal<'LOADING' | 'READY' | 'ERROR'>('ERROR');
+    const context = signal<null>(null);
+    const errorMessage = signal('No fue posible cargar tu perfil de acceso.');
+    const store = {
+      state,
+      context,
+      errorMessage,
+      loading: () => false,
+      ready: () => false,
+      load: jasmine.createSpy('load').and.returnValue(throwError(() => new Error('unavailable'))),
+      refresh: jasmine.createSpy('refresh').and.returnValue(of(null)),
+    };
+    TestBed.configureTestingModule({ providers: [{ provide: AccessContextStore, useValue: store }] });
 
     const component = TestBed.runInInjectionContext(() => new AccessProfileComponent());
-    component.load();
-
     expect(component.state()).toBe('ERROR');
     expect(component.accessContext()).toBeNull();
     expect(component.error()).toBe('No fue posible cargar tu perfil de acceso.');
+
+    component.retry();
+    expect(store.refresh).toHaveBeenCalledTimes(1);
   });
 });

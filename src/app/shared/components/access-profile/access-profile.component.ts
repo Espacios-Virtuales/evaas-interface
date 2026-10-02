@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { MyAccessContextDto, MyOrganizationContextDto } from '../../../core/models/evaas-contracts.model';
-import { MeService } from '../../../core/services/me.service';
-
-type AccessProfileState = 'LOADING' | 'READY' | 'ERROR';
+import { AccessContextStore } from '../../../core/access/access-context.store';
 
 @Component({
   standalone: true,
@@ -13,34 +11,24 @@ type AccessProfileState = 'LOADING' | 'READY' | 'ERROR';
   styleUrls: ['./access-profile.component.scss'],
 })
 export class AccessProfileComponent implements OnInit {
-  private readonly meService = inject(MeService);
+  private readonly accessContextStore = inject(AccessContextStore);
 
-  readonly state = signal<AccessProfileState>('LOADING');
-  readonly accessContext = signal<MyAccessContextDto | null>(null);
-  readonly error = signal<string | null>(null);
-  readonly loading = computed(() => this.state() === 'LOADING');
-  readonly ready = computed(() => this.state() === 'READY');
+  readonly state = this.accessContextStore.state;
+  readonly accessContext = this.accessContextStore.context;
+  readonly error = this.accessContextStore.errorMessage;
+  readonly loading = this.accessContextStore.loading;
+  readonly ready = this.accessContextStore.ready;
 
   ngOnInit(): void {
     this.load();
   }
 
   load(): void {
-    this.state.set('LOADING');
-    this.error.set(null);
+    this.accessContextStore.load().subscribe({ error: () => undefined });
+  }
 
-    this.meService.getMyAccessContext().subscribe({
-      next: accessContext => {
-        this.accessContext.set(accessContext);
-        this.state.set('READY');
-      },
-      error: err => {
-        console.error('[AccessProfile] access context load error', err);
-        this.accessContext.set(null);
-        this.error.set('No fue posible cargar tu perfil de acceso.');
-        this.state.set('ERROR');
-      },
-    });
+  retry(): void {
+    this.accessContextStore.refresh().subscribe({ error: () => undefined });
   }
 
   organizationState(organization: MyOrganizationContextDto): string {

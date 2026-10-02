@@ -5,11 +5,13 @@ import { of, finalize, catchError } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from './auth.service';
 import { AuthStore } from './auth.store';
+import { AccessContextStore } from '../access/access-context.store';
 
 @Injectable({ providedIn: 'root' })
 export class AuthFacade {
   private api = inject(AuthService);
   private store = inject(AuthStore);
+  private accessContext = inject(AccessContextStore);
   private router = inject(Router);
   private snack = inject(MatSnackBar);
   private loggingOut = false;
@@ -17,6 +19,7 @@ export class AuthFacade {
   logout(reason = 'Sesión finalizada.') {
     if (this.loggingOut) return;
     this.loggingOut = true;
+    this.accessContext.clear();
 
     const s = this.store.session();
     const refreshToken = s?.refreshToken ?? null;

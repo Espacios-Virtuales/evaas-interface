@@ -4,12 +4,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Subject, of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
 import { AdminAccessService } from '../../../../core/services/admin-access.service';
-import { AdminCommunicationActionService } from '../../../../core/services/admin-communication-action.service';
 import { AdminOrganizationDetailComponent } from './admin-organization-detail.component';
 
 describe('AdminOrganizationDetailComponent request refreshes', () => {
   let access: jasmine.SpyObj<AdminAccessService>;
-  let communicationActions: jasmine.SpyObj<AdminCommunicationActionService>;
 
   beforeEach(() => {
     access = jasmine.createSpyObj<AdminAccessService>('AdminAccessService', [
@@ -20,16 +18,9 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     access.getOrganizationMembers.and.returnValue(of([]));
     access.getOrganizationToolAccess.and.returnValue(of([]));
     access.getOrganizationResources.and.returnValue(of([]));
-    communicationActions = jasmine.createSpyObj<AdminCommunicationActionService>(
-      'AdminCommunicationActionService',
-      ['getCommunicationActions'],
-    );
-    communicationActions.getCommunicationActions.and.returnValue(of([]));
-
     TestBed.configureTestingModule({
       providers: [
         { provide: AdminAccessService, useValue: access },
-        { provide: AdminCommunicationActionService, useValue: communicationActions },
         { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ id: '7' })) } },
       ],
     });
@@ -46,6 +37,41 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(access.getOrganizationResources).toHaveBeenCalledWith(7);
     expect(component.resources()).toEqual([{ id: 99, name: 'Gateway' }]);
     expect(component.resourceCreateSuccess()).toBe('Recurso creado correctamente.');
+  });
+
+  it('refreshes only Organization Resources after lifecycle success and keeps ToolAccess unchanged', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const toolAccess = { id: 30, toolKey: 'EVAAS_WORKFLOW', organizationId: 7, organizationName: 'EVAAS Operations', status: 'ENABLED' as const, grantedAt: '2026-01-01' };
+    const active = { id: 99, name: 'Gateway', status: 'ACTIVE' as const };
+    const disabled = { id: 99, name: 'Gateway', status: 'DISABLED' as const };
+    component.toolAccess.set([toolAccess]);
+    component.resources.set([active]);
+    access.getOrganizationResources.calls.reset();
+    access.getOrganizationResources.and.returnValue(of([disabled]));
+
+    component.onResourceStatusUpdated();
+
+    expect(access.getOrganizationResources).toHaveBeenCalledOnceWith(7);
+    expect(component.resources()).toEqual([disabled]);
+    expect(component.toolAccess()).toEqual([toolAccess]);
+    expect(component.resourceStatusSuccess()).toContain('actualizado');
+  });
+
+  it('preserves Organization Resources and ToolAccess when lifecycle refresh fails', () => {
+    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
+    component.ngOnInit();
+    const toolAccess = { id: 30, toolKey: 'EVAAS_WORKFLOW', organizationId: 7, organizationName: 'EVAAS Operations', status: 'ENABLED' as const, grantedAt: '2026-01-01' };
+    const resource = { id: 99, name: 'Gateway', status: 'ACTIVE' as const };
+    component.toolAccess.set([toolAccess]);
+    component.resources.set([resource]);
+    access.getOrganizationResources.and.returnValue(throwError(() => new HttpErrorResponse({ status: 500 })));
+
+    component.onResourceStatusUpdated();
+
+    expect(component.resources()).toEqual([resource]);
+    expect(component.toolAccess()).toEqual([toolAccess]);
+    expect(component.resourceStatusError()).toContain('no se pudo refrescar');
   });
 
   it('refreshes only ToolAccess after the ToolAccess modal reports success', () => {
@@ -243,57 +269,4 @@ describe('AdminOrganizationDetailComponent request refreshes', () => {
     expect(component.membersError()).toContain('miembros');
   });
 
-  it('maps a 200 empty communication collection to EMPTY', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
-    component.ngOnInit();
-
-    expect(communicationActions.getCommunicationActions).toHaveBeenCalled();
-    expect(component.communicationActions()).toEqual([]);
-    expect(component.communicationActionsState()).toBe('EMPTY');
-  });
-
-  it('shows only communication evidence whose DTO organizationId matches the current Organization', () => {
-    communicationActions.getCommunicationActions.and.returnValue(of([
-      { id: 1, organizationId: 7, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-7' },
-      { id: 2, organizationId: 8, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-8' },
-    ]));
-
-    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
-    component.ngOnInit();
-
-    expect(component.communicationActions()).toEqual([
-      { id: 1, organizationId: 7, operation: 'NOTIFY', channel: 'EMAIL', status: 'SENT', requestId: 'request-7' },
-    ]);
-    expect(component.communicationActionsState()).toBe('READY');
-  });
-
-  it('keeps communication evidence in LOADING while its response is pending', () => {
-    const response = new Subject<[]>();
-    communicationActions.getCommunicationActions.and.returnValue(response);
-
-    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
-    component.ngOnInit();
-
-    expect(component.communicationActionsState()).toBe('LOADING');
-    response.next([]);
-    response.complete();
-  });
-
-  it('keeps Organization, Members and Resources available when communication evidence fails', () => {
-    access.getOrganizationMembers.and.returnValue(of([
-      { canonicalId: 'member-1', userId: 2, userEmail: 'member@example.com', role: 'MEMBER', status: 'ACTIVE' },
-    ]));
-    access.getOrganizationResources.and.returnValue(of([{ id: 99, name: 'Gateway', provider: 'DigitalOcean' }]));
-    communicationActions.getCommunicationActions.and.returnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 })),
-    );
-
-    const component = TestBed.runInInjectionContext(() => new AdminOrganizationDetailComponent());
-    component.ngOnInit();
-
-    expect(component.organization()?.name).toBe('EVAAS Operations');
-    expect(component.membersState()).toBe('READY');
-    expect(component.resourcesState()).toBe('POPULATED');
-    expect(component.communicationActionsState()).toBe('ERROR');
-  });
 });

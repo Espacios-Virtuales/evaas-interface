@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { AdminInstrumentService } from '../../../../core/services/admin-instrument.service';
+import { LioraEvidenceV1Dto, LioraEvidenceOrganizationDto } from '../../../../core/models/evaas-contracts.model';
+import { MeService } from '../../../../core/services/me.service';
 
-type CommunicatorState = 'LOADING' | 'AVAILABLE' | 'UNAVAILABLE' | 'ERROR';
+type LioraEvidenceState = 'LOADING' | 'READY' | 'EMPTY' | 'ERROR';
 
 @Component({
   standalone: true,
@@ -14,39 +15,25 @@ type CommunicatorState = 'LOADING' | 'AVAILABLE' | 'UNAVAILABLE' | 'ERROR';
   styleUrls: ['./admin-communicator-instrument-detail.component.scss'],
 })
 export class AdminCommunicatorInstrumentDetailComponent implements OnInit {
-  private readonly adminInstruments = inject(AdminInstrumentService);
+  private readonly me = inject(MeService);
 
-  readonly state = signal<CommunicatorState>('LOADING');
+  readonly state = signal<LioraEvidenceState>('LOADING');
+  readonly projection = signal<LioraEvidenceV1Dto | null>(null);
   readonly error = signal<string | null>(null);
-  readonly pilotScope = [
-    'Preparación de borradores',
-    'Consulta manual de estado técnico',
-    'Trazabilidad de comunicación',
-  ];
-
-  readonly unavailableScope = [
-    'Envío directo desde EVAAS Interface',
-    'Aprobación remota',
-    'Callback HMAC',
-    'Polling automático',
-    'WhatsApp',
-    'Telegram',
-    'Automatización de campañas',
-  ];
 
   ngOnInit(): void {
-    this.loadAvailability();
+    this.loadEvidence();
   }
 
-  loadAvailability(): void {
+  private loadEvidence(): void {
     this.state.set('LOADING');
+    this.projection.set(null);
     this.error.set(null);
 
-    this.adminInstruments.getInstruments().subscribe({
-      next: instruments => {
-        const isAvailable = Array.isArray(instruments)
-          && instruments.some(instrument => instrument.key === 'LIORA');
-        this.state.set(isAvailable ? 'AVAILABLE' : 'UNAVAILABLE');
+    this.me.getMyLioraEvidence().subscribe({
+      next: projection => {
+        this.projection.set(projection);
+        this.state.set(projection.organizations.length === 0 ? 'EMPTY' : 'READY');
       },
       error: error => {
         this.error.set(this.errorMessage(error));
@@ -55,12 +42,26 @@ export class AdminCommunicatorInstrumentDetailComponent implements OnInit {
     });
   }
 
+  readonly trackOrganization = (
+    index: number,
+    organization: LioraEvidenceOrganizationDto | null | undefined,
+  ): string | number => organization?.organizationRef ?? index;
+
+  readonly trackEvidence = (
+    index: number,
+    evidence: LioraEvidenceOrganizationDto['evidence'][number] | null | undefined,
+  ): string | number => evidence?.actionRef ?? index;
+
+  formatDate(value: string): string {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  }
+
   private errorMessage(error: unknown): string {
     const status = error instanceof HttpErrorResponse ? error.status : 0;
-    if (status === 401) return 'No tienes una sesión autorizada para consultar el catálogo de instrumentos.';
-    if (status === 403) return 'No tienes permisos para consultar el catálogo de instrumentos.';
-    if (status === 404) return 'El catálogo canónico de instrumentos no está disponible.';
-
-    return 'No fue posible confirmar la disponibilidad de Comunicador.';
+    if (status === 401) return 'Tu sesión no está autorizada para consultar esta evidencia.';
+    if (status === 403) return 'No tienes acceso a esta evidencia.';
+    if (status === 404) return 'La proyección de evidencia LIORA no está disponible.';
+    return 'No fue posible cargar la evidencia de LIORA.';
   }
 }

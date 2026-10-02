@@ -164,56 +164,6 @@
       [organizationName]="organization()!.name"
     />
 
-    <section class="admin-organization-detail__section" aria-labelledby="organization-communication-actions-title">
-      <div class="admin-organization-detail__section-header">
-        <div>
-          <p class="admin-organization-detail__section-kicker">CommunicationAction</p>
-          <h2 id="organization-communication-actions-title">Evidencia comunicacional</h2>
-          <p>Memoria, correlación y evidencia registrada por CORE. Esta proyección es solo de lectura.</p>
-        </div>
-      </div>
-
-      <div class="state state-loading" *ngIf="communicationActionsState() === 'LOADING'">
-        <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        <span>Cargando evidencia comunicacional...</span>
-      </div>
-
-      <div class="state state-error" *ngIf="communicationActionsState() === 'ERROR'">
-        <strong>{{ communicationActionsError() }}</strong>
-      </div>
-
-      <div class="state state-empty" *ngIf="communicationActionsState() === 'EMPTY'">
-        <strong>No hay evidencia comunicacional para esta organización.</strong>
-      </div>
-
-      <div class="table-responsive" *ngIf="communicationActionsState() === 'READY' && hasCommunicationActions()">
-        <table class="table align-middle">
-          <thead>
-            <tr>
-              <th>Operación</th>
-              <th>Canal</th>
-              <th>Estado</th>
-              <th>Correlación</th>
-              <th>Evidencia</th>
-              <th>Error</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let action of communicationActions(); trackBy: trackCommunicationAction">
-              <td>{{ formatValue(action.operation) }}</td>
-              <td>{{ formatValue(action.channel) }}</td>
-              <td>
-                <span [class]="statusClass(action.status)">{{ formatValue(action.status) }}</span>
-              </td>
-              <td>{{ communicationCorrelation(action) }}</td>
-              <td>{{ communicationEvidence(action) }}</td>
-              <td>{{ communicationError(action) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
     <section class="admin-organization-detail__section" aria-labelledby="organization-access-title">
       <div class="admin-organization-detail__section-header">
         <div>
@@ -314,6 +264,12 @@
       <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceCreateSuccess()">
         <strong>{{ resourceCreateSuccess() }}</strong>
       </div>
+      <div class="state state-success admin-organization-detail__section-state" *ngIf="resourceStatusSuccess()">
+        <strong>{{ resourceStatusSuccess() }}</strong>
+      </div>
+      <div class="state state-error admin-organization-detail__section-state" *ngIf="resourceStatusError()">
+        <strong>{{ resourceStatusError() }}</strong>
+      </div>
 
       <div class="state state-loading" *ngIf="resourcesState() === 'LOADING'">
         <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -365,6 +321,13 @@
                   >
                     Ver detalle
                   </button>
+                  <button
+                    class="admin-organization-detail__secondary-action"
+                    type="button"
+                    (click)="openResourceStatusModal(resource)"
+                  >
+                    Cambiar estado
+                  </button>
                 </div>
               </td>
             </tr>
@@ -395,6 +358,13 @@
       [toolAccess]="toolAccess()"
       (cancelled)="closeResourceCreateModal()"
       (created)="onResourceCreated()"
+    />
+
+    <evaas-admin-resource-status-modal
+      *ngIf="resourceStatusModalResource() as resource"
+      [resource]="resource"
+      (cancelled)="closeResourceStatusModal()"
+      (updated)="onResourceStatusUpdated()"
     />
 
     <evaas-admin-owner-transfer-modal

@@ -31,6 +31,116 @@ export type OrganizationMemberRole = 'OWNER' | 'MEMBER';
 
 export type OrganizationMemberStatus = 'ACTIVE' | 'SUSPENDED' | 'REVOKED';
 
+export type ResourceType =
+  | 'VPS'
+  | 'HOSTING'
+  | 'CLOUD'
+  | 'MANAGED_PLATFORM'
+  | 'LOCAL'
+  | 'STORAGE'
+  | 'DASHBOARD'
+  | 'REPOSITORY'
+  | 'API'
+  | 'POWER_BI'
+  | 'WORDPRESS'
+  | 'DATABASE'
+  | 'DOCUMENTATION'
+  | 'OTHER';
+
+/** Read-only governed projection returned by GET /api/v1/me/contextual-projection. */
+export interface ContextualProjectionDto {
+  version: string;
+  identity: ContextualIdentityDto;
+  context: ContextualContextDto;
+  capabilities: ContextualCapabilityDto[];
+  relationships: ContextualRelationshipDto[];
+  resources: ContextualResourceDto[];
+  actions: ContextualActionDto[];
+  results: ContextualResultDto[];
+  evidence: ContextualEvidenceDto[];
+}
+
+export interface ContextualIdentityDto {
+  subjectRef: string;
+  enabled: boolean;
+}
+
+export interface ContextualContextDto {
+  authorities: string[];
+  organizationRefs: string[];
+}
+
+export interface ContextualCapabilityDto {
+  organizationRef: string;
+  instrumentAccessRef: string;
+  instrumentRef: string;
+  instrumentKey: string;
+}
+
+export interface ContextualRelationshipDto {
+  organizationRef: string;
+  organizationName: string;
+  organizationEnabled: boolean;
+  memberRef: string;
+  role: OrganizationMemberRole;
+  status: OrganizationMemberStatus;
+}
+
+export interface ContextualResourceDto {
+  organizationRef: string;
+  type: ResourceType;
+  key: string;
+  name: string;
+  status: ResourceStatus;
+}
+
+export interface ContextualActionDto {
+  actionKey: string;
+  organizationRef: string;
+}
+
+export interface ContextualResultDto {
+  resultRef: string;
+  status: string;
+}
+
+export interface ContextualEvidenceDto {
+  evidenceRef: string;
+  occurredAt: string;
+  status: string;
+}
+
+/** Governed read-only LIORA evidence returned by GET /api/v1/me/instruments/liora/evidence. */
+export interface LioraEvidenceV1Dto {
+  instrument: LioraEvidenceInstrumentDto;
+  organizations: LioraEvidenceOrganizationDto[];
+}
+
+export interface LioraEvidenceInstrumentDto {
+  canonicalId: string;
+  key: 'LIORA';
+  name: string;
+}
+
+export interface LioraEvidenceOrganizationDto {
+  organizationRef: string;
+  organizationName: string;
+  instrumentAccess: {
+    canonicalId: string;
+    status: 'ENABLED';
+  };
+  evidence: LioraEvidenceRowDto[];
+}
+
+export interface LioraEvidenceRowDto {
+  actionRef: string;
+  notificationType: string;
+  status: string;
+  occurredAt: string;
+  sourceReference: string | null;
+  resultRef: string | null;
+}
+
 /** Read-only authenticated HUMAN access context returned by GET /me/access-context. */
 export interface MyAccessContextDto {
   email: string;
@@ -124,11 +234,19 @@ export interface AdminResourceDto {
   key?: string;
   name?: string;
   url?: string | null;
-  status?: string;
+  status?: ResourceStatus;
   visibility?: string;
   createdAt?: string;
   updatedAt?: string;
   [key: string]: unknown;
+}
+
+/** Operational lifecycle of a Resource. It is independent from Deployment and access statuses. */
+export type ResourceStatus = 'PLANNED' | 'ACTIVE' | 'MAINTENANCE' | 'DISABLED';
+
+/** Contractual body for PATCH /admin/resources/{id}/status. */
+export interface UpdateResourceStatusRequest {
+  status: ResourceStatus;
 }
 
 /** Canonical catalogue item returned by GET /admin/instruments. */
@@ -157,37 +275,6 @@ export interface UpdateInstrumentAccessStatusRequest {
   status: InstrumentAccessStatus;
 }
 
-/** Read-only administrative evidence returned by GET /admin/communication-actions. */
-export interface CommunicationActionDto {
-  id: number;
-  organizationId: number;
-  sourceSystem?: string | null;
-  channel?: string | null;
-  operation?: string | null;
-  status: string;
-  approvalStatus?: string | null;
-  recipientAddress?: string | null;
-  recipientDisplayName?: string | null;
-  subject?: string | null;
-  contentSummary?: string | null;
-  templateKey?: string | null;
-  provider?: string | null;
-  providerMessageId?: string | null;
-  providerThreadId?: string | null;
-  lioraCommunicationId?: string | null;
-  lioraTechnicalStatus?: string | null;
-  lioraRequestId?: string | null;
-  lioraLastSyncedAt?: string | null;
-  lioraLastErrorCode?: string | null;
-  lioraLastErrorMessage?: string | null;
-  idempotencyKey?: string | null;
-  requestId?: string | null;
-  errorCode?: string | null;
-  errorMessage?: string | null;
-  createdAt?: string | null;
-  updatedAt?: string | null;
-}
-
 export interface CreateAdminResourcePayload {
   organizationId: number;
   toolAccessId?: number;
@@ -195,7 +282,7 @@ export interface CreateAdminResourcePayload {
   key?: string;
   name: string;
   url?: string;
-  status?: string;
+  status?: ResourceStatus;
   visibility?: string;
   metadataJson?: string;
 }

@@ -31,10 +31,12 @@ export const API = {
   },
   me: {
     accessContext: '/me/access-context',
+    contextualProjection: '/api/v1/me/contextual-projection',
     toolAccess: '/me/tool-access',
     resources: '/me/resources',
     intake: '/me/intake',
     intakeSubmit: '/me/intake/submit',
+    lioraEvidence: '/api/v1/me/instruments/liora/evidence',
   },
   adminAccess: {
     organizations: '/admin/access/organizations',
@@ -66,7 +68,8 @@ export const API = {
   },
   adminResources: {
     resources: '/admin/resources',
-    resourceById: (id: number) => `/admin/resources/${encodeURIComponent(String(id))}`,
+    resourceStatus: (id: number) =>
+      `/admin/resources/${encodeURIComponent(String(id))}/status`,
   },
   adminInstruments: {
     instruments: '/admin/instruments',
@@ -76,10 +79,6 @@ export const API = {
       `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access`,
     status: (organizationRef: string, instrumentAccessRef: string) =>
       `/admin/organizations/${encodeURIComponent(organizationRef)}/instrument-access/${encodeURIComponent(instrumentAccessRef)}/status`,
-  },
-  adminCommunicationActions: {
-    actions: '/admin/communication-actions',
-    actionById: (id: number) => `/admin/communication-actions/${encodeURIComponent(String(id))}`,
   },
   legacy: {
     integrations: {
